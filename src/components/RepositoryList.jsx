@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, View, Text, FlatList, SafeAreaView, StyleSheet, Pressable, TextInput } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import RepositoryItem from './RepositoryItem.jsx';
 import { useRepositories } from '../hooks/useRepositories.js';
 import { Link } from 'react-router-native';
@@ -7,8 +7,14 @@ import { ModalPaw } from "../components/ModalPaw";
 import StyledText from './StyledText'
 import StyledTextInput from './StyledTextInput.jsx';
 import LogInPage from './AddFinca.jsx';
+import { useLocation } from 'react-router-native';
+import queryString from 'query-string';
 
 const RepositoryList = () => {
+
+    const location = useLocation();
+    const queryParams = queryString.parse(location.search);
+    const { isBill } = queryParams;
 
     const [isOpen, setIsOpen] = useState(false);
     const [search, setsearch] = useState('')
@@ -55,9 +61,11 @@ const RepositoryList = () => {
                 <Link to='/'>
                     <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
                 </Link>
-                <Pressable onPress={() => { setIsOpen(true) }}>
-                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>+ Agregar Finca</StyledText>
-                </Pressable>
+                {!isBill &&
+                    <Pressable onPress={() => { setIsOpen(true) }}>
+                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>+ Agregar Finca</StyledText>
+                    </Pressable>
+                }
                 <ModalPaw
                     isOpen={isOpen}
                 >
@@ -80,7 +88,13 @@ const RepositoryList = () => {
                 data={filterData}
                 ItemSeparatorComponent={() => <Text> </Text>}
                 renderItem={({ item: repo }) => (
-                    <RepositoryItem {...repo} />
+                    <>
+                        {isBill ?
+                            (<RepositoryItem isBill {...repo} />)
+                            :
+                            (<RepositoryItem {...repo} />)
+                        }
+                    </>
                 )}
             />
         </View>
@@ -119,7 +133,7 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 5,
     },
-    textInput:{
+    textInput: {
         marginHorizontal: 20
     }
 });

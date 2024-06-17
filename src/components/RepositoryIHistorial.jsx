@@ -13,7 +13,7 @@ const RepositoryItemHeader = (props) => {
         </View> */}
             <Link to='/historial'>
                 <View style={styles.card} >
-                    <StyledText fontWeight='bold'>Vaca: {props.nombre_vaca}</StyledText>
+                    <StyledText fontWeight='bold'>ID Animal: {props.nombre_vaca}</StyledText>
                     <StyledText >Enfermedades: {props.enfermedades}</StyledText>
                     <StyledText style={styles.language} >Fecha: {props.fecha}</StyledText>
                 </View>

@@ -4,21 +4,28 @@ import StyledText from './StyledText'
 import theme from '../theme'
 import { Link } from 'react-router-native'
 
+const CardFarm = (props) => (
+    <View style={styles.card} >
+        <StyledText fontWeight='bold' style={{ fontSize: 20 }}>Finca: {props.nombre_finca}</StyledText>
+        <StyledText style={{ fontSize: 17 }}>Cliente: {props.nombre_propietario}</StyledText>
+        <StyledText style={styles.language} >Ubicación: {props.ubicacion}</StyledText>
+        <StyledText style={{ fontSize: 17 }} >Nit: {props.nit}</StyledText>
+        <StyledText style={{ fontSize: 17 }} >Tel: {props.telefono}</StyledText>
+    </View>
+)
+
 const RepositoryItemHeader = (props) => {
     return (
         <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-            {/* <View style={{paddingRight: 10 }}>
-            <Image style={styles.image} source={require(`../img/pata-inicio.jpeg`)}  />
-        </View> */}
-            <Link to={`/historial?finca=${props.nombre_finca}&id=${props.id}`}>
-                <View style={styles.card} >
-                    <StyledText fontWeight='bold' style={{fontSize: 20}}>Finca: {props.nombre_finca}</StyledText>
-                    <StyledText style={{fontSize: 17}}>Propietario: {props.nombre_propietario}</StyledText>
-                    <StyledText style={styles.language} >Ubicación: {props.ubicacion}</StyledText>
-                    <StyledText style={{fontSize: 17}} >Nit: {props.nit}</StyledText>
-                    <StyledText style={{fontSize: 17}} >Tel: {props.telefono}</StyledText>
-                </View>
-            </Link>
+            {props?.isBill ? (
+                <Link to={`/bill?finca=${props.nombre_finca}&cliente=${props.nombre_propietario}&lugar=${props.ubicacion}&nit=${props.nit}&tel=${props.telefono}&id=${props.id}`}>
+                    <CardFarm {...props} />
+                </Link>
+            ) : (
+                <Link to={`/historial?finca=${props.nombre_finca}&id=${props.id}`}>
+                    <CardFarm {...props} />
+                </Link>
+            )}
         </View>
     )
 }

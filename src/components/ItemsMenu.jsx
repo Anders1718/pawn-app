@@ -36,9 +36,13 @@ const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
                 }
             </View>
             <View >
-                <Image style={styles.image} source={require(`../img/factura.png`)} />
-                <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center', paddingBottom: 45 }}>Factura</StyledText>
-                <Image style={styles.image} source={require(`../img/usuario-2.png`)} />
+                <Link to='/home?isBill=true' >
+                    <View>
+                        <Image style={styles.image} source={require(`../img/factura.png`)} />
+                        <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center', paddingBottom: 45 }}>Factura</StyledText>
+                    </View>
+                </Link>
+                <Image style={styles.imageDisabled} source={require(`../img/usuario-2.png`)} />
                 <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Usuario</StyledText>
             </View>
         </View>

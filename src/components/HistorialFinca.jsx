@@ -23,9 +23,6 @@ const HistorialFinca = () => {
     useEffect(() => {
         const fetchFincas = async () => {
             const resultado = await historialVacas(id);
-
-            console.log('resultado', resultado)
-
             setfilterData(resultado.vacas);
             setmasterData(resultado.vacas);
         };

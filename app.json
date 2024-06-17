@@ -15,7 +15,8 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anders17.cowfootapp"
     },
     "android": {
       "adaptiveIcon": {
@@ -26,13 +27,11 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": [
-      [
-        "expo-font",
-        {
-          "fonts": ["./src/fenotype-wonder-light.otf"]
-        }
-      ]
-    ]
+    "plugins": [],
+    "extra": {
+      "eas": {
+        "projectId": "158de54f-d332-4162-bfb2-800942d578db"
+      }
+    }
   }
 }

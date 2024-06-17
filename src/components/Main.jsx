@@ -6,6 +6,7 @@ import LogInPage from '../pages/LogIn.jsx'
 import PawPage from "../pages/PawPage.jsx";
 import HistorialFinca from "./HistorialFinca.jsx";
 import ItemMenu from "./ItemsMenu.jsx";
+import BillPage from "../pages/bill-page/Bill.jsx";
 
 const Main = () => {
     return (
@@ -16,6 +17,7 @@ const Main = () => {
                 <Route path='/signin' element={<LogInPage/>} />
                 <Route path='/pawpage' element={<PawPage/>} />
                 <Route path='/historial' element={<HistorialFinca/>} />
+                <Route path='/bill' element={<BillPage/>} />
                 <Route path='*' element={<Navigate to='/' />} />
             </Routes>
         </View>
