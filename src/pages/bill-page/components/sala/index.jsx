@@ -26,17 +26,7 @@ const Sala = ({ finca, cliente, lugar }) => {
                             </View>
                             <View style={{ marginBottom: 10 }}>
                                 <StyledText fontSize='subheading' fontWeight='bold' >Descripción:</StyledText>
-                                <StyledText > PI-DL Fisura axial. Moderado Recorte terapéutico sjdjsd sdjsdjjsd</StyledText>
-                            </View>
-                        </View>
-                        <View style={styles.item}>
-                            <View style={styles.animalInfo}>
-                                <StyledText fontSize='subheading' fontWeight='bold' >ID-Animal: </StyledText>
-                                <StyledText fontSize='subheading' > 376</StyledText>
-                            </View>
-                            <View style={{ marginBottom: 10 }}>
-                                <StyledText fontSize='subheading' fontWeight='bold' >Descripción:</StyledText>
-                                <StyledText > PI-DL Fisura axial. Moderado Recorte terapéutico sjdjsd sdjsdjjsd</StyledText>
+                                <StyledText > PI-DL Fisura axial. Moderado Recorte terapéutico</StyledText>
                             </View>
                         </View>
                     </View>
