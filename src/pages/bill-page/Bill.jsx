@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Formik, useField } from 'formik'
 import { StyleSheet, View, ScrollView } from 'react-native'
 import StyledTextInput from '../../components/StyledTextInput'
@@ -10,7 +10,7 @@ import queryString from 'query-string';
 import { Link } from 'react-router-native';
 import Informe from './components/informe'
 import Sala from './components/sala'
-
+import Precio from './components/precio'
 
 const initialValues = {
     email: '',
@@ -58,7 +58,16 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
+const fechaHoy = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
+const fechaHoyFormateada = fechaHoy.split('/').join('/');
+
 export default function BillPage() {
+
+    const [listaVacas, setListaVacas] = useState([]);
+    const [totalCuenta, setTotalCuenta] = useState([]);
+    const [sumaTotal, setSumaTotal] = useState(0);
+    const [buttonContinue, setButtonContinue] = useState(false);
+
     return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => console.log(values)}>
         {({ handleChange, handleSubmit, values }) => {
 
@@ -74,9 +83,29 @@ export default function BillPage() {
                     <Link to='/home?isBill=true'>
                         <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
                     </Link>
-                    <Informe cliente={cliente} lugar={lugar} finca={finca} />
-                    <Sala cliente={cliente} lugar={lugar} finca={finca} />
-                    <CreatePDF finca={finca} cliente={cliente} lugar={lugar} />
+                    <Informe cliente={cliente} lugar={lugar} finca={finca} fechaHoyFormateada={fechaHoyFormateada} />
+                    <Sala listaVacas={listaVacas} setListaVacas={setListaVacas} />
+                    <Precio
+                        setTotalCuenta={setTotalCuenta}
+                        totalCuenta={totalCuenta}
+                        setSumaTotal={setSumaTotal}
+                        sumaTotal={sumaTotal}
+                        setButtonContinue={setButtonContinue}
+                        buttonContinue={buttonContinue}
+                    />
+                    {!buttonContinue && (
+                        <CreatePDF
+                            finca={finca}
+                            cliente={cliente}
+                            lugar={lugar}
+                            totalCuenta={totalCuenta}
+                            listaVacas={listaVacas}
+                            fechaHoyFormateada={fechaHoyFormateada}
+                            nit={nit}
+                            tel={tel}
+                            sumaTotal={sumaTotal}
+                        />
+                    )}
                 </ScrollView>
             )
         }}
