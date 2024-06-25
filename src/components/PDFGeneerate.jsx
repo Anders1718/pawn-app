@@ -6,7 +6,29 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function App({finca, cliente, lugar}) {
+export default function App({ finca, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal }) {
+
+    let tablaCuenta = '';
+    totalCuenta.forEach((cuenta, index) => {
+        tablaCuenta += `
+        <tr>
+            <td>${cuenta.cantidad}</td>
+            <td>${cuenta.descripcion}</td>
+            <td>${cuenta.valor}</td>
+            <td>${cuenta.total}</td>
+        </tr>
+    `;
+    });
+
+    let tablaVacas = '';
+    listaVacas.forEach((vaca, index) => {
+        tablaVacas += `
+        <tr>
+            <td>${vaca.id}</td>
+            <td>${vaca.enfermedades}</td>
+        </tr>
+    `;
+    });
 
     const html = `
 <html>
@@ -78,7 +100,7 @@ export default function App({finca, cliente, lugar}) {
             <td class="left-column bold">Ubicación:</td>
             <td class="left-column">${lugar}</td>
             <td class="right-column bold">Fecha:</td>
-            <td class="right-column">07/03/2024</td>
+            <td class="right-column">${fechaHoyFormateada}</td>
         </tr>
     </table>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
@@ -87,18 +109,9 @@ export default function App({finca, cliente, lugar}) {
     <table class="animal-table">
         <tr>
             <th>ID-Animal</th>
-            <th>Miembro</th>
-            <th>Hallazgos</th>
-            <th>Severidad</th>
-            <th>Tratamiento</th>
+            <th>Descripción</th>
         </tr>
-        <tr>
-            <td>594</td>
-            <td>PD-DL</td>
-            <td>enfermedad de línea blanca.</td>
-            <td>Moderado</td>
-            <td>Recorte terapéutico</td>
-        </tr>
+        ${tablaVacas}
     </table>
 
     <table class="paws-table">
@@ -123,13 +136,13 @@ export default function App({finca, cliente, lugar}) {
             <td class="left-column bold">Cliente:</td>
             <td class="left-column">${cliente}</td>
             <td class="right-column bold">Nit:</td>
-            <td class="right-column">845555</td>
+            <td class="right-column">${nit}</td>
         </tr>
         <tr>
             <td class="left-column bold">Ubicación:</td>
             <td class="left-column">${lugar}</td>
             <td class="right-column bold">Tel:</td>
-            <td class="right-column">3216654656</td>
+            <td class="right-column">${tel}</td>
         </tr>
     </table>
 
@@ -155,30 +168,12 @@ export default function App({finca, cliente, lugar}) {
             <th>Valor/und</th>
             <th>Valor</th>
         </tr>
-        <tr>
-            <td>5</td>
-            <td>Podología funcional.</td>
-            <td>$1</td>
-            <td>$5</td>
-        </tr>
-        <tr>
-            <td>17</td>
-            <td>Podología terapéutica.</td>
-            <td>$2</td>
-            <td>$34</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td>Revisión.</td>
-            <td>$1</td>
-            <td>$4</td>
-        </tr>
-
+        ${tablaCuenta}
     </table>
     <table class="info-table">
         <tr>
             <td class="right-column bold">Total:</td>
-            <td class="right-column">$43</td>
+            <td class="right-column">${sumaTotal}</td>
         </tr>
     </table>
     <table class="info-table">

@@ -2,7 +2,7 @@ import React from 'react'
 import { StyleSheet, View } from 'react-native'
 import StyledText from '../../../../components/StyledText'
 
-const Informe = ({ finca, cliente, lugar }) => {
+const Informe = ({ finca, cliente, lugar, fechaHoyFormateada }) => {
     return (
         <View style={styles.conatiner}>
             <StyledText fontSize='title'>INFORME</StyledText>
@@ -13,7 +13,7 @@ const Informe = ({ finca, cliente, lugar }) => {
                 </View>
                 <View style={styles.info}>
                     <StyledText fontSize='subheading'>Finca: {finca}</StyledText>
-                    <StyledText fontSize='subheading'>Fecha: 06/26/12</StyledText>
+                    <StyledText fontSize='subheading'>Fecha: {fechaHoyFormateada}</StyledText>
                 </View>
             </View>
 
