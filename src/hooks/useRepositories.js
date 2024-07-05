@@ -123,20 +123,23 @@ export async function fetchEnfermedades() {
 }
 
 export async function fetchHistorialVacas(id, startDate, endDate) {
-
-    console.log(id, startDate, endDate)
+    console.log(id, startDate, endDate);
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
     await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
-    const historialVacas = await db.getAllAsync(`SELECT * FROM historial_vacas WHERE fecha BETWEEN ${startDate} AND ${endDate}`);
+    
+    const historialVacas = await db.getAllAsync(
+        'SELECT * FROM historial_vacas WHERE fecha BETWEEN ? AND ? AND finca = ?',
+        [startDate, endDate, id]
+    );
+
     console.log(historialVacas);
-    // const historialVacas = await db.getAllAsync(`SELECT * FROM historial_vacas WHERE finca = ${id} `);
 
     const listaVacas = historialVacas.map(function (item) {
-        console.log(typeof item.fecha)
+        console.log(typeof item.fecha);
         return { nombre_vaca: item.nombre_vaca, enfermedades: item.enfermedades, fecha: item.fecha, sala: item.sala, nota: item.nota, tratamiento: item.tratamiento };
-    })
+    });
 
     return listaVacas;
 }
