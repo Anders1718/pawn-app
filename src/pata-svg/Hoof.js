@@ -8,7 +8,6 @@ const Hoof = ({ numberPawnSave, optionsSelectedSave, setNumberPawnSave, idPaw, s
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
 
   const handlePress = (index, pathData) => {
-    console.log('index', pathData.name);
     if (index >= paths.length - 2) return; // Evita la selección para los dos últimos paths
     const newColors = [...colors];
     newColors[index] = newColors[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
@@ -23,8 +22,6 @@ const Hoof = ({ numberPawnSave, optionsSelectedSave, setNumberPawnSave, idPaw, s
   };
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
-
-    console.log('actualArray', actualArray)
 
     // Hacemos una copia del array actual
     const newArray = [...actualArray];

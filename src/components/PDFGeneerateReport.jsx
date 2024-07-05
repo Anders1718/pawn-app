@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import StyledText from './StyledText';
 import * as Print from 'expo-print';
@@ -6,28 +6,33 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function GenerateReport({ finca, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada }) {
+export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormateada, report, setIsOpen }) {
 
-    let tablaCuenta = '';
-    totalCuenta.forEach((cuenta, index) => {
-        tablaCuenta += `
-        <tr>
-            <td>${cuenta.cantidad}</td>
-            <td>${cuenta.descripcion}</td>
-            <td>${cuenta.valor}</td>
-            <td>${cuenta.total}</td>
-        </tr>
-    `;
-    });
+    const uniqueSalas = [...new Set(report.map(item => item.sala))];
 
     let tablaVacas = '';
-    listaVacas.forEach((vaca, index) => {
+    uniqueSalas.forEach(sala => {
         tablaVacas += `
-        <tr>
-            <td>${vaca.id}</td>
-            <td>${vaca.enfermedades}</td>
-        </tr>
-    `;
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
+            ${sala}
+        </h1>
+        <table class="animal-table">
+            <tr>
+                <th>ID-Animal</th>
+                <th>Descripción</th>
+                <th>Tratamiento</th>
+            </tr>
+        `;
+        report.filter(vaca => vaca.sala === sala).forEach(vaca => {
+            tablaVacas += `
+            <tr>
+                <td>${vaca.nombre_vaca}</td>
+                <td>${vaca.enfermedades}</td>
+                <td>${vaca.tratamiento}</td>
+            </tr>
+            `;
+        });
+        tablaVacas += `</table>`;
     });
 
     const html = `
@@ -103,16 +108,7 @@ export default function GenerateReport({ finca, cliente, lugar, totalCuenta, lis
             <td class="right-column">${fechaHoyFormateada}</td>
         </tr>
     </table>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-        Sala 1
-    </h1>
-    <table class="animal-table">
-        <tr>
-            <th>ID-Animal</th>
-            <th>Descripción</th>
-        </tr>
         ${tablaVacas}
-    </table>
 
     <table class="paws-table">
         <tr>
@@ -128,28 +124,45 @@ export default function GenerateReport({ finca, cliente, lugar, totalCuenta, lis
             <td>DM = dígito medial</td>
         </tr>
     </table>
+
+    <table class="info-table">
+        <tr>
+            <td class="left-column">Alejandro Cardona Tobón </td>
+        </tr>
+        <tr>
+            <td class="left-column">Médico Veterinario Zootecnista </td>
+        </tr>
+        <tr>
+            <td class="left-column">Universidad CES </td>
+        </tr>
+    </table>
     
 </body>
 
 </html>
-`;
+`;  
+
+    const isFirstRender = useRef(true);
+
+    useEffect(() => {
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+       printToFile();
+    }, [report]);
 
     const printToFile = async () => {
         // On iOS/android prints the given html. On web prints the HTML from the current page.
         const { uri } = await Print.printToFileAsync({ html });
         console.log('File has been saved to:', uri);
         await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+        setIsOpen(false);
     };
 
     return (
         <View style={styles.container}>
             <View style={styles.spacer} />
-            <TouchableOpacity
-                style={styles.button}
-                onPress={printToFile}
-            >
-                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar factura</StyledText>
-            </TouchableOpacity>
         </View>
     );
 }

@@ -123,7 +123,7 @@ export async function fetchEnfermedades() {
 }
 
 export async function fetchHistorialVacas(id, startDate, endDate) {
-    console.log(id, startDate, endDate);
+    console.log("hora", startDate, endDate);
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
@@ -137,7 +137,6 @@ export async function fetchHistorialVacas(id, startDate, endDate) {
     console.log(historialVacas);
 
     const listaVacas = historialVacas.map(function (item) {
-        console.log(typeof item.fecha);
         return { nombre_vaca: item.nombre_vaca, enfermedades: item.enfermedades, fecha: item.fecha, sala: item.sala, nota: item.nota, tratamiento: item.tratamiento };
     });
 

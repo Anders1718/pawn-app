@@ -15,7 +15,7 @@ const HistorialFinca = () => {
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
     const queryParams = queryString.parse(location.search);
-    const { finca, id } = queryParams;
+    const { finca, id, cliente, lugar, nit, tel } = queryParams;
 
     const [isOpen, setIsOpen] = useState(false);
     const [search, setsearch] = useState('')
@@ -65,7 +65,7 @@ const HistorialFinca = () => {
                     <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
                         <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>X</StyledText>
                     </Pressable>
-                    <GenerarInforme id={id}/>
+                    <GenerarInforme  id={id} finca={finca} cliente={cliente} lugar={lugar} setIsOpen={setModalVisible}/>
                 </View>
             </ModalPaw>
             <TouchableOpacity

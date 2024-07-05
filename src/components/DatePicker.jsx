@@ -3,7 +3,7 @@ import { View, Platform, StyleSheet } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import StyledText from './StyledText';
 
-const DateRangePicker = ({ startDate, endDate, setEndDate, setStartDate }) => {
+const DateRangePicker = ({ startDate, endDate, setEndDate, setStartDate, setHabilitado }) => {
   const [showStartPicker, setShowStartPicker] = useState(false);
   const [showEndPicker, setShowEndPicker] = useState(false);
 
@@ -11,15 +11,18 @@ const DateRangePicker = ({ startDate, endDate, setEndDate, setStartDate }) => {
     const currentDate = selectedDate || startDate;
     setShowStartPicker(Platform.OS === 'ios');
     setStartDate(currentDate);
+    setHabilitado(true);
   };
 
   const onChangeEnd = (event, selectedDate) => {
     const currentDate = selectedDate || endDate;
     setShowEndPicker(Platform.OS === 'ios');
     if (currentDate < startDate) {
+      setHabilitado(false);
       alert('La fecha de fin no puede ser anterior a la fecha de inicio');
     } else {
       setEndDate(currentDate);
+      setHabilitado(true);
     }
   };
 

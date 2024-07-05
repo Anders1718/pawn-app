@@ -156,8 +156,6 @@ export default function PawPage() {
         const fetchEnfermedadesList = async () => {
             const resultado = await fetchEnfermedades();
             setEnfermedades(resultado);
-
-            console.log("resultado", resultado)
         };
 
         fetchVacas();

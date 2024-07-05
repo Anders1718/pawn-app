@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Formik, useField } from 'formik'
-import { StyleSheet, View, ScrollView } from 'react-native'
+import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native'
 import StyledTextInput from '../../components/StyledTextInput'
 import StyledText from '../../components/StyledText'
 import { loginValidationSchema } from '../../validationSchemas/login'
@@ -8,9 +8,9 @@ import CreatePDF from '../../components/PDFGeneerate'
 import { useLocation } from 'react-router-native';
 import queryString from 'query-string';
 import { Link } from 'react-router-native';
-import Informe from './components/informe'
-import Sala from './components/sala'
 import Precio from './components/precio'
+import DateRangePicker from '../../components/DatePicker'
+import { fetchHistorialVacas } from '../../hooks/useRepositories';
 
 const initialValues = {
     email: '',
@@ -35,11 +35,26 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: '#1e293b',
-        padding: 15,
+        padding: 8,
         borderRadius: 15,
-        borderWidth: 10
+        borderWidth: 10,
+        marginTop: 20,
+        marginHorizontal: 80,
     }
 })
+
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist) => {
+    const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
+
+    const terapeuticosCount = response.filter(item => item.tratamiento === "Terapéutico").length;
+    const preventivosCount = response.filter(item => item.tratamiento === "Preventivo").length;
+
+    setResponse(response);
+    setTerapeuticosCount(terapeuticosCount);
+    setPreventivosCount(preventivosCount);
+    setPrices([terapeuticosCount, preventivosCount]);
+    setPricesExist(true);
+}
 
 const FormikInputValue = ({ name, ...props }) => {
     const [field, meta, helpers] = useField(name)
@@ -67,6 +82,28 @@ export default function BillPage() {
     const [totalCuenta, setTotalCuenta] = useState([]);
     const [sumaTotal, setSumaTotal] = useState(0);
     const [buttonContinue, setButtonContinue] = useState(false);
+    const [terapeuticosCount, setTerapeuticosCount] = useState(0);
+    const [preventivosCount, setPreventivosCount] = useState(0);
+
+    const [pricesExist, setPricesExist] = useState(false);
+
+    const [prices, setPrices] = useState([terapeuticosCount, preventivosCount]);
+
+    const [response, setResponse] = useState([]);
+
+    const [startDate, setStartDate] = useState(() => {
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+        return date;
+    });
+    // ... existing code ...
+    const [endDate, setEndDate] = useState(() => {
+        const date = new Date();
+        date.setHours(18, 59, 0, 0);
+        return date;
+    });
+
+
 
     return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => console.log(values)}>
         {({ handleChange, handleSubmit, values }) => {
@@ -83,16 +120,33 @@ export default function BillPage() {
                     <Link to='/home?isBill=true'>
                         <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
                     </Link>
-                    <Informe cliente={cliente} lugar={lugar} finca={finca} fechaHoyFormateada={fechaHoyFormateada} />
-                    <Sala listaVacas={listaVacas} setListaVacas={setListaVacas} />
-                    <Precio
-                        setTotalCuenta={setTotalCuenta}
-                        totalCuenta={totalCuenta}
-                        setSumaTotal={setSumaTotal}
-                        sumaTotal={sumaTotal}
-                        setButtonContinue={setButtonContinue}
-                        buttonContinue={buttonContinue}
+
+                    <DateRangePicker
+                        startDate={startDate}
+                        setStartDate={setStartDate}
+                        endDate={endDate}
+                        setEndDate={setEndDate}
                     />
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist)}
+                    >
+                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
+                    </TouchableOpacity>
+                    {pricesExist && (
+                        <Precio
+                            setTotalCuenta={setTotalCuenta}
+                            totalCuenta={totalCuenta}
+                            setSumaTotal={setSumaTotal}
+                            sumaTotal={sumaTotal}
+                            setButtonContinue={setButtonContinue}
+                            buttonContinue={buttonContinue}
+                            terapeuticosCount={terapeuticosCount}
+                            preventivosCount={preventivosCount}
+                            prices={prices}
+                        />
+                    )}
+
                     {!buttonContinue && (
                         <CreatePDF
                             finca={finca}
@@ -111,3 +165,4 @@ export default function BillPage() {
         }}
     </Formik>
 }
+

@@ -22,7 +22,7 @@ const RepositoryItemHeader = (props) => {
                     <CardFarm {...props} />
                 </Link>
             ) : (
-                <Link to={`/historial?finca=${props.nombre_finca}&id=${props.id}`}>
+                <Link to={`/historial?finca=${props.nombre_finca}&id=${props.id}&cliente=${props.nombre_propietario}&lugar=${props.ubicacion}`}>
                     <CardFarm {...props} />
                 </Link>
             )}

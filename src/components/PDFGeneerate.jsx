@@ -20,16 +20,6 @@ export default function App({ finca, cliente, lugar, totalCuenta, listaVacas, fe
     `;
     });
 
-    let tablaVacas = '';
-    listaVacas.forEach((vaca, index) => {
-        tablaVacas += `
-        <tr>
-            <td>${vaca.id}</td>
-            <td>${vaca.enfermedades}</td>
-        </tr>
-    `;
-    });
-
     const html = `
 <html>
 
@@ -86,48 +76,9 @@ export default function App({ finca, cliente, lugar, totalCuenta, listaVacas, fe
 </head>
 
 <body style=" margin: 40px;">
-    <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-        INFORME
-    </h1>
-    <table class="info-table">
-        <tr>
-            <td class="left-column bold">Cliente:</td>
-            <td class="left-column">${cliente}</td>
-            <td class="right-column bold">Finca:</td>
-            <td class="right-column">${finca}</td>
-        </tr>
-        <tr>
-            <td class="left-column bold">Ubicación:</td>
-            <td class="left-column">${lugar}</td>
-            <td class="right-column bold">Fecha:</td>
-            <td class="right-column">${fechaHoyFormateada}</td>
-        </tr>
-    </table>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-        Sala 1
-    </h1>
-    <table class="animal-table">
-        <tr>
-            <th>ID-Animal</th>
-            <th>Descripción</th>
-        </tr>
-        ${tablaVacas}
-    </table>
-
-    <table class="paws-table">
-        <tr>
-            <td>AI = anterior izquierdo</td>
-            <td>AD = anterior derecho</td>
-        </tr>
-        <tr>
-            <td>PI = posterior izquierdo</td>
-            <td>PD = posterior derecho</td>
-        </tr>
-        <tr>
-            <td>DL = dígito lateral </td>
-            <td>DM = dígito medial</td>
-        </tr>
-    </table>
+   <h2 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; ">
+   Fecha: ${fechaHoyFormateada}
+   </h2>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
         CUENTA DE COBRO
     </h1>
