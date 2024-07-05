@@ -28,5 +28,25 @@ export const farmValidation = yup.object().shape({
 export const cowValidation = yup.object().shape({
     id: yup
         .string()
-        .required('Id es requerido')
+        .required('Id es requerido'),
+    sala: yup
+        .string(),
 })
+
+export const enfermedadesValidation = yup.object().shape({
+    nombre: yup
+        .string()
+        .required('Nombre es requerido'),
+    id: yup
+        .string()
+        .required('Identificador es requerido'),
+})
+
+export const reportValidation = yup.object().shape({
+    fechaInicio: yup
+        .string()
+        .required('Fecha de inicio es requerida'),
+    fechaFin: yup
+        .string()
+        .required('Fecha de fin es requerida'),
+});

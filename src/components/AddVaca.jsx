@@ -8,6 +8,7 @@ import { addVaca } from '../hooks/useRepositories'
 
 const initialValues = {
     nombre: '',
+    sala: '',
 }
 
 const styles = StyleSheet.create({
@@ -23,8 +24,9 @@ const styles = StyleSheet.create({
     }
 })
 
-const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen) => {
-    await addVaca(id, values.id);
+const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen, finca) => {
+
+    await addVaca(id, values.id, values.sala ? values.sala : finca);
     actualizarVacas();
     setModalCowAddOpen(false)
 };
@@ -46,9 +48,9 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
-export default function CowValidation({actualizarVacas, id, setModalCowAddOpen}) {
+export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, finca}) {
     return <Formik validationSchema={cowValidation} initialValues={initialValues} onSubmit={values => {
-        addFincas(values, id, actualizarVacas, setModalCowAddOpen)
+        addFincas(values, id, actualizarVacas, setModalCowAddOpen, finca)
     }}>
         {({ handleChange, handleSubmit, values }) => {
             return (
@@ -56,6 +58,11 @@ export default function CowValidation({actualizarVacas, id, setModalCowAddOpen})
                     <FormikInputValue
                         name='id'
                         placeholder='Id del animal'
+                        placeholderTextColor="#c2c0c0"
+                    />
+                    <FormikInputValue
+                        name='sala'
+                        placeholder='Sala'
                         placeholderTextColor="#c2c0c0"
                     />
                     <Button onPress={handleSubmit} title='Guardar' />

@@ -18,7 +18,6 @@ export const optionsSick = [
     { "label": 'SC', 'value': 'sobre crecimiento', 'number': 13 },
     { "label": 'DS', 'value': 'doble suela', 'number': 14 },
     { "label": 'CE', 'value': 'cuerpo extraño', 'number': 15 },
-   // { "label": '+', 'value': 'añadir' },
 ];
 
 export const optionsPawn = [

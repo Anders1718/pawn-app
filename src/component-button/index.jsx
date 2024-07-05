@@ -3,6 +3,7 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, StyleSheet, Text, View, FlatList } from "react-native";
 import Card from "./card/Card";
 
+
 const ComponentButton =
     ({
         title,
@@ -47,7 +48,10 @@ const ComponentButton =
                 </Text>
                 <View style={styles.board}>
                     <FlatList
+                        contentContainerStyle={styles.flatList}
                         data={options}
+                        scrollEnabled={false}
+                        numColumns={3}
                         ItemSeparatorComponent={() => <Text> </Text>}
                         renderItem={({ item: repo, index }) => {
                             let isTurnedOver = false;
@@ -97,8 +101,6 @@ const ComponentButton =
                                 {repo.label}
                             </Card>)
                         }}
-                        horizontal={true}
-                        showsHorizontalScrollIndicator={false}
                     />
                 </View>
                 <StatusBar style="light" />
@@ -110,18 +112,20 @@ export default ComponentButton;
 
 const styles = StyleSheet.create({
     container: {
-        alignItems: "center",
-        justifyContent: "start",
-        // backgroundColor: 'red',
-        height: 200
-    },
-    board: {
 
     },
     title: {
+        display: 'flex',
+        // backgroundColor: 'red',
+        alignItems: "center",
         fontSize: 32,
         fontWeight: "900",
         color: "snow",
         marginVertical: 15,
+        textAlign: 'center',
     },
+    flatList: {
+        flexGrow: 1,
+        justifyContent: 'center',
+    }
 });

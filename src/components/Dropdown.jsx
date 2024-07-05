@@ -23,7 +23,7 @@ const DropdownItems = ({data, onChange, placeholder}) => {
       searchPlaceholder="Buscar..."
       value={value}
       onChange={item => {
-        onChange(item.value, item.label);
+        onChange(item.value, item.label, item.sala);
       }}
     />
   );

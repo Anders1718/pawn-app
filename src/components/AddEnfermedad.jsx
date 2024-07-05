@@ -3,15 +3,12 @@ import { Formik, useField } from 'formik'
 import { Button, StyleSheet, TextInput, View } from 'react-native'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
-import { farmValidation } from '../validationSchemas/login'
-import { addFinca } from '../hooks/useRepositories'
+import { enfermedadesValidation } from '../validationSchemas/login'
+import { addEnfermedades } from '../hooks/useRepositories'
 
 const initialValues = {
-    finca: '',
     nombre: '',
-    nit: '',
-    tel: '',
-    ubicacion: '',
+    id: '',
 }
 
 const styles = StyleSheet.create({
@@ -27,9 +24,10 @@ const styles = StyleSheet.create({
     }
 })
 
-const addFincas = async (values, actualizarFincas) => {
-    await addFinca(values);
-    actualizarFincas();
+const addEnfermedadesRepo = async (values, actualizarEnfermedades, setModalEnfermedadesOpen) => {
+    await addEnfermedades(values.id.toUpperCase(), values.nombre );
+    actualizarEnfermedades();
+    setModalEnfermedadesOpen(false);
 };
 
 const FormikInputValue = ({ name, ...props }) => {
@@ -49,38 +47,24 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
-export default function LogInPage({actualizarFincas}) {
-    return <Formik validationSchema={farmValidation} initialValues={initialValues} onSubmit={values => {
-        addFincas(values, actualizarFincas)
+export default function AddEnfermedad({actualizarEnfermedades, setModalEnfermedadesOpen}) {
+    return <Formik validationSchema={enfermedadesValidation} initialValues={initialValues} onSubmit={values => {
+        addEnfermedadesRepo(values, actualizarEnfermedades, setModalEnfermedadesOpen)
     }}>
         {({ handleChange, handleSubmit, values }) => {
             return (
                 <View style={styles.form}>
                     <FormikInputValue
-                        name='finca'
-                        placeholder='Finca'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
                         name='nombre'
-                        placeholder='Cliente'
+                        placeholder='Nombre Enfermedad'
                         placeholderTextColor="#c2c0c0"
                     />
                     <FormikInputValue
-                        name='nit'
-                        placeholder='NIT/C.C'
+                        name='id'
+                        placeholder='Identificación Enfermedad'
                         placeholderTextColor="#c2c0c0"
                     />
-                    <FormikInputValue
-                        name='tel'
-                        placeholder='Tel'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='ubicacion'
-                        placeholder='Ubicación'
-                        placeholderTextColor="#c2c0c0"
-                    />
+
                     <Button onPress={handleSubmit} title='Guardar' />
                 </View>
             )

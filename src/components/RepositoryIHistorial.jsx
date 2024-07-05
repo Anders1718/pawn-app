@@ -6,12 +6,26 @@ import { Link } from 'react-router-native'
 
 const RepositoryItemHeader = (props) => {
 
+    const convertirFecha = (fecha) => {
+
+        const fechaNueva = new Date(fecha);
+
+        var dia = fechaNueva.getDate();
+        var mes = fechaNueva.getMonth() + 1; // Los meses empiezan desde 0, por lo que necesitas sumar 1
+        var año = fechaNueva.getFullYear();
+
+        return dia + '/' + mes + '/' + año;
+    }
+
     return (
         <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
                 <View style={styles.card} >
                     <StyledText fontWeight='bold'>ID Animal: {props.nombre_vaca}</StyledText>
                     <StyledText >Enfermedades: {props.enfermedades}</StyledText>
-                    <StyledText style={styles.language} >Fecha: {props.fecha}</StyledText>
+                    <StyledText style={styles.language} >Fecha: {convertirFecha(props.fecha)}</StyledText>
+                    {props.nota && <StyledText >Nota: {props.nota}</StyledText>}
+                    <StyledText style={styles.language} >Sala: {props.sala}</StyledText>
+                    <StyledText style={styles.language} >Tratamiento: {props.tratamiento}</StyledText>
                 </View>
         </View>
     )

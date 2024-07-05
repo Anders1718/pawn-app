@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
 import RepositoryHistorial from './RepositoryIHistorial.jsx';
 import queryString from 'query-string';
 import { historialVacas } from '../hooks/useRepositories.js';
@@ -7,6 +7,8 @@ import { Link } from 'react-router-native';
 import StyledText from './StyledText.jsx'
 import StyledTextInput from './StyledTextInput.jsx';
 import { useLocation } from 'react-router-native';
+import { ModalPaw } from './ModalPaw.jsx';
+import GenerarInforme from './GenerateReport.jsx';
 
 const HistorialFinca = () => {
 
@@ -19,6 +21,7 @@ const HistorialFinca = () => {
     const [search, setsearch] = useState('')
     const [filterData, setfilterData] = useState([])
     const [masterData, setmasterData] = useState([])
+    const [modalVisible, setModalVisible] = useState(false);
 
     useEffect(() => {
         const fetchFincas = async () => {
@@ -55,7 +58,22 @@ const HistorialFinca = () => {
                     <StyledText fontWeight='bold' color='secondary' fontSize='subheading' >⬅ Volver</StyledText>
                 </Link>
             </View>
-            <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>{`🚜Finca: ${finca}`}</StyledText>
+            <ModalPaw
+                isOpen={modalVisible}
+            >
+                <View style={styles.modalView}>
+                    <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
+                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>X</StyledText>
+                    </Pressable>
+                    <GenerarInforme id={id}/>
+                </View>
+            </ModalPaw>
+            <TouchableOpacity
+                style={styles.button}
+                onPress={() => setModalVisible(true)}
+            >
+                <StyledText fontSize='subheading' >Generar Informe</StyledText>
+            </TouchableOpacity>
             <StyledTextInput
                 placeholder='Buscar vaca...'
                 placeholderTextColor="#c2c0c0"
@@ -106,7 +124,20 @@ const styles = StyleSheet.create({
     },
     textInput: {
         marginHorizontal: 20
-    }
+    },
+    button: {
+        borderColor: "#334155",
+        borderRadius: "25%",
+        borderRadius: "25%",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 15,
+        borderWidth: 10,
+        marginBottom:20,
+        marginHorizontal: 20,
+    },
 });
 
 export default HistorialFinca;

@@ -1,4 +1,7 @@
 {
-  "expoServerPort": 19000,
-  "packagerPort": 19000
+  "expoServerPort": null,
+  "packagerPort": 19000,
+  "expoServerNgrokUrl": "https://uv1lyck.anders17.pawn-app.exp.direct",
+  "packagerNgrokUrl": "https://uv1lyck.anders17.pawn-app.exp.direct",
+  "ngrokPid": 32372
 }
