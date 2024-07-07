@@ -83,7 +83,7 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.cowfootapp"
+    namespace 'com.anders17.cowfootapp'
     defaultConfig {
         applicationId 'com.anders17.cowfootapp'
         minSdkVersion rootProject.ext.minSdkVersion
