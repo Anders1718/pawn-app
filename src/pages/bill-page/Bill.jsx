@@ -40,10 +40,14 @@ const styles = StyleSheet.create({
         borderWidth: 10,
         marginTop: 20,
         marginHorizontal: 80,
+    },
+    returnButton: {
+        marginTop: 20,
+        marginHorizontal: 40,
     }
 })
 
-const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist) => {
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist, setHabilitado) => {
     const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
 
     const terapeuticosCount = response.filter(item => item.tratamiento === "Terapéutico").length;
@@ -54,6 +58,7 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     setPreventivosCount(preventivosCount);
     setPrices([terapeuticosCount, preventivosCount]);
     setPricesExist(true);
+    setHabilitado(false);
 }
 
 const FormikInputValue = ({ name, ...props }) => {
@@ -73,15 +78,20 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
-const fechaHoy = new Date().toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' });
-const fechaHoyFormateada = fechaHoy.split('/').join('/');
+const fechaHoy = new Date();
+
+const diferenciaZonaHoraria = fechaHoy.getTimezoneOffset() * 60000;
+const fechaLocal = new Date(fechaHoy.getTime() - diferenciaZonaHoraria);
+
+const fechaLocalTransformada = fechaLocal.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+const fechaHoyFormateada = fechaLocalTransformada.split('/').join('/');
 
 export default function BillPage() {
 
     const [listaVacas, setListaVacas] = useState([]);
     const [totalCuenta, setTotalCuenta] = useState([]);
     const [sumaTotal, setSumaTotal] = useState(0);
-    const [buttonContinue, setButtonContinue] = useState(false);
+    const [buttonContinue, setButtonContinue] = useState(true);
     const [terapeuticosCount, setTerapeuticosCount] = useState(0);
     const [preventivosCount, setPreventivosCount] = useState(0);
 
@@ -137,7 +147,7 @@ export default function BillPage() {
 
                         <TouchableOpacity
                             style={styles.button}
-                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist)}
+                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist, setHabilitado)}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
                         </TouchableOpacity>

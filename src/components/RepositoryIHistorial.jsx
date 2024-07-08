@@ -20,10 +20,10 @@ const RepositoryItemHeader = (props) => {
     return (
         <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
                 <View style={styles.card} >
-                    <StyledText fontWeight='bold'>ID Animal: {props.nombre_vaca}</StyledText>
-                    <StyledText >Enfermedades: {props.enfermedades}</StyledText>
-                    <StyledText style={styles.language} >Fecha: {convertirFecha(props.fecha)}</StyledText>
-                    {props.nota && <StyledText >Nota: {props.nota}</StyledText>}
+                    <StyledText fontWeight='bold' style={{fontSize: 22}}>ID Animal: {props.nombre_vaca}</StyledText>
+                    <StyledText style={{fontSize: 22}}>Enfermedades: {props.enfermedades}</StyledText>
+                    <StyledText style={styles.language}  >Fecha: {convertirFecha(props.fecha)}</StyledText>
+                    {props.nota && <StyledText style={{fontSize: 22}}>Nota: {props.nota}</StyledText>}
                     <StyledText style={styles.language} >Sala: {props.sala}</StyledText>
                     <StyledText style={styles.language} >Tratamiento: {props.tratamiento}</StyledText>
                 </View>
@@ -49,7 +49,8 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-start',
         marginVertical: 4,
         borderRadius: 4,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        fontSize: 18,
     },
     image: {
         width: 48,
@@ -61,7 +62,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#94ACD4',
         padding: 10,
-        borderRadius: 4
+        borderRadius: 4,
     }
 })
 

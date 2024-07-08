@@ -50,3 +50,24 @@ export const reportValidation = yup.object().shape({
         .string()
         .required('Fecha de fin es requerida'),
 });
+
+export const precioValidation = yup.object().shape({
+    cantidadPreventivos: yup
+        .number()
+        .required('Campo requerido'),
+    descripcionPreventivos: yup
+        .string()
+        .required('Campo requerido'),
+    cantidadTerapeuticos: yup
+        .number()
+        .required('Campo requerido'),
+    descripcionTerapeuticos: yup
+        .string()
+        .required('Campo requerido'),
+    valorPreventivos: yup
+        .number()
+        .required('Campo requerido'),
+    valorTerapeuticos: yup
+        .number()
+        .required('Campo requerido'),
+})

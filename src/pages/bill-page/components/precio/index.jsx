@@ -5,6 +5,8 @@ import { useState } from 'react'
 import StyledTextInput from '../../../../components/StyledTextInput'
 import { Formik, useField } from 'formik'
 import * as Yup from 'yup'
+import { precioValidation } from '../../../../validationSchemas/login'
+import { initialValuePrice } from '../../../../utils/initialValuePrice'
 
 const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount }) => {
 
@@ -21,6 +23,8 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
     const [modalVisible, setModalVisible] = useState(false);
 
+    const contador = preventivosCount > 0 && terapeuticosCount > 0 ? 2 : preventivosCount > 0 ? 1 : terapeuticosCount > 0 ? 1 : 0;
+
     const addCuenta = () => {
         const longitudCuenta = cuenta.length + 1;
         setCampo((prevCuenta) => [...prevCuenta, longitudCuenta]);
@@ -29,7 +33,6 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const saveCuenta = (values) => {
-        console.log(values);
         const total = values.cantidad * values.valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
@@ -41,6 +44,35 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         }
         setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
 
+    }
+
+    const saveTerapeuticos = (values) => {
+        const total = values.cantidadTerapeuticos * values.valorTerapeuticos;
+        setTotal((prevTotal) => [...prevTotal, total]);
+        setSumaTotal((prevTotal) => prevTotal + total);
+        const cuentaFinal = {
+            cantidad: values.cantidadTerapeuticos,
+            descripcion: values.descripcionTerapeuticos,
+            valor: values.valorTerapeuticos,
+            total: total
+        }
+        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
+        setButtonContinue(false);
+    }
+
+    const savePreventivos = (values) => {
+
+        const total = values.cantidadPreventivos * values.valorPreventivos;
+        setTotal((prevTotal) => [...prevTotal, total]);
+        setSumaTotal((prevTotal) => prevTotal + total);
+        const cuentaFinal = {
+            cantidad: values.cantidadPreventivos,
+            descripcion: values.descripcionPreventivos,
+            valor: values.valorPreventivos,
+            total: total
+        }
+        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
+        setButtonContinue(false);
     }
 
     const validationSchema = Yup.object().shape({
@@ -56,9 +88,10 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         return (
             <View>
                 <StyledTextInput
+                    style={styles.input}
                     error={meta.error}
-                    value={field.value}
-                    onChangeText={value => helpers.setValue(value)}
+                    value={String(field.value)}
+                    onChangeText={value => helpers.setValue(value)}        
                     {...props}
                 />
                 {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
@@ -73,26 +106,58 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
 
             <Formik
-                initialValues={{ cantidad: terapeuticosCount, descripcion: name[0], valor: '' }}
-                validationSchema={validationSchema}
+                initialValues={initialValuePrice(preventivosCount, terapeuticosCount, name)}
+                validationSchema={precioValidation}
                 onSubmit={(values) => {
-                    saveCuenta(values);
+                    if(terapeuticosCount > 0){
+                        saveTerapeuticos(values);
+
+                    }
+                    if(preventivosCount > 0){
+                        savePreventivos(values);
+                    }
                     setFirst(true);
                 }}
             >
                 {({ handleSubmit }) => (
                     <>
-                        <View style={styles.item}>
-                            <StyledText>{terapeuticosCount}</StyledText>
-                            <StyledText>{name[0]}</StyledText>
-                            <FormikInputValue
-                                name='valor'
-                                placeholder='Valor'
-                                placeholderTextColor="#c2c0c0"
-                                keyboardType="numeric"
-                            />
-                            <StyledTextInput editable={false} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[0] ? total[0] : 'Total'} </StyledTextInput>
-                        </View>
+                        {terapeuticosCount > 0 && (
+                            <View style={styles.item}>
+                                <FormikInputValue
+                                    name='cantidadTerapeuticos'
+                                    placeholder='Cantidad'
+                                    placeholderTextColor="#c2c0c0"
+                                    //keyboardType="numeric"
+                                />
+                                <StyledText style={styles.text}>{name[0]}</StyledText>
+                                <FormikInputValue
+                                    name='valorTerapeuticos'
+                                    placeholder='Valor'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                />
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[0] ? total[0] : 0} </StyledTextInput>
+                            </View>
+                        )}
+                        {preventivosCount > 0 && (
+                            <View style={styles.item}>
+                                <FormikInputValue
+                                    name='cantidadPreventivos'
+                                    placeholder='Cantidad'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                />
+                                <StyledText style={styles.text}>{name[1]}</StyledText>
+                                <FormikInputValue
+                                    name='valorPreventivos'
+                                    placeholder='Valor'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                />
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0} </StyledTextInput>
+                            </View>
+
+                        )}
                         {!first && (
                             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                                 <StyledText fontSize='subheading'>Guardar y continuar</StyledText>
@@ -101,44 +166,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                     </>
                 )}
             </Formik>
-
             {first && (
-
-
-
-                <Formik
-                    initialValues={{ cantidad: preventivosCount, descripcion: name[1], valor: '' }}
-                    validationSchema={validationSchema}
-                    onSubmit={(values) => {
-                        saveCuenta(values);
-                        setSecond(true);
-                    }}
-                >
-                    {({ handleSubmit }) => (
-                        <>
-                            <View style={styles.item}>
-                                <StyledText>{preventivosCount}</StyledText>
-                                <StyledText>{name[1]}</StyledText>
-                                <FormikInputValue
-                                    name='valor'
-                                    placeholder='Valor'
-                                    placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
-                                />
-                                <StyledTextInput editable={false} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[1] ? total[1] : 'Total'} </StyledTextInput>
-                            </View>
-                            {!second && (
-                                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                                    <StyledText fontSize='subheading'>Guardar y continuar</StyledText>
-                                </TouchableOpacity>
-                            )}
-                        </>
-                    )}
-                </Formik>
-
-            )}
-
-            {second && (
                 <>
 
 
@@ -173,7 +201,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             placeholderTextColor="#c2c0c0"
                                             keyboardType="numeric"
                                         />
-                                        <StyledTextInput editable={false} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[index + 2] ? total[index + 2] : 'Total'} </StyledTextInput>
+                                        <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {total[index + contador] ? total[index + contador] : 0} </StyledTextInput>
                                     </View>
                                     {buttonContinue && index === campo.length - 1 && (
                                         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
@@ -237,12 +265,29 @@ const styles = StyleSheet.create({
         display: 'flex',
         flexDirection: 'row',
         justifyContent: 'space-around',
-        width: 410,
+        width: 650,
         padding: 5
     },
     total: {
         marginTop: 20,
         marginBottom: 50,
+    },
+    input: {
+        fontSize:30,
+    },
+    text: {
+        fontSize: 30,
+        textAlign: 'center',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flex: 1,
+        marginTop: 10,
+        marginBottom: 10,
+        marginHorizontal: 10,
+    },
+    textTotal: {
+        fontSize: 30,
+        marginLeft: 20,
     }
 })
 

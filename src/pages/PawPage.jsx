@@ -16,6 +16,8 @@ import CowValidation from "../components/AddVaca";
 import { addHistorialVacas } from "../hooks/useRepositories";
 import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '../utils/pawOptions'
 import Hoof from '../pata-svg/Hoof';
+import HoofSide from "../patas-lado-svg/Hoof";
+import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
 import StyledTextInput from "../components/StyledTextInput";
 import Enfermedades from "../components/AddEnfermedad";
 
@@ -136,6 +138,9 @@ export default function PawPage() {
     const [pawList, setPawList] = useState([false, false, false, false, false, false, false, false]);
     const [idPaw, setIdPaw] = useState(null);
     const [numberPawnPart, setNumberPawnPart] = useState(null);
+    const [numberSidePawnPart, setNumberSidePawnPart] = useState(null);
+    const [numberUpPawnPart, setNumberUpPawnPart] = useState(null);
+
 
     //Sicks
     // Crear un nuevo string con las partes que si tengan texto
@@ -195,6 +200,24 @@ export default function PawPage() {
         actualizarVacas();
     };
 
+    const clearCowData = async () => {
+        setModalCowAddOpen(false);
+        isTerapeuctic(false);
+        setPawn(null);
+        setNote('');
+        setPawList([false, false, false, false, false, false, false, false]);
+        setIdPaw(null);
+        setNumberPawnPart(null);
+        setSickList(['', '', '', '', '', '', '', '']);
+        setFirstPartSick(null);
+        setSecondPartSick(null);
+        setContadorBotones(0);
+        setNumberPawnSave([-1, -1, -1, -1]);
+        setNumberSickSave([-1, -1, -1, -1]);
+        setNumberTratSave([-1, -1, -1, -1]);
+        setNumberSeverSave([-1, -1, -1, -1]);
+    };
+
     const actualizarVacas = async () => {
         const resultado = await fetchVacasId(id);
         setCowList(resultado);
@@ -211,7 +234,7 @@ export default function PawPage() {
 
     const modificarPosicion = (index, value) => {
 
-        const identificadorPata = `${pawn}: ${firstPartSick} ${secondPartSick} ${value} ${numberPawnPart}`
+        const identificadorPata = `${pawn}: ${firstPartSick} ${secondPartSick} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
 
         // Clonar el array original
         const nuevoPaws = [...sickList];
@@ -235,30 +258,29 @@ export default function PawPage() {
         setCowName(label)
         setIsCowSelected(true);
         setSala(sala);
+        clearCowData();
     }
 
     const onSubmitCow = async () => {
         var fechaHoy = new Date();
 
-        // Obtener el día, mes y año
-        
-
-        // Formatear la fecha como desees (por ejemplo, en formato dd/mm/aaaa)
-        
+        const diferenciaZonaHoraria = fechaHoy.getTimezoneOffset() * 60000;
+        const fechaLocal = new Date(fechaHoy.getTime() - diferenciaZonaHoraria);
 
         if (terapeutic) {
             const stringUnido = sickList.join(" ");
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaHoy.toISOString(), sala, note, tratamiento);
+            console.log("enfermedades", enfermedades)
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, note, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         } else {
             const enfermedades = 'Libre de enfermedades, se hizo tratamiento preventivo';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaHoy.toISOString(), sala, note, tratamiento);
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, note, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
-        
+
     }
 
 
@@ -277,7 +299,7 @@ export default function PawPage() {
                         </Link>
                         <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
                     </View>
-                        {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
+                    {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
                     <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
                         <Pressable onPress={() => setModalCowAddOpen(true)} >
                             <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
@@ -344,9 +366,11 @@ export default function PawPage() {
 
                                     {idPaw &&
                                         <>
+
+                                            <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
+                                            <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart}/>
+                                            <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart}/>
                                             
-                                            <Hoof numberPawnSave={numberPawnSave} optionsSelectedSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                            {/* < ComponentButton title="Número" options={numbersPawns} numberPawnSave={numberPawnSave} optionsSelectedSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} /> */}
 
                                             <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
                                             <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
@@ -358,7 +382,7 @@ export default function PawPage() {
                                                 onChangeText={(text) => addNote(text)}
                                                 style={styles.textInput}
                                             />
-                                            {contadorBotones >= 4 && (
+                                            {contadorBotones >= 3 && (
                                                 <View>
                                                     {/* <TouchableOpacity
                                                     style={styles.buttonContinue}
