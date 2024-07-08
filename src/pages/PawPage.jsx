@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Formik } from 'formik'
-import { Button, Image, StyleSheet, View, Pressable, ScrollView, Alert, TouchableOpacity } from 'react-native'
+import { Button, Image, StyleSheet, View, Pressable, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { loginValidationSchema } from '../validationSchemas/login'
 import { ModalPaw } from "../components/ModalPaw";
 import Card from "../component-button/card/Card";
@@ -31,7 +31,8 @@ const styles = StyleSheet.create({
     },
     form: {
         margin: 45,
-        marginTop: 60
+        marginTop: 60,
+        paddingBottom:120
     },
     paw: {
         flexDirection: 'row',
@@ -289,124 +290,116 @@ export default function PawPage() {
     }}>
         {({ handleChange, handleSubmit, values }) => {
             return (
-                <ScrollView
-                    style={styles.form}
-                    showsVerticalScrollIndicator={false}
-                >
-                    <View style={styles.title}>
-                        <Link to='/' style={styles.returnMenu}>
-                            <StyledText style={styles.returnMenu}>⬅ Volver</StyledText>
-                        </Link>
-                        <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
-                    </View>
-                    {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
-                    <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
-                        <Pressable onPress={() => setModalCowAddOpen(true)} >
-                            <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
-                        </Pressable>
-                        <StyledText style={styles.farmName}>{pawn ? `Pata: ${pawn}` : 'Seleccione la pata'}</StyledText>
-                    </View>
-                    <Dropdown
-                        onChange={handleChangeDropdown}
-                        data={cowList}
-                        placeholder="🐮 Lista de vacas"
-                    />
-                    <ModalPaw
-                        isOpen={modalCowAddOpen}
+                <KeyboardAvoidingView
+                        behavior={Platform.OS === "ios" ? "padding" : "height"}
+                        style={{ flex: 1 }}
+                        keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
                     >
-                        <View style={styles.modalView}>
-                            <Pressable onPress={() => { setModalCowAddOpen(false) }}>
-                                <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                            </Pressable>
-                            <CowValidation finca={finca} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
-                        </View>
-                    </ModalPaw>
-                    <ModalPaw
-                        isOpen={modalEnfermedadesOpen}
-                    >
-                        <View style={styles.modalView}>
-                            <Pressable onPress={() => { setModalEnfermedadesOpen(false) }}>
-                                <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                            </Pressable>
-                            <Enfermedades
-                                actualizarEnfermedades={actualizarEnfermedades}
-                                setModalEnfermedadesOpen={setModalEnfermedadesOpen}
-                            />
-                        </View>
-                    </ModalPaw>
-                    {iscowSelected &&
-                        <>
-                            <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
-                                <>
-                                    <TouchableOpacity
-                                        style={styles.button}
-                                        onPress={() => {
-                                            setTratamiento('Terapéutico')
-                                            isTerapeuctic(true)
-                                        }}
-                                    >
-                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
-                                    </TouchableOpacity>
-                                    {!terapeutic &&
-                                        <TouchableOpacity
-                                            style={styles.button}
-                                            onPress={() => {
-                                                setTratamiento('Preventivo')
-                                                handleSubmit()
-                                            }}
-                                        >
-                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
-                                        </TouchableOpacity>
-                                    }
-                                </>
+                        <ScrollView
+                            contentContainerStyle={styles.form}
+                            showsVerticalScrollIndicator={false}
+                        >
+                            <View style={styles.title}>
+                                <Link to='/' style={styles.returnMenu}>
+                                    <StyledText style={styles.returnMenu}>⬅ Volver</StyledText>
+                                </Link>
+                                <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
                             </View>
-                            {terapeutic &&
+                            {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
+                            <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
+                                <Pressable onPress={() => setModalCowAddOpen(true)} >
+                                    <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
+                                </Pressable>
+                                <StyledText style={styles.farmName}>{pawn ? `Pata: ${pawn}` : 'Seleccione la pata'}</StyledText>
+                            </View>
+                            <Dropdown
+                                onChange={handleChangeDropdown}
+                                data={cowList}
+                                placeholder="🐮 Lista de vacas"
+                            />
+                            <ModalPaw isOpen={modalCowAddOpen}>
+                                <View style={styles.modalView}>
+                                    <Pressable onPress={() => { setModalCowAddOpen(false) }}>
+                                        <StyledText style={{ fontSize: 20 }}> X </StyledText>
+                                    </Pressable>
+                                    <CowValidation finca={finca} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                                </View>
+                            </ModalPaw>
+                            <ModalPaw isOpen={modalEnfermedadesOpen}>
+                                <View style={styles.modalView}>
+                                    <Pressable onPress={() => { setModalEnfermedadesOpen(false) }}>
+                                        <StyledText style={{ fontSize: 20 }}> X </StyledText>
+                                    </Pressable>
+                                    <Enfermedades
+                                        actualizarEnfermedades={actualizarEnfermedades}
+                                        setModalEnfermedadesOpen={setModalEnfermedadesOpen}
+                                    />
+                                </View>
+                            </ModalPaw>
+                            {iscowSelected &&
                                 <>
-                                    < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
-
-                                    {idPaw &&
+                                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
                                         <>
-
-                                            <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
-                                            <View style={{flexDirection: 'row', marginBottom:35}}>
-                                                <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
-                                                <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />
-                                            </View>
-
-
-                                            <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                            <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
-                                            <ComponentButton title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                            <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                            <StyledTextInput
-                                                placeholder='Nota (opcional)'
-                                                placeholderTextColor="#c2c0c0"
-                                                onChangeText={(text) => addNote(text)}
-                                                style={styles.textInput}
-                                            />
-                                            {contadorBotones >= 3 && (
-                                                <View>
-                                                    {/* <TouchableOpacity
-                                                    style={styles.buttonContinue}
-                                                    onPress={handleContinue}
+                                            <TouchableOpacity
+                                                style={styles.button}
+                                                onPress={() => {
+                                                    setTratamiento('Terapéutico');
+                                                    isTerapeuctic(true);
+                                                }}
+                                            >
+                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
+                                            </TouchableOpacity>
+                                            {!terapeutic &&
+                                                <TouchableOpacity
+                                                    style={styles.button}
+                                                    onPress={() => {
+                                                        setTratamiento('Preventivo');
+                                                        handleSubmit();
+                                                    }}
                                                 >
-                                                    <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
-                                                </TouchableOpacity> */}
-                                                    <TouchableOpacity
-                                                        style={styles.button}
-                                                        onPress={handleSubmit}
-                                                    >
-                                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            )}
+                                                    <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
+                                                </TouchableOpacity>
+                                            }
+                                        </>
+                                    </View>
+                                    {terapeutic &&
+                                        <>
+                                            < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
+                                            {idPaw &&
+                                                <>
+                                                    <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
+                                                    <View style={{ flexDirection: 'row', marginBottom: 35 }}>
+                                                        <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
+                                                        <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />
+                                                    </View>
+                                                    <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                    <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
+                                                    <ComponentButton title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                    <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                    <StyledTextInput
+                                                        placeholder='Nota (opcional)'
+                                                        placeholderTextColor="#c2c0c0"
+                                                        onChangeText={(text) => addNote(text)}
+                                                        style={styles.textInput}
+                                                    />
+                                                    {contadorBotones >= 3 && (
+                                                        <View>
+                                                            <TouchableOpacity
+                                                                style={styles.button}
+                                                                onPress={handleSubmit}
+                                                            >
+                                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
+                                                            </TouchableOpacity>
+                                                        </View>
+                                                    )}
+                                                </>
+                                            }
                                         </>
                                     }
                                 </>
                             }
-                        </>
-                    }
-                </ScrollView>
+                        </ScrollView>
+                    </KeyboardAvoidingView>
 
             )
         }}
