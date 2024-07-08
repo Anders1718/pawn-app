@@ -32,7 +32,7 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
 
   return (
     <View style={styles.container}>
-      <Svg height="300" width="500" viewBox="0 0 1024 480">
+      <Svg height="250" width="250" viewBox="0 0 1024 480">
         <G>
           {paths.map((pathData, index) => (
             <TouchableWithoutFeedback 
