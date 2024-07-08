@@ -85,6 +85,8 @@ export default function BillPage() {
     const [terapeuticosCount, setTerapeuticosCount] = useState(0);
     const [preventivosCount, setPreventivosCount] = useState(0);
 
+    const [habilitado, setHabilitado] = useState(true);
+
     const [pricesExist, setPricesExist] = useState(false);
 
     const [prices, setPrices] = useState([terapeuticosCount, preventivosCount]);
@@ -102,6 +104,8 @@ export default function BillPage() {
         date.setHours(18, 59, 0, 0);
         return date;
     });
+
+
 
 
 
@@ -126,13 +130,18 @@ export default function BillPage() {
                         setStartDate={setStartDate}
                         endDate={endDate}
                         setEndDate={setEndDate}
+                        habilitado={habilitado}
+                        setHabilitado={setHabilitado}
                     />
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist)}
-                    >
-                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
-                    </TouchableOpacity>
+                    {habilitado && (
+
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist)}
+                        >
+                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
+                        </TouchableOpacity>
+                    )}
                     {pricesExist && (
                         <Precio
                             setTotalCuenta={setTotalCuenta}

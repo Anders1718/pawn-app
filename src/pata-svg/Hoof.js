@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Svg, { Path, G, Circle } from 'react-native-svg';
-import paths from './hoofpaths'; // Importa las rutas de los `Path`
+import paths from './hoofpaths'; 
+// Importa las rutas de los `Path`
+import StyledText from '../components/StyledText';
 
 const Hoof = ({ numberPawnSave, optionsSelectedSave, setNumberPawnSave, idPaw, setNumberPawnPart, numberPawnPart, setContadorBotones, contadorBotones }) => {
   const [selectedZone, setSelectedZone] = useState(null);
@@ -33,6 +35,7 @@ const Hoof = ({ numberPawnSave, optionsSelectedSave, setNumberPawnSave, idPaw, s
 
   return (
     <View style={styles.container}>
+      <StyledText fontSize='title'>Lateral</StyledText>
       <Svg height="350" width="350" viewBox="0 0 612 792">
         <G>
           {paths.map((pathData, index) => (
@@ -54,6 +57,7 @@ const Hoof = ({ numberPawnSave, optionsSelectedSave, setNumberPawnSave, idPaw, s
           ))}
         </G>
       </Svg>
+      <StyledText fontSize='title'>Medial</StyledText>
       {selectedZone !== null && (
         <Text style={styles.selectedText}>
           {`Seleccionado: ${paths[selectedZone].name}`}
@@ -68,6 +72,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    flexDirection: 'row',
   },
   selectedText: {
     marginTop: 0,

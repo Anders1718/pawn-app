@@ -51,7 +51,7 @@ const ComponentButton =
                         contentContainerStyle={styles.flatList}
                         data={options}
                         scrollEnabled={false}
-                        numColumns={3}
+                        numColumns={5}
                         ItemSeparatorComponent={() => <Text> </Text>}
                         renderItem={({ item: repo, index }) => {
                             let isTurnedOver = false;
@@ -127,5 +127,6 @@ const styles = StyleSheet.create({
     flatList: {
         flexGrow: 1,
         justifyContent: 'center',
+        alignItems: 'center',
     }
 });

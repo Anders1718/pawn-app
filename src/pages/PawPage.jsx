@@ -108,6 +108,15 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         textAlign: 'center'
     },
+    textInput: {
+        marginTop: 40,
+        marginBottom: 20,
+        borderWidth: 1,
+        borderColor: '#334155',
+        borderRadius: 10,
+        padding: 10,
+        fontSize: 28,
+    }
 })
 
 export default function PawPage() {
@@ -162,7 +171,7 @@ export default function PawPage() {
         fetchEnfermedadesList();
     }, [setIdPaw]);
 
-    const clearAllData = () => {
+    const clearAllData = async () => {
         setModalCowAddOpen(false);
         setCowList([]);
         setIsCowSelected(false);
@@ -182,6 +191,8 @@ export default function PawPage() {
         setNumberSickSave([-1, -1, -1, -1]);
         setNumberTratSave([-1, -1, -1, -1]);
         setNumberSeverSave([-1, -1, -1, -1]);
+
+        actualizarVacas();
     };
 
     const actualizarVacas = async () => {
@@ -333,12 +344,7 @@ export default function PawPage() {
 
                                     {idPaw &&
                                         <>
-                                            <StyledTextInput
-                                                placeholder='Nota (opcional)'
-                                                placeholderTextColor="#c2c0c0"
-                                                onChangeText={(text) => addNote(text)}
-                                                style={styles.textInput}
-                                            />
+                                            
                                             <Hoof numberPawnSave={numberPawnSave} optionsSelectedSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
                                             {/* < ComponentButton title="Número" options={numbersPawns} numberPawnSave={numberPawnSave} optionsSelectedSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} /> */}
 
@@ -346,6 +352,12 @@ export default function PawPage() {
                                             <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
                                             <ComponentButton title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
                                             <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                            <StyledTextInput
+                                                placeholder='Nota (opcional)'
+                                                placeholderTextColor="#c2c0c0"
+                                                onChangeText={(text) => addNote(text)}
+                                                style={styles.textInput}
+                                            />
                                             {contadorBotones >= 4 && (
                                                 <View>
                                                     {/* <TouchableOpacity
