@@ -70,4 +70,22 @@ export const precioValidation = yup.object().shape({
     valorTerapeuticos: yup
         .number()
         .required('Campo requerido'),
+    valorDesplazamiento: yup
+        .number()
+        .required('Campo requerido'),
+    descripcionDesplazamiento: yup
+        .string()
+        .required('Campo requerido'),
+    cantidadDesplazamiento: yup
+        .number()
+        .required('Campo requerido'),
+    valorRevision: yup
+        .number()
+        .required('Campo requerido'),
+    cantidadRevision: yup
+        .number()
+        .required('Campo requerido'),
+    descripcionRevision: yup
+        .string()
+        .required('Campo requerido'),
 })

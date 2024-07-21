@@ -8,7 +8,10 @@ import * as Yup from 'yup'
 import { precioValidation } from '../../../../validationSchemas/login'
 import { initialValuePrice } from '../../../../utils/initialValuePrice'
 
-const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount }) => {
+const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount, revisionCount }) => {
+
+    const elementosMayoresACero = prices.filter(elemento => elemento > 0);
+    const contadorFinal = elementosMayoresACero.length;
 
     const [campo, setCampo] = useState([]);
     const [cuenta, setCuenta] = useState([]);
@@ -17,13 +20,14 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     const [first, setFirst] = useState(false);
     const [second, setSecond] = useState(false);
 
-    const [name, setName] = useState(['Terapéuticos', 'Preventivos']);
+    const [name, setName] = useState(['Terapéuticos', 'Preventivos', 'Revisión']);
 
     const [total, setTotal] = useState([]);
 
     const [modalVisible, setModalVisible] = useState(false);
 
-    const contador = preventivosCount > 0 && terapeuticosCount > 0 ? 2 : preventivosCount > 0 ? 1 : terapeuticosCount > 0 ? 1 : 0;
+    const contador = contadorFinal + 1;
+    const contadorDesplazamiento = contadorFinal;
 
     const addCuenta = () => {
         const longitudCuenta = cuenta.length + 1;
@@ -44,6 +48,35 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         }
         setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
 
+    }
+
+    const saveDesplazamiento = (values) => {
+        const total = values.cantidadDesplazamiento * values.valorDesplazamiento;
+        setTotal((prevTotal) => [...prevTotal, total]);
+        setSumaTotal((prevTotal) => prevTotal + total);
+        const cuentaFinal = {
+            cantidad: values.cantidadDesplazamiento,
+            descripcion: 'Desplazamiento',
+            valor: values.valorDesplazamiento,
+            total: total
+        }
+        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
+        setButtonContinue(false);
+    }
+
+    const saveRevision = (values) => {
+        console.log('values', values)
+        const total = values.cantidadRevision * values.valorRevision;
+        setTotal((prevTotal) => [...prevTotal, total]);
+        setSumaTotal((prevTotal) => prevTotal + total);
+        const cuentaFinal = {
+            cantidad: values.cantidadRevision,
+            descripcion: values.descripcionRevision,
+            valor: values.valorRevision,
+            total: total
+        }
+        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
+        setButtonContinue(false);
     }
 
     const saveTerapeuticos = (values) => {
@@ -83,7 +116,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
     const FormikInputValue = ({ name, value, ...props }) => {
 
-        const [field, meta, helpers] = useField(name)
+        const [field, meta, helpers] = useField(name);
 
         return (
             <View>
@@ -91,7 +124,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                     style={styles.input}
                     error={meta.error}
                     value={String(field.value)}
-                    onChangeText={value => helpers.setValue(value)}        
+                    onChangeText={value => helpers.setValue(value)}
                     {...props}
                 />
                 {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
@@ -106,16 +139,20 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
 
             <Formik
-                initialValues={initialValuePrice(preventivosCount, terapeuticosCount, name)}
+                initialValues={initialValuePrice(preventivosCount, terapeuticosCount, revisionCount, name)}
                 validationSchema={precioValidation}
                 onSubmit={(values) => {
-                    if(terapeuticosCount > 0){
+                    console.log('llega a submit')
+                    if (terapeuticosCount > 0) {
                         saveTerapeuticos(values);
-
                     }
-                    if(preventivosCount > 0){
+                    if (preventivosCount > 0) {
                         savePreventivos(values);
                     }
+                    if (revisionCount > 0) {
+                        saveRevision(values);
+                    }
+                    saveDesplazamiento(values);
                     setFirst(true);
                 }}
             >
@@ -127,7 +164,6 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadTerapeuticos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    //keyboardType="numeric"
                                 />
                                 <StyledText style={styles.text}>{name[0]}</StyledText>
                                 <FormikInputValue
@@ -158,6 +194,41 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                             </View>
 
                         )}
+                        {revisionCount > 0 && (
+                            <View style={styles.item}>
+                                <FormikInputValue
+                                    name='cantidadRevision'
+                                    placeholder='Cantidad'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                />
+                                <StyledText style={styles.text}>{name[2]}</StyledText>
+                                <FormikInputValue
+                                    name='valorRevision'
+                                    placeholder='Valor'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                />
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total.length > 0 ? total[contadorDesplazamiento - 1] : 0 } </StyledTextInput>
+                            </View>
+
+                        )}
+                        <View style={styles.item}>
+                            <FormikInputValue
+                                name='cantidadDesplazamiento'
+                                placeholder='Cantidad'
+                                placeholderTextColor="#c2c0c0"
+                                keyboardType="numeric"
+                            />
+                            <StyledText style={styles.text}>Desplazamiento</StyledText>
+                            <FormikInputValue
+                                name='valorDesplazamiento'
+                                placeholder='Valor'
+                                placeholderTextColor="#c2c0c0"
+                                keyboardType="numeric"
+                            />
+                            <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[contadorDesplazamiento] ? total[contadorDesplazamiento] : 0 } </StyledTextInput>
+                        </View>
                         {!first && (
                             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                                 <StyledText fontSize='subheading'>Guardar y continuar</StyledText>
@@ -273,7 +344,7 @@ const styles = StyleSheet.create({
         marginBottom: 50,
     },
     input: {
-        fontSize:30,
+        fontSize: 30,
     },
     text: {
         fontSize: 30,

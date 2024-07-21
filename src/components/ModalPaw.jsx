@@ -16,10 +16,10 @@ const styles = StyleSheet.create({
     },
     modal: {
         paddingLeft: 0.75,
-        paddingRight:0.75,
-        flex:1 ,
-        justifyContent:'center',
-        alignItems:'center'
+        paddingRight: 0.75,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center'
     }
 })
 
@@ -29,26 +29,29 @@ export const ModalPaw = ({ isOpen, withInput, children, ...rest }) => {
         <KeyboardAvoidingView
             style={styles.modal}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
         >
             {children}
         </KeyboardAvoidingView>
     ) : (
-        <View
+        <KeyboardAvoidingView
             style={styles.modal}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={0}
         >
             {children}
-        </View>
+        </KeyboardAvoidingView>
     )
-            return (
-                <RNModal
-                    visible={isOpen}
-                    transparent
-                    animationType="fade"
-                    statusBarTranslucent
-                    {...rest}
-                >
-                    {content}
-                </RNModal>
+    return (
+        <RNModal
+            visible={isOpen}
+            transparent
+            animationType="fade"
+            statusBarTranslucent
+            {...rest}
+        >
+            {content}
+        </RNModal>
 
-            )
+    )
 }

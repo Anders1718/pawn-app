@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import RepositoryItem from './RepositoryItem.jsx';
 import { useRepositories } from '../hooks/useRepositories.js';
 import { Link } from 'react-router-native';
 import { ModalPaw } from "../components/ModalPaw";
-import StyledText from './StyledText'
+import StyledText from './StyledText';
 import StyledTextInput from './StyledTextInput.jsx';
 import LogInPage from './AddFinca.jsx';
 import { useLocation } from 'react-router-native';
@@ -56,55 +56,66 @@ const RepositoryList = () => {
     };
 
     return (
-        <View style={styles.container}>
-            <View style={styles.title}>
-                <Link to='/'>
-                    <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
-                </Link>
-                {!isBill &&
-                    <Pressable onPress={() => { setIsOpen(true) }}>
-                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>+ Agregar Finca</StyledText>
-                    </Pressable>
-                }
-                <ModalPaw
-                    isOpen={isOpen}
+        <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={{ flex: 1 }}
+            keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
+        >
+            <View
+                style={styles.container}
+            >
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
                 >
-                    <View style={styles.modalView}>
-                        <Pressable onPress={() => setIsOpen(false)}>
-                            <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
-                        </Pressable>
-                        <LogInPage actualizarFincas={actualizarFincas} setIsOpen={setIsOpen} />
-                    </View>
-                </ModalPaw>
-            </View>
-            <StyledTextInput
-                placeholder='Buscar finca...'
-                placeholderTextColor="#c2c0c0"
-                value={search}
-                onChangeText={(text) => searchFilter(text)}
-                style={styles.textInput}
-            />
-            <FlatList
-                data={filterData}
-                ItemSeparatorComponent={() => <Text> </Text>}
-                renderItem={({ item: repo }) => (
-                    <>
-                        {isBill ?
-                            (<RepositoryItem isBill {...repo} />)
-                            :
-                            (<RepositoryItem {...repo} />)
+                    <View style={styles.title}>
+                        <Link to='/'>
+                            <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
+                        </Link>
+                        {!isBill &&
+                            <Pressable onPress={() => { setIsOpen(true) }}>
+                                <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>+ Agregar Finca</StyledText>
+                            </Pressable>
                         }
-                    </>
-                )}
-            />
-        </View>
+                        <ModalPaw
+                            isOpen={isOpen}
+                        >
+                            <View style={styles.modalView}>
+                                <Pressable onPress={() => setIsOpen(false)}>
+                                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
+                                </Pressable>
+                                <LogInPage actualizarFincas={actualizarFincas} setIsOpen={setIsOpen} />
+                            </View>
+                        </ModalPaw>
+                    </View>
+                    <StyledTextInput
+                        placeholder='Buscar finca...'
+                        placeholderTextColor="#c2c0c0"
+                        value={search}
+                        onChangeText={(text) => searchFilter(text)}
+                        style={styles.textInput}
+                    />
+                </ScrollView>
+                <FlatList
+                    data={filterData}
+                    ItemSeparatorComponent={() => <Text> </Text>}
+                    renderItem={({ item: repo }) => (
+                        <>
+                            {isBill ?
+                                (<RepositoryItem isBill {...repo} />)
+                                :
+                                (<RepositoryItem {...repo} />)
+                            }
+                        </>
+                    )}
+                />
+            </View>
+        </KeyboardAvoidingView>
     )
 }
 
 const styles = StyleSheet.create({
     container: {
         marginTop: 60,
-        height: 790
     },
     list: {
         marginTop: 10

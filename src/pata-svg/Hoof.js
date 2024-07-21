@@ -9,27 +9,49 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart }) =
   const [selectedZone, setSelectedZone] = useState(null);
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
 
+  const toggleString = (str, setVal) => {
+    setVal((prevState) => {
+      if (prevState.includes(str)) {
+        return prevState.filter(item => item !== str);
+      } else {
+        return [...prevState, str];
+      }
+    });
+  };
+
   const handlePress = (index, pathData) => {
     if (index >= paths.length - 2) return; // Evita la selección para los dos últimos paths
     // Deselect all elements first
-    const newColors = Array(paths.length).fill("#D2B48C");
+    const newColors = [...colors];
     // Select the new element
-    newColors[index] = "#FF6347";
+    newColors[index] = newColors[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
     setColors(newColors);
     setSelectedZone(index);
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
-      setNumberPawnPart(pathData.name)
+      toggleString(pathData.name, setNumberPawnPart)
     }
 
   };
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
 
-    // Hacemos una copia del array actual
     const newArray = [...actualArray];
+
+    const arrayPoscion = actualArray[index]
+
+    const itemsArray = actualArray[index].indexOf(newValue);
+
+    if (itemsArray === -1) {
+      // Si el elemento no existe en el array, añadirlo
+      arrayPoscion.push(newValue);
+    } else {
+      // Si el elemento existe en el array, eliminarlo
+      arrayPoscion.splice(itemsArray, 1);
+    }
+
     // Modificamos el valor en la posición especificada
-    newArray[index] = newValue;
+    newArray[index] = arrayPoscion;
     // Actualizamos el estado con el array modificado
     setArray(newArray);
   };

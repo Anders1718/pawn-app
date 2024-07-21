@@ -47,15 +47,17 @@ const styles = StyleSheet.create({
     }
 })
 
-const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist, setHabilitado) => {
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado) => {
     const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
 
     const terapeuticosCount = response.filter(item => item.tratamiento === "Terapéutico").length;
     const preventivosCount = response.filter(item => item.tratamiento === "Preventivo").length;
+    const revisionCount = response.filter(item => item.tratamiento === "Revisión").length;
 
     setResponse(response);
     setTerapeuticosCount(terapeuticosCount);
     setPreventivosCount(preventivosCount);
+    setRevisionCount(revisionCount);
     setPrices([terapeuticosCount, preventivosCount]);
     setPricesExist(true);
     setHabilitado(false);
@@ -94,12 +96,13 @@ export default function BillPage() {
     const [buttonContinue, setButtonContinue] = useState(true);
     const [terapeuticosCount, setTerapeuticosCount] = useState(0);
     const [preventivosCount, setPreventivosCount] = useState(0);
+    const [revisionCount, setRevisionCount] = useState(0);
 
     const [habilitado, setHabilitado] = useState(true);
 
     const [pricesExist, setPricesExist] = useState(false);
 
-    const [prices, setPrices] = useState([terapeuticosCount, preventivosCount]);
+    const [prices, setPrices] = useState([terapeuticosCount, preventivosCount, revisionCount]);
 
     const [response, setResponse] = useState([]);
 
@@ -147,7 +150,7 @@ export default function BillPage() {
 
                         <TouchableOpacity
                             style={styles.button}
-                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setPrices, setPricesExist, setHabilitado)}
+                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado)}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
                         </TouchableOpacity>
@@ -162,6 +165,7 @@ export default function BillPage() {
                             buttonContinue={buttonContinue}
                             terapeuticosCount={terapeuticosCount}
                             preventivosCount={preventivosCount}
+                            revisionCount={revisionCount}
                             prices={prices}
                         />
                     )}

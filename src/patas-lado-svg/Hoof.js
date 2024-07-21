@@ -5,27 +5,56 @@ import Svg, { Path, G, Circle } from 'react-native-svg';
 import paths from './hoofpaths3'; // Importa las rutas de los `Path`
 const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart}) => {
   const [selectedZone, setSelectedZone] = useState(null);
-  const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
+  const lengthColors = Array(paths.length).fill("#D2B48C");
+  const [colors, setColors] = useState([lengthColors, lengthColors, lengthColors, lengthColors]);
+  const [pawColor, setPawColor] = useState(colors[idPaw]);
+
+  console.log('pawColor' ,pawColor);
+
+  const toggleString = (str, setVal) => {
+    setVal((prevState) => {
+      if (prevState.includes(str)) {
+        return prevState.filter(item => item !== str);
+      } else {
+        return [...prevState, str];
+      }
+    });
+  };
 
   const handlePress = (index, pathData) => {
     if (index >= 2) return; // Evita la selección para los dos últimos paths
-    const newColors = Array(paths.length).fill("#D2B48C");
+    const newColors = colors;
+    const indexModify = newColors[idPaw];
+
     // Select the new element
-    newColors[index] = "#FF6347";
+    indexModify[index] = indexModify[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
+    newColors[idPaw] = indexModify;
     setColors(newColors);
+    setPawColor(newColors[idPaw]);
     setSelectedZone(index);
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
-      setNumberPawnPart(pathData.name)
+      toggleString(pathData.name, setNumberPawnPart)
     }
   };
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
 
-    // Hacemos una copia del array actual
     const newArray = [...actualArray];
+
+    const arrayPoscion = actualArray[index]
+
+    const itemsArray = actualArray[index].indexOf(newValue);
+
+    if (itemsArray === -1) {
+      // Si el elemento no existe en el array, añadirlo
+      arrayPoscion.push(newValue);
+    } else {
+      // Si el elemento existe en el array, eliminarlo
+      arrayPoscion.splice(itemsArray, 1);
+    }
     // Modificamos el valor en la posición especificada
-    newArray[index] = newValue;
+    newArray[index] = arrayPoscion;
     // Actualizamos el estado con el array modificado
     setArray(newArray);
   };
@@ -41,7 +70,7 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
               disabled={index >= 2} // Deshabilita la selección para los dos últimos paths
             >
               <G>
-                <Path d={pathData.d} fill={colors[index]} />
+                <Path d={pathData.d} fill={pawColor[index]} />
                 {index < 2 && (
                   <>
                     <Path d={pathData.d} fill="transparent" stroke="transparent" strokeWidth="20" />

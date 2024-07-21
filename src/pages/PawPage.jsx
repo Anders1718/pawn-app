@@ -6,6 +6,7 @@ import { ModalPaw } from "../components/ModalPaw";
 import Card from "../component-button/card/Card";
 
 import ComponentButton from "../component-button";
+import ComponentButtonTreatment from "../component-button-treatment";
 import StyledText from "../components/StyledText";
 import { Link } from "react-router-native";
 import { useLocation } from 'react-router-native';
@@ -32,7 +33,7 @@ const styles = StyleSheet.create({
     form: {
         margin: 45,
         marginTop: 60,
-        paddingBottom:120
+        paddingBottom: 120
     },
     paw: {
         flexDirection: 'row',
@@ -129,6 +130,7 @@ export default function PawPage() {
     const [iscowSelected, setIsCowSelected] = useState(false)
     const [cowName, setCowName] = useState(null)
     const [terapeutic, isTerapeuctic] = useState(false)
+    const [isRevision, setRevision] = useState(false)
     const [pawn, setPawn] = useState(null);
     const [note, setNote] = useState('');
     const [sala, setSala] = useState('');
@@ -137,25 +139,25 @@ export default function PawPage() {
 
     // Paws 
     const [pawList, setPawList] = useState([false, false, false, false, false, false, false, false]);
-    const [idPaw, setIdPaw] = useState(null);
-    const [numberPawnPart, setNumberPawnPart] = useState(null);
-    const [numberSidePawnPart, setNumberSidePawnPart] = useState(null);
-    const [numberUpPawnPart, setNumberUpPawnPart] = useState(null);
+    const [idPaw, setIdPaw] = useState('');
+    const [numberPawnPart, setNumberPawnPart] = useState([], [], [], []);
+    const [numberSidePawnPart, setNumberSidePawnPart] = useState([], [], [], []);
+    const [numberUpPawnPart, setNumberUpPawnPart] = useState([], [], [], []);
 
 
     //Sicks
     // Crear un nuevo string con las partes que si tengan texto
     const [sickList, setSickList] = useState(['', '', '', '', '', '', '', ''])
-    const [firstPartSick, setFirstPartSick] = useState(null)
-    const [secondPartSick, setSecondPartSick] = useState(null)
+    const [firstPartSick, setFirstPartSick] = useState('')
+    const [secondPartSick, setSecondPartSick] = useState([])
     const [contadorBotones, setContadorBotones] = useState(0);
     const [tratamiento, setTratamiento] = useState(null);
 
     //Save pawns
-    const [numberPawnSave, setNumberPawnSave] = useState([-1, -1, -1, -1])
-    const [numberSickSave, setNumberSickSave] = useState([-1, -1, -1, -1])
-    const [numberTratSave, setNumberTratSave] = useState([-1, -1, -1, -1])
-    const [numberSeverSave, setNumberSeverSave] = useState([-1, -1, -1, -1])
+    const [numberPawnSave, setNumberPawnSave] = useState([[], [], [], []])
+    const [numberSickSave, setNumberSickSave] = useState([[], [], [], []])
+    const [numberTratSave, setNumberTratSave] = useState([[], [], [], []])
+    const [numberSeverSave, setNumberSeverSave] = useState([[], [], [], []])
 
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
@@ -183,20 +185,23 @@ export default function PawPage() {
         setIsCowSelected(false);
         setCowName(null);
         isTerapeuctic(false);
+        setRevision(false)
         setPawn(null);
         setNote('');
         setSala('');
         setPawList([false, false, false, false, false, false, false, false]);
         setIdPaw(null);
-        setNumberPawnPart(null);
+        setNumberPawnPart([], [], [], []);
+        setNumberSidePawnPart([], [], [], []);
+        setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '', '', '', '', '']);
-        setFirstPartSick(null);
-        setSecondPartSick(null);
+        setFirstPartSick('');
+        setSecondPartSick([]);
         setContadorBotones(0);
-        setNumberPawnSave([-1, -1, -1, -1]);
-        setNumberSickSave([-1, -1, -1, -1]);
-        setNumberTratSave([-1, -1, -1, -1]);
-        setNumberSeverSave([-1, -1, -1, -1]);
+        setNumberPawnSave([[], [], [], []])
+        setNumberSickSave([[], [], [], []])
+        setNumberTratSave([[], [], [], []]);
+        setNumberSeverSave([[], [], [], []])
 
         actualizarVacas();
     };
@@ -204,19 +209,22 @@ export default function PawPage() {
     const clearCowData = async () => {
         setModalCowAddOpen(false);
         isTerapeuctic(false);
+        setRevision(false);
         setPawn(null);
         setNote('');
         setPawList([false, false, false, false, false, false, false, false]);
         setIdPaw(null);
-        setNumberPawnPart(null);
+        setNumberPawnPart([], [], [], []);
+        setNumberSidePawnPart([], [], [], []);
+        setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '', '', '', '', '']);
-        setFirstPartSick(null);
-        setSecondPartSick(null);
+        setFirstPartSick('');
+        setSecondPartSick([]);
         setContadorBotones(0);
-        setNumberPawnSave([-1, -1, -1, -1]);
-        setNumberSickSave([-1, -1, -1, -1]);
-        setNumberTratSave([-1, -1, -1, -1]);
-        setNumberSeverSave([-1, -1, -1, -1]);
+        setNumberPawnSave([[], [], [], []]);
+        setNumberSickSave([[], [], [], []]);
+        setNumberTratSave([[], [], [], []]);
+        setNumberSeverSave([[], [], [], []]);
     };
 
     const actualizarVacas = async () => {
@@ -234,8 +242,12 @@ export default function PawPage() {
     }
 
     const modificarPosicion = (index, value) => {
+        let segundaParte = '';
+        if (secondPartSick.includes('venda + oxi')) {
+            segundaParte = 'venda + oxi'
+        }
 
-        const identificadorPata = `${pawn}: ${firstPartSick} ${secondPartSick} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
+        const identificadorPata = `${pawn}: ${firstPartSick} ${segundaParte} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
 
         // Clonar el array original
         const nuevoPaws = [...sickList];
@@ -268,16 +280,18 @@ export default function PawPage() {
         const diferenciaZonaHoraria = fechaHoy.getTimezoneOffset() * 60000;
         const fechaLocal = new Date(fechaHoy.getTime() - diferenciaZonaHoraria);
 
-        if (terapeutic) {
+        const notaCompleta = note ? note : 'N/A';
+
+        if (terapeutic || isRevision ) {
             const stringUnido = sickList.join(" ");
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
             console.log("enfermedades", enfermedades)
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, note, tratamiento);
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         } else {
             const enfermedades = 'Libre de enfermedades, se hizo tratamiento preventivo';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, note, tratamiento);
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
@@ -291,55 +305,56 @@ export default function PawPage() {
         {({ handleChange, handleSubmit, values }) => {
             return (
                 <KeyboardAvoidingView
-                        behavior={Platform.OS === "ios" ? "padding" : "height"}
-                        style={{ flex: 1 }}
-                        keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={{ flex: 1 }}
+                    keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
+                >
+                    <ScrollView
+                        contentContainerStyle={styles.form}
+                        showsVerticalScrollIndicator={false}
                     >
-                        <ScrollView
-                            contentContainerStyle={styles.form}
-                            showsVerticalScrollIndicator={false}
-                        >
-                            <View style={styles.title}>
-                                <Link to='/' style={styles.returnMenu}>
-                                    <StyledText style={styles.returnMenu}>⬅ Volver</StyledText>
-                                </Link>
-                                <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
-                            </View>
-                            {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
-                            <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
-                                <Pressable onPress={() => setModalCowAddOpen(true)} >
-                                    <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
+                        <View style={styles.title}>
+                            <Link to='/' style={styles.returnMenu}>
+                                <StyledText style={styles.returnMenu}>⬅ Volver</StyledText>
+                            </Link>
+                            <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
+                        </View>
+                        {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
+                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
+                            <Pressable onPress={() => setModalCowAddOpen(true)} >
+                                <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
+                            </Pressable>
+                            <StyledText style={styles.farmName}>{pawn ? `Pata: ${pawn}` : 'Seleccione la pata'}</StyledText>
+                        </View>
+                        <Dropdown
+                            onChange={handleChangeDropdown}
+                            data={cowList}
+                            placeholder="🐮 Lista de vacas"
+                        />
+                        <ModalPaw isOpen={modalCowAddOpen}>
+                            <View style={styles.modalView}>
+                                <Pressable onPress={() => { setModalCowAddOpen(false) }}>
+                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
                                 </Pressable>
-                                <StyledText style={styles.farmName}>{pawn ? `Pata: ${pawn}` : 'Seleccione la pata'}</StyledText>
+                                <CowValidation finca={finca} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
                             </View>
-                            <Dropdown
-                                onChange={handleChangeDropdown}
-                                data={cowList}
-                                placeholder="🐮 Lista de vacas"
-                            />
-                            <ModalPaw isOpen={modalCowAddOpen}>
-                                <View style={styles.modalView}>
-                                    <Pressable onPress={() => { setModalCowAddOpen(false) }}>
-                                        <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                    </Pressable>
-                                    <CowValidation finca={finca} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
-                                </View>
-                            </ModalPaw>
-                            <ModalPaw isOpen={modalEnfermedadesOpen}>
-                                <View style={styles.modalView}>
-                                    <Pressable onPress={() => { setModalEnfermedadesOpen(false) }}>
-                                        <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                    </Pressable>
-                                    <Enfermedades
-                                        actualizarEnfermedades={actualizarEnfermedades}
-                                        setModalEnfermedadesOpen={setModalEnfermedadesOpen}
-                                    />
-                                </View>
-                            </ModalPaw>
-                            {iscowSelected &&
-                                <>
-                                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
-                                        <>
+                        </ModalPaw>
+                        <ModalPaw isOpen={modalEnfermedadesOpen}>
+                            <View style={styles.modalView}>
+                                <Pressable onPress={() => { setModalEnfermedadesOpen(false) }}>
+                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
+                                </Pressable>
+                                <Enfermedades
+                                    actualizarEnfermedades={actualizarEnfermedades}
+                                    setModalEnfermedadesOpen={setModalEnfermedadesOpen}
+                                />
+                            </View>
+                        </ModalPaw>
+                        {iscowSelected &&
+                            <>
+                                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
+                                    <>
+                                        {!isRevision && 
                                             <TouchableOpacity
                                                 style={styles.button}
                                                 onPress={() => {
@@ -349,57 +364,72 @@ export default function PawPage() {
                                             >
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
                                             </TouchableOpacity>
-                                            {!terapeutic &&
-                                                <TouchableOpacity
-                                                    style={styles.button}
-                                                    onPress={() => {
-                                                        setTratamiento('Preventivo');
-                                                        handleSubmit();
-                                                    }}
-                                                >
-                                                    <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
-                                                </TouchableOpacity>
-                                            }
-                                        </>
-                                    </View>
-                                    {terapeutic &&
-                                        <>
-                                            < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
-                                            {idPaw &&
-                                                <>
-                                                    <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
-                                                    <View style={{ flexDirection: 'row', marginBottom: 35 }}>
-                                                        <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
-                                                        <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />
+                                        }
+                                        {!terapeutic && 
+                                        
+                                            <TouchableOpacity
+                                                style={styles.button}
+                                                onPress={() => {
+                                                    setTratamiento('Revisión');
+                                                    
+                                                    setRevision(true);
+                                                }}
+                                            >
+                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Revisión</StyledText>
+                                            </TouchableOpacity>
+                                        }
+
+                                            {!terapeutic && !isRevision &&
+                                            <TouchableOpacity
+                                                style={styles.button}
+                                                onPress={() => {
+                                                    setTratamiento('Preventivo');
+                                                    handleSubmit();
+                                                }}
+                                            >
+                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
+                                            </TouchableOpacity>
+                                        }
+                                    </>
+                                </View>
+                                {(terapeutic || isRevision) &&
+                                    <>
+                                        < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
+                                        {idPaw &&
+                                            <>
+                                                <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
+                                                <View style={{ flexDirection: 'row', marginBottom: 35 }}>
+                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
+                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />
+                                                </View>
+                                                <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
+                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                <StyledTextInput
+                                                    placeholder='Nota (opcional)'
+                                                    placeholderTextColor="#c2c0c0"
+                                                    onChangeText={(text) => addNote(text)}
+                                                    style={styles.textInput}
+                                                />
+                                                {contadorBotones >= 3 && (
+                                                    <View>
+                                                        <TouchableOpacity
+                                                            style={styles.button}
+                                                            onPress={handleSubmit}
+                                                        >
+                                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
+                                                        </TouchableOpacity>
                                                     </View>
-                                                    <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                                    <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
-                                                    <ComponentButton title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                                    <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                                    <StyledTextInput
-                                                        placeholder='Nota (opcional)'
-                                                        placeholderTextColor="#c2c0c0"
-                                                        onChangeText={(text) => addNote(text)}
-                                                        style={styles.textInput}
-                                                    />
-                                                    {contadorBotones >= 3 && (
-                                                        <View>
-                                                            <TouchableOpacity
-                                                                style={styles.button}
-                                                                onPress={handleSubmit}
-                                                            >
-                                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
-                                                            </TouchableOpacity>
-                                                        </View>
-                                                    )}
-                                                </>
-                                            }
-                                        </>
-                                    }
-                                </>
-                            }
-                        </ScrollView>
-                    </KeyboardAvoidingView>
+                                                )}
+                                            </>
+                                        }
+                                    </>
+                                }
+                            </>
+                        }
+                    </ScrollView>
+                </KeyboardAvoidingView>
 
             )
         }}

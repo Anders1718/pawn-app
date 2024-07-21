@@ -35,21 +35,34 @@ const ComponentButton =
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
             // Hacemos una copia del array actual
             const newArray = [...actualArray];
+
+            const arrayPoscion = actualArray[index]
+
+            const itemsArray = actualArray[index].indexOf(newValue);
+
+            if (itemsArray === -1) {
+                // Si el elemento no existe en el array, añadirlo
+                arrayPoscion.push(newValue);
+            } else {
+                // Si el elemento existe en el array, eliminarlo
+                arrayPoscion.splice(itemsArray, 1);
+            }
+
             // Modificamos el valor en la posición especificada
-            newArray[index] = newValue;
+            newArray[index] = arrayPoscion;
             // Actualizamos el estado con el array modificado
             setArray(newArray);
         };
 
         const toggleString = (str) => {
             setSecondPartSick((prevState) => {
-              if (prevState.includes(str)) {
-                return prevState.filter(item => item !== str);
-              } else {
-                return [...prevState, str];
-              }
+                if (prevState.includes(str)) {
+                    return prevState.filter(item => item !== str);
+                } else {
+                    return [...prevState, str];
+                }
             });
-          };
+        };
 
         return (
             <SafeAreaView style={styles.container}>
@@ -65,8 +78,9 @@ const ComponentButton =
                         ItemSeparatorComponent={() => <Text> </Text>}
                         renderItem={({ item: repo, index }) => {
                             let isTurnedOver = false;
+                            const numberSearch = index + 1;
                             if (optionsSelectedSave) {
-                                isTurnedOver = index === optionsSelectedSave[idPaw] - 1;
+                                isTurnedOver = optionsSelectedSave[idPaw].indexOf(numberSearch) !== -1 ? true : false;
                             } else {
                                 isTurnedOver = cardSelected === index;
                             }

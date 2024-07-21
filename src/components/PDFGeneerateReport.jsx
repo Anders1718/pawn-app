@@ -20,6 +20,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
             <tr>
                 <th>ID-Animal</th>
                 <th>Descripción</th>
+                <th>Observación</th>
                 <th>Tratamiento</th>
             </tr>
         `;
@@ -28,6 +29,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
             <tr>
                 <td>${vaca.nombre_vaca}</td>
                 <td>${vaca.enfermedades}</td>
+                <td>${vaca.nota}</td>
                 <td>${vaca.tratamiento}</td>
             </tr>
             `;
