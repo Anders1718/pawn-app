@@ -2,7 +2,7 @@
   "expo": {
     "name": "cow-foot-app",
     "slug": "cow-foot-app",
-    "version": "0.2.3",
+    "version": "1.2.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
