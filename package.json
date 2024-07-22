@@ -1,6 +1,6 @@
 {
   "name": "cow-foot-app",
-  "version": "1.0.0",
+  "version": "1.2.3",
   "scripts": {
     "start": "expo start --dev-client",
     "android": "expo run:android",
