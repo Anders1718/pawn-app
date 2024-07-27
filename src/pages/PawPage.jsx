@@ -14,13 +14,15 @@ import queryString from 'query-string';
 import Dropdown from "../components/Dropdown";
 import { fetchVacasId, fetchEnfermedades } from "../hooks/useRepositories";
 import CowValidation from "../components/AddVaca";
-import { addHistorialVacas } from "../hooks/useRepositories";
+import { addHistorialVacas, ultimaHistoriaVaca } from "../hooks/useRepositories";
 import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '../utils/pawOptions'
 import Hoof from '../pata-svg/Hoof';
 import HoofSide from "../patas-lado-svg/Hoof";
 import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
 import StyledTextInput from "../components/StyledTextInput";
 import Enfermedades from "../components/AddEnfermedad";
+import { formatDate } from "../utils/transformDate";
+import ListaVacas from "../components/ListaVacas";
 
 const styles = StyleSheet.create({
     error: {
@@ -41,6 +43,21 @@ const styles = StyleSheet.create({
     },
     modalView: {
         // margin: 20,
+        width: 400,
+        backgroundColor: '#0f172a',
+        borderRadius: 20,
+        padding: 35,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
+    modalViewList: {
+        height: 600,
         width: 400,
         backgroundColor: '#0f172a',
         borderRadius: 20,
@@ -125,6 +142,8 @@ const styles = StyleSheet.create({
 
 export default function PawPage() {
 
+    const [isEdit, setIsEdit] = useState(false);
+
     const [modalCowAddOpen, setModalCowAddOpen] = useState(false)
     const [cowList, setCowList] = useState([])
     const [iscowSelected, setIsCowSelected] = useState(false)
@@ -136,6 +155,8 @@ export default function PawPage() {
     const [sala, setSala] = useState('');
     const [modalEnfermedadesOpen, setModalEnfermedadesOpen] = useState(false);
     const [enfermedades, setEnfermedades] = useState([]);
+
+    const [seleccionarAnimal, setSeleccionarAnimal] = useState('');
 
     // Paws 
     const [pawList, setPawList] = useState([false, false, false, false, false, false, false, false]);
@@ -149,9 +170,12 @@ export default function PawPage() {
     // Crear un nuevo string con las partes que si tengan texto
     const [sickList, setSickList] = useState(['', '', '', '', '', '', '', ''])
     const [firstPartSick, setFirstPartSick] = useState('')
+    const [pawnSide, setPawnSide] = useState([])
     const [secondPartSick, setSecondPartSick] = useState([])
     const [contadorBotones, setContadorBotones] = useState(0);
     const [tratamiento, setTratamiento] = useState(null);
+
+    const [ultimoTratamiento, setUltimoTratamiento] = useState(null);
 
     //Save pawns
     const [numberPawnSave, setNumberPawnSave] = useState([[], [], [], []])
@@ -196,12 +220,14 @@ export default function PawPage() {
         setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '', '', '', '', '']);
         setFirstPartSick('');
+        setPawnSide([]);
         setSecondPartSick([]);
         setContadorBotones(0);
         setNumberPawnSave([[], [], [], []])
         setNumberSickSave([[], [], [], []])
         setNumberTratSave([[], [], [], []]);
-        setNumberSeverSave([[], [], [], []])
+        setNumberSeverSave([[], [], [], []]);
+        setUltimoTratamiento(null);
 
         actualizarVacas();
     };
@@ -219,12 +245,14 @@ export default function PawPage() {
         setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '', '', '', '', '']);
         setFirstPartSick('');
+        setPawnSide([]);
         setSecondPartSick([]);
         setContadorBotones(0);
         setNumberPawnSave([[], [], [], []]);
         setNumberSickSave([[], [], [], []]);
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
+        setUltimoTratamiento(null);
     };
 
     const actualizarVacas = async () => {
@@ -237,6 +265,11 @@ export default function PawPage() {
         setEnfermedades(resultado);
     };
 
+    const historiaAnimal = async (nombre) => {
+        const resultado = await ultimaHistoriaVaca(id, nombre);
+        setUltimoTratamiento(resultado);
+    }
+
     const addNote = (text) => {
         setNote(text)
     }
@@ -247,7 +280,7 @@ export default function PawPage() {
             segundaParte = 'venda + oxi'
         }
 
-        const identificadorPata = `${pawn}: ${firstPartSick} ${segundaParte} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
+        const identificadorPata = `${pawn}: ${pawnSide} ${firstPartSick} ${segundaParte} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
 
         // Clonar el array original
         const nuevoPaws = [...sickList];
@@ -272,6 +305,7 @@ export default function PawPage() {
         setIsCowSelected(true);
         setSala(sala);
         clearCowData();
+        historiaAnimal(label);
     }
 
     const onSubmitCow = async () => {
@@ -282,7 +316,7 @@ export default function PawPage() {
 
         const notaCompleta = note ? note : 'N/A';
 
-        if (terapeutic || isRevision ) {
+        if (terapeutic || isRevision) {
             const stringUnido = sickList.join(" ");
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
             console.log("enfermedades", enfermedades)
@@ -320,23 +354,42 @@ export default function PawPage() {
                             <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
                         </View>
                         {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
-                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between" }}>
-                            <Pressable onPress={() => setModalCowAddOpen(true)} >
+                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between", paddingTop: 20 }}>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPressOut={() => {
+                                    if (!isEdit) setModalCowAddOpen(true);
+                                }}
+                                onLongPress={() => {
+                                    setIsEdit(true);
+                                }}
+                            >
                                 <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
-                            </Pressable>
-                            <StyledText style={styles.farmName}>{pawn ? `Pata: ${pawn}` : 'Seleccione la pata'}</StyledText>
+                            </TouchableOpacity>
                         </View>
                         <Dropdown
                             onChange={handleChangeDropdown}
                             data={cowList}
-                            placeholder="🐮 Lista de vacas"
+                            placeholder="🐮 Lista de animales"
                         />
                         <ModalPaw isOpen={modalCowAddOpen}>
                             <View style={styles.modalView}>
-                                <Pressable onPress={() => { setModalCowAddOpen(false) }}>
+                                <Pressable onPress={() => {
+                                    setModalCowAddOpen(false)
+                                }}>
                                     <StyledText style={{ fontSize: 20 }}> X </StyledText>
                                 </Pressable>
-                                <CowValidation finca={finca} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                                <CowValidation finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                            </View>
+                        </ModalPaw>
+                        <ModalPaw isOpen={isEdit}>
+                            <View style={styles.modalViewList}>
+                                <Pressable onPress={() => {
+                                    setIsEdit(false)
+                                }}>
+                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
+                                </Pressable>
+                                <ListaVacas setIsEdit={setIsEdit} />
                             </View>
                         </ModalPaw>
                         <ModalPaw isOpen={modalEnfermedadesOpen}>
@@ -352,9 +405,20 @@ export default function PawPage() {
                         </ModalPaw>
                         {iscowSelected &&
                             <>
+                                {ultimoTratamiento && ultimoTratamiento.length > 0 && (
+                                    <View style={{ paddingVertical: 20, backgroundColor: '#94ACD4', borderRadius: 15, paddingHorizontal: 10, marginBottom: 25 }}>
+                                        <StyledText fontSize='subheading' style={{ fontSize: 22, textAlign: 'center', marginBottom: 10 }}>Última historia</StyledText>
+                                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                                            <StyledText style={{ fontSize: 18 }}>Enfermedad: {ultimoTratamiento[0].enfermedades}</StyledText>
+                                            <StyledText style={{ fontSize: 18 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
+                                            <StyledText style={{ fontSize: 18 }}>Nota: {ultimoTratamiento[0].nota}</StyledText>
+                                        </View>
+                                    </View>
+                                )}
                                 <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
                                     <>
-                                        {!isRevision && 
+
+                                        {!isRevision &&
                                             <TouchableOpacity
                                                 style={styles.button}
                                                 onPress={() => {
@@ -365,13 +429,13 @@ export default function PawPage() {
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
                                             </TouchableOpacity>
                                         }
-                                        {!terapeutic && 
-                                        
+                                        {!terapeutic &&
+
                                             <TouchableOpacity
                                                 style={styles.button}
                                                 onPress={() => {
                                                     setTratamiento('Revisión');
-                                                    
+
                                                     setRevision(true);
                                                 }}
                                             >
@@ -379,7 +443,7 @@ export default function PawPage() {
                                             </TouchableOpacity>
                                         }
 
-                                            {!terapeutic && !isRevision &&
+                                        {!terapeutic && !isRevision &&
                                             <TouchableOpacity
                                                 style={styles.button}
                                                 onPress={() => {
@@ -397,7 +461,7 @@ export default function PawPage() {
                                         < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
                                         {idPaw &&
                                             <>
-                                                <Hoof numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
+                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
                                                 <View style={{ flexDirection: 'row', marginBottom: 35 }}>
                                                     <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
                                                     <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />

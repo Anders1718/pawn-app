@@ -6,7 +6,7 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function App({ finca, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal }) {
+export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal }) {
 
     let tablaCuenta = '';
     totalCuenta.forEach((cuenta, index) => {
@@ -90,8 +90,8 @@ export default function App({ finca, cliente, lugar, totalCuenta, listaVacas, fe
             <td class="right-column">${nit}</td>
         </tr>
         <tr>
-            <td class="left-column bold">Ubicación:</td>
-            <td class="left-column">${lugar}</td>
+            <td class="left-column bold">Dirección:</td>
+            <td class="left-column">${direccion}</td>
             <td class="right-column bold">Tel:</td>
             <td class="right-column">${tel}</td>
         </tr>

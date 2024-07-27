@@ -24,9 +24,10 @@ const styles = StyleSheet.create({
     }
 })
 
-const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen, finca) => {
+const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal) => {
 
     await addVaca(id, values.id, values.sala ? values.sala : finca);
+    setSeleccionarAnimal({nombre: values.id, sala: values.sala ? values.sala : finca});
     actualizarVacas();
     setModalCowAddOpen(false)
 };
@@ -48,9 +49,9 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
-export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, finca}) {
+export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, finca, setSeleccionarAnimal}) {
     return <Formik validationSchema={cowValidation} initialValues={initialValues} onSubmit={values => {
-        addFincas(values, id, actualizarVacas, setModalCowAddOpen, finca)
+        addFincas(values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal)
     }}>
         {({ handleChange, handleSubmit, values }) => {
             return (

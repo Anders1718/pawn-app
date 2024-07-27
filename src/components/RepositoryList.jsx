@@ -103,7 +103,7 @@ const RepositoryList = () => {
                             {isBill ?
                                 (<RepositoryItem isBill {...repo} />)
                                 :
-                                (<RepositoryItem {...repo} />)
+                                (<RepositoryItem {...repo} actualizarFincas={actualizarFincas} />)
                             }
                         </>
                     )}

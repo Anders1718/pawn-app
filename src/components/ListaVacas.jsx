@@ -1,16 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Pressable } from 'react-native';
-import RepositoryHistorial from './RepositoryIHistorial.jsx';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import RepositoryVacasEdit from './RepositoryVacasEdit.jsx';
 import queryString from 'query-string';
-import { historialVacas } from '../hooks/useRepositories.js';
-import { Link } from 'react-router-native';
-import StyledText from './StyledText.jsx'
+import { listadoVacasId } from '../hooks/useRepositories.js';
 import StyledTextInput from './StyledTextInput.jsx';
 import { useLocation } from 'react-router-native';
-import { ModalPaw } from './ModalPaw.jsx';
-import GenerarInforme from './GenerateReport.jsx';
 
-const HistorialFinca = () => {
+const ListaVacas = ({setIsEdit}) => {
 
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
@@ -23,15 +19,16 @@ const HistorialFinca = () => {
     const [masterData, setmasterData] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
 
-    useEffect(() => {
-        const fetchFincas = async () => {
-            const resultado = await historialVacas(id);
-            setfilterData(resultado.vacas);
-            setmasterData(resultado.vacas);
-        };
+    const fetchFincas = async () => {
+        const resultado = await listadoVacasId(id);
+        setfilterData(resultado.vacas);
+        setmasterData(resultado.vacas);
+    };
 
+    // Llamar a la función dentro de useEffect
+    useEffect(() => {
         fetchFincas();
-    }, []);
+    }, [id]);
 
     const searchFilter = (text) => {
         if (text) {
@@ -53,27 +50,6 @@ const HistorialFinca = () => {
 
     return (
         <View style={styles.container}>
-            <View style={styles.title}>
-                <Link to='/home'>
-                    <StyledText fontWeight='bold' color='secondary' fontSize='subheading' >⬅ Volver</StyledText>
-                </Link>
-            </View>
-            <ModalPaw
-                isOpen={modalVisible}
-            >
-                <View style={styles.modalView}>
-                    <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
-                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>X</StyledText>
-                    </Pressable>
-                    <GenerarInforme  id={id} finca={finca} cliente={cliente} lugar={lugar} setIsOpen={setModalVisible}/>
-                </View>
-            </ModalPaw>
-            <TouchableOpacity
-                style={styles.button}
-                onPress={() => setModalVisible(true)}
-            >
-                <StyledText fontSize='subheading' >Generar Informe</StyledText>
-            </TouchableOpacity>
             <StyledTextInput
                 placeholder='Buscar animal...'
                 placeholderTextColor="#c2c0c0"
@@ -85,7 +61,7 @@ const HistorialFinca = () => {
                 data={filterData}
                 ItemSeparatorComponent={() => <Text> </Text>}
                 renderItem={({ item: repo }) => (
-                    <RepositoryHistorial {...repo} />
+                    <RepositoryVacasEdit setIsEdit={setIsEdit} fetchFincas={fetchFincas} {...repo} />
                 )}
             />
         </View>
@@ -94,8 +70,8 @@ const HistorialFinca = () => {
 
 const styles = StyleSheet.create({
     container: {
-        marginTop: 60,
-        height: 790
+        marginTop: 10,
+        height: 500,
     },
     list: {
         marginTop: 10
@@ -140,4 +116,4 @@ const styles = StyleSheet.create({
     },
 });
 
-export default HistorialFinca;
+export default ListaVacas;

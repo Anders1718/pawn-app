@@ -10,19 +10,22 @@ export const loginValidationSchema = yup.object().shape({
 export const farmValidation = yup.object().shape({
     finca: yup
         .string()
-        .required('Email es requerida'),
+        .required('Finca es requerida'),
     nombre: yup
         .string()
-        .required('Password es requerida'),
+        .required('Nombre es requerido'),
     nit: yup
         .string()
-        .required('Email es requerida'),
+        .required('Nit es requerido'),
     tel: yup
         .string()
-        .required('Password es requerida'),
+        .required('Teléfono es requerido'),
     ubicacion: yup
         .string()
-        .required('Email es requerida'),
+        .required('Ubicación es requerida'),
+    direccion: yup
+        .string()
+        .required('Dirección requerida'),
 })
 
 export const cowValidation = yup.object().shape({

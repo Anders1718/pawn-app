@@ -1,19 +1,23 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View } from 'react-native'
-import StyledTextInput from '../components/StyledTextInput'
-import StyledText from '../components/StyledText'
+import { Alert, Button, StyleSheet, TextInput, View } from 'react-native'
+import StyledTextInput from './StyledTextInput'
+import StyledText from './StyledText'
 import { farmValidation } from '../validationSchemas/login'
-import { addFinca } from '../hooks/useRepositories'
+import { editFinca, deleteFinca } from '../hooks/useRepositories'
 
-const initialValues = {
-    finca: '',
-    nombre: '',
-    nit: '',
-    tel: '',
-    ubicacion: '',
-    direccion: '',
+const initialValues = (props) => {
+    return {
+        finca: props.nombre_finca,
+        nombre: props.nombre_propietario,
+        nit: props.nit,
+        tel: props.telefono,
+        ubicacion: props.ubicacion,
+        direccion: props.direccion,
+        id: props.id,
+    };
 }
+
 
 const styles = StyleSheet.create({
     error: {
@@ -28,8 +32,12 @@ const styles = StyleSheet.create({
     }
 })
 
-const addFincas = async (values, actualizarFincas, setIsOpen) => {
-    await addFinca(values);
+const addFincas = async (values, actualizarFincas, setIsOpen, isDelete) => {
+    if (isDelete) {
+        await deleteFinca(values);
+    } else {
+        await editFinca(values);
+    }
     actualizarFincas();
     setIsOpen(false);
 };
@@ -51,11 +59,36 @@ const FormikInputValue = ({ name, ...props }) => {
     )
 }
 
-export default function LogInPage({actualizarFincas, setIsOpen}) {
-    return <Formik validationSchema={farmValidation} initialValues={initialValues} onSubmit={values => {
-        addFincas(values, actualizarFincas, setIsOpen)
+export default function LogInPage(props) {
+
+    const [isDelete, setIsDelete] = useState(false);
+
+    return <Formik validationSchema={farmValidation} initialValues={initialValues(props)} onSubmit={values => {
+        addFincas(values, props.actualizarFincas, props.setIsOpen, isDelete)
     }}>
         {({ handleChange, handleSubmit, values }) => {
+
+            
+
+            const pressDelete = () => {
+                Alert.alert(
+                    "Eliminar predio",
+                    "¿Estás seguro de que deseas continuar?",
+                    [
+                      {
+                        text: "Cancelar",
+                        onPress: () => props.setIsOpen(false),
+                        style: "cancel"
+                      },
+                      { text: "OK", onPress: () => {
+                        setIsDelete(true);
+                        handleSubmit();
+                      } }
+                    ],
+                    { cancelable: false }
+                  );
+            }
+
             return (
                 <View style={styles.form}>
                     <FormikInputValue
@@ -88,7 +121,8 @@ export default function LogInPage({actualizarFincas, setIsOpen}) {
                         placeholder='Dirección'
                         placeholderTextColor="#c2c0c0"
                     />
-                    <Button onPress={handleSubmit} title='Guardar' />
+                    <Button onPress={handleSubmit} title='Editar' />
+                    <Button onPress={pressDelete} title='Eliminar' />
                 </View>
             )
         }}

@@ -9,7 +9,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     marginBottom: 10,
     color:'snow',
-    placeholderTextColor:"#c2c0c0"
+    placeholderTextColor:"#c2c0c0",
+    fontSize:22
   },
   error: {
     borderColor: 'red'

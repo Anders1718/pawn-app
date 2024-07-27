@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Image, TouchableWithoutFeedback, Pressable, Alert } from "react-native"
+import { View, StyleSheet, Image, TouchableWithoutFeedback, Pressable, ScrollView, Alert } from "react-native"
 import { Link } from 'react-router-native'
 import StyledText from './StyledText'
 import theme from '../theme'
@@ -9,7 +9,7 @@ import { fetchFincasNombres } from '../hooks/useRepositories'
 const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
 
     return (
-        <View style={{ paddingBottom: 2, flexDirection: 'row', alignSelf: 'center', marginTop:40 }}>
+        <View style={{ paddingBottom: 2, flexDirection: 'row', alignSelf: 'center', marginTop: 40 }}>
             <View style={{ paddingRight: 45 }}>
 
                 <Link to='/home' >
@@ -22,14 +22,14 @@ const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
                     <Link to={`/pawpage?finca=${nombreFinca}&id=${idFinca}`} component={TouchableWithoutFeedback} >
                         <View>
                             <Image style={styles.image} source={require(`../img/pata-inicio.png`)} />
-                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Vaca</StyledText>
+                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Animal</StyledText>
                         </View>
                     </Link>
                 ) : (
                     <Pressable onPress={() => Alert.alert('Debe seleccionar un predio')} >
                         <View>
                             <Image style={styles.imageDisabled} source={require(`../img/pata-inicio.png`)} />
-                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Vaca</StyledText>
+                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Animal</StyledText>
                         </View>
                     </Pressable>
                 )
@@ -70,7 +70,10 @@ const ItemMenu = () => {
     }, []);
 
     return (
-        <View style={styles.container}>
+        <ScrollView
+            contentContainerStyle={styles.container}
+            showsVerticalScrollIndicator={false}
+        >
             <Dropdown
                 data={fincas}
                 onChange={handleChange}
@@ -78,7 +81,7 @@ const ItemMenu = () => {
 
             />
             <RepositoryItemHeader nombreFinca={nombreFinca} idFinca={idFinca} />
-        </View>
+        </ScrollView>
     )
 }
 
@@ -86,7 +89,8 @@ const styles = StyleSheet.create({
     container: {
         padding: 20,
         marginTop: 50,
-        backgroundColor: '#1e293b'
+        backgroundColor: '#1e293b',
+        paddingBottom: 90,
     },
     language: {
         padding: 4,

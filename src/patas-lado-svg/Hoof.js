@@ -9,8 +9,6 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
   const [colors, setColors] = useState([lengthColors, lengthColors, lengthColors, lengthColors]);
   const [pawColor, setPawColor] = useState(colors[idPaw]);
 
-  console.log('pawColor' ,pawColor);
-
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
       if (prevState.includes(str)) {

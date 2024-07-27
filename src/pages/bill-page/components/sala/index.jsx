@@ -52,7 +52,7 @@ const Sala = ({ listaVacas, setListaVacas }) => {
                             style={styles.button}
                             onPress={() => setModalVisible(true)}
                         >
-                            <StyledText fontSize='subheading' >+ Agregar Vaca</StyledText>
+                            <StyledText fontSize='subheading' >+ Agregar animal</StyledText>
                         </TouchableOpacity>
 
                     </>

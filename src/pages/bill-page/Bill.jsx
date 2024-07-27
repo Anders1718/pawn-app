@@ -127,7 +127,7 @@ export default function BillPage() {
 
             const location = useLocation();
             const queryParams = queryString.parse(location.search);
-            const { id, finca, cliente, lugar, nit, tel } = queryParams;
+            const { id, finca, cliente, lugar, nit, tel, direccion } = queryParams;
 
             return (
                 <ScrollView
@@ -173,6 +173,7 @@ export default function BillPage() {
                     {!buttonContinue && (
                         <CreatePDF
                             finca={finca}
+                            direccion={direccion}
                             cliente={cliente}
                             lugar={lugar}
                             totalCuenta={totalCuenta}

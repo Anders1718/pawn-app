@@ -5,9 +5,11 @@ import paths from './hoofpaths';
 // Importa las rutas de los `Path`
 import StyledText from '../components/StyledText';
 
-const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart }) => {
+const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide }) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
+
+  const [colorSide, setColorSide] = useState(['snow', 'snow']);
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -18,6 +20,23 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart }) =
       }
     });
   };
+
+  const selectSide = (pata, index) => {
+
+    const updatedColorSide = [...colorSide];
+
+    setPawnSide((prevState) => {
+      if (prevState.includes(pata)) {
+        updatedColorSide[index] = 'snow';
+        setColorSide(updatedColorSide);
+        return prevState.filter(item => item !== pata);
+      } else {
+        updatedColorSide[index] = 'red';
+        setColorSide(updatedColorSide);
+        return [...prevState, pata];
+      }
+    });
+  }
 
   const handlePress = (index, pathData) => {
     if (index >= paths.length - 2) return; // Evita la selección para los dos últimos paths
@@ -59,7 +78,11 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart }) =
   return (
     <View style={styles.container}>
       <View style={styles.hoof}>
-        <StyledText fontSize='title'>Lateral</StyledText>
+        <TouchableWithoutFeedback
+          onPress={() => selectSide('Lateral', 0)}
+        >
+          <StyledText style={{color: colorSide[0]}} fontSize='title'>Lateral</StyledText>
+        </TouchableWithoutFeedback>
         <Svg height="350" width="350" viewBox="0 0 612 792">
           <G>
             {paths.map((pathData, index) => (
@@ -81,7 +104,11 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart }) =
             ))}
           </G>
         </Svg>
-        <StyledText fontSize='title'>Medial</StyledText>
+        <TouchableWithoutFeedback
+          onPress={() => selectSide('Medial', 1)}
+        >
+          <StyledText style={{color: colorSide[1]}} fontSize='title'>Medial</StyledText>
+        </TouchableWithoutFeedback>
       </View>
       {selectedZone !== null && (
         <Text style={styles.selectedText}>

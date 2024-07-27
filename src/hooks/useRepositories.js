@@ -1,12 +1,12 @@
 import * as SQLite from 'expo-sqlite'
 
-const databaseName = 'cowdatabasetest4.db';
+const databaseName = 'cowdatabasetest5.db';
 
 export async function useRepositories() {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
-    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
 
     const fincas = await db.getAllAsync('SELECT * FROM fincas ORDER BY id DESC');
 
@@ -17,7 +17,7 @@ export async function fetchFincasNombres() {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
-    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
 
     const fincas = await db.getAllAsync('SELECT * FROM fincas ORDER BY id DESC');
 
@@ -45,8 +45,6 @@ export async function fetchVacasId(id) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
     await db.execAsync('CREATE TABLE IF NOT EXISTS vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), sala VARCHAR(255), finca INT, FOREIGN KEY (finca) REFERENCES fincas(id))');
-
-    //const fincas = await db.getAllAsync(`SELECT * FROM vacas WHERE id = ${id}`);
     const fincas = await db.getAllAsync(`SELECT * FROM vacas WHERE finca = ${id} ORDER BY id DESC`);
 
     const nombreVacas = fincas.map(function (item) {
@@ -56,13 +54,50 @@ export async function fetchVacasId(id) {
     return nombreVacas;
 }
 
+export async function listadoVacasId(id) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), sala VARCHAR(255), finca INT, FOREIGN KEY (finca) REFERENCES fincas(id))');
+    const vacas = await db.getAllAsync(`SELECT * FROM vacas WHERE finca = ${id} ORDER BY id DESC`);
+
+    return { vacas: vacas };
+}
+
+export async function deleteVacasId(id) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), sala VARCHAR(255), finca INT, FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await db.runAsync('DELETE FROM vacas WHERE id = ?', id);
+}
+
 export async function addFinca(values) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
-    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
 
-    await db.runAsync('INSERT INTO fincas (nombre_finca, nombre_propietario, ubicacion, telefono, nit) VALUES (?, ?, ?, ?, ?)', values.finca, values.nombre, values.ubicacion, values.tel, values.nit);
+    await db.runAsync('INSERT INTO fincas (nombre_finca, nombre_propietario, ubicacion, direccion, telefono, nit) VALUES (?, ?, ?, ?, ?, ?)', values.finca, values.nombre, values.ubicacion, values.direccion, values.tel, values.nit);
+}
+
+export async function editFinca(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+
+    await db.runAsync('UPDATE fincas SET nombre_finca = ?, nombre_propietario = ?, ubicacion = ?, direccion = ?, telefono = ?, nit = ? WHERE id = ?', values.finca, values.nombre, values.ubicacion, values.direccion, values.tel, values.nit, values.id);
+}
+
+export async function deleteFinca(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+
+    await db.runAsync('DELETE FROM fincas WHERE id = ?', values.id);
+
 }
 
 export async function addVaca(id, nombre, sala) {
@@ -84,6 +119,18 @@ export async function historialVacas(id) {
 
 
     return { vacas: vacas };
+}
+
+export async function ultimaHistoriaVaca(id, nombre_vaca) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+
+    const vacas = await db.getAllAsync(`SELECT * FROM historial_vacas WHERE finca = ${id} AND nombre_vaca = ${nombre_vaca} ORDER BY id DESC LIMIT 1`);
+
+
+    return vacas;
 }
 
 export async function addHistorialVacas(id, nombre, enfermedades, fecha, sala, nota, tratamiento) {
