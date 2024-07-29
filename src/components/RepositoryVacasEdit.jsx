@@ -22,6 +22,7 @@ const RepositoryVacasEdit = (props) => {
     const deleteAnimal = async () => {
         await deleteVacasId(props.id);
         props.fetchFincas();
+        props.actualizarVacas();
     }
 
     const pressAnimalDelete = () => {

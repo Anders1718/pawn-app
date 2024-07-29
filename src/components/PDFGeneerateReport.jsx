@@ -18,24 +18,28 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         </h1>
         <table class="animal-table">
             <tr>
+                <th>ID</th>
                 <th>ID-Animal</th>
                 <th>Descripción</th>
                 <th>Observación</th>
                 <th>Tratamiento</th>
             </tr>
         `;
+        let index = 1; // Inicializar el contador para cada sala
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
             tablaVacas += `
             <tr>
+                <td>${index}</td>
                 <td>${vaca.nombre_vaca}</td>
                 <td>${vaca.enfermedades}</td>
                 <td>${vaca.nota}</td>
                 <td>${vaca.tratamiento}</td>
             </tr>
             `;
+            index++; // Incrementar el contador después de cada fila
         });
         tablaVacas += `</table>`;
-    });
+    });    
 
     const html = `
 <html>

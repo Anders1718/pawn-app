@@ -389,7 +389,7 @@ export default function PawPage() {
                                 }}>
                                     <StyledText style={{ fontSize: 20 }}> X </StyledText>
                                 </Pressable>
-                                <ListaVacas setIsEdit={setIsEdit} />
+                                <ListaVacas setIsEdit={setIsEdit} actualizarVacas={actualizarVacas} />
                             </View>
                         </ModalPaw>
                         <ModalPaw isOpen={modalEnfermedadesOpen}>

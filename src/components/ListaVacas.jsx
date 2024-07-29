@@ -6,7 +6,7 @@ import { listadoVacasId } from '../hooks/useRepositories.js';
 import StyledTextInput from './StyledTextInput.jsx';
 import { useLocation } from 'react-router-native';
 
-const ListaVacas = ({setIsEdit}) => {
+const ListaVacas = ({setIsEdit, actualizarVacas}) => {
 
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
@@ -61,7 +61,7 @@ const ListaVacas = ({setIsEdit}) => {
                 data={filterData}
                 ItemSeparatorComponent={() => <Text> </Text>}
                 renderItem={({ item: repo }) => (
-                    <RepositoryVacasEdit setIsEdit={setIsEdit} fetchFincas={fetchFincas} {...repo} />
+                    <RepositoryVacasEdit setIsEdit={setIsEdit} actualizarVacas={actualizarVacas} fetchFincas={fetchFincas} {...repo} />
                 )}
             />
         </View>

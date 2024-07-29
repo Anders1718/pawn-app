@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Formik, useField } from 'formik'
-import { StyleSheet, View, ScrollView, TouchableOpacity } from 'react-native'
+import { StyleSheet, View, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
 import StyledTextInput from '../../components/StyledTextInput'
 import StyledText from '../../components/StyledText'
 import { loginValidationSchema } from '../../validationSchemas/login'
@@ -130,61 +130,67 @@ export default function BillPage() {
             const { id, finca, cliente, lugar, nit, tel, direccion } = queryParams;
 
             return (
-                <ScrollView
-                    contentContainerStyle={styles.form}
-                    showsVerticalScrollIndicator={false}
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === "ios" ? "padding" : "height"}
+                    style={{ flex: 1 }}
+                    keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
                 >
-                    <Link to='/home?isBill=true'>
-                        <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
-                    </Link>
+                    <ScrollView
+                        contentContainerStyle={styles.form}
+                        showsVerticalScrollIndicator={false}
+                    >
+                        <Link to='/home?isBill=true'>
+                            <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
+                        </Link>
 
-                    <DateRangePicker
-                        startDate={startDate}
-                        setStartDate={setStartDate}
-                        endDate={endDate}
-                        setEndDate={setEndDate}
-                        habilitado={habilitado}
-                        setHabilitado={setHabilitado}
-                    />
-                    {habilitado && (
-
-                        <TouchableOpacity
-                            style={styles.button}
-                            onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado)}
-                        >
-                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
-                        </TouchableOpacity>
-                    )}
-                    {pricesExist && (
-                        <Precio
-                            setTotalCuenta={setTotalCuenta}
-                            totalCuenta={totalCuenta}
-                            setSumaTotal={setSumaTotal}
-                            sumaTotal={sumaTotal}
-                            setButtonContinue={setButtonContinue}
-                            buttonContinue={buttonContinue}
-                            terapeuticosCount={terapeuticosCount}
-                            preventivosCount={preventivosCount}
-                            revisionCount={revisionCount}
-                            prices={prices}
+                        <DateRangePicker
+                            startDate={startDate}
+                            setStartDate={setStartDate}
+                            endDate={endDate}
+                            setEndDate={setEndDate}
+                            habilitado={habilitado}
+                            setHabilitado={setHabilitado}
                         />
-                    )}
+                        {habilitado && (
 
-                    {!buttonContinue && (
-                        <CreatePDF
-                            finca={finca}
-                            direccion={direccion}
-                            cliente={cliente}
-                            lugar={lugar}
-                            totalCuenta={totalCuenta}
-                            listaVacas={listaVacas}
-                            fechaHoyFormateada={fechaHoyFormateada}
-                            nit={nit}
-                            tel={tel}
-                            sumaTotal={sumaTotal}
-                        />
-                    )}
-                </ScrollView>
+                            <TouchableOpacity
+                                style={styles.button}
+                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado)}
+                            >
+                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
+                            </TouchableOpacity>
+                        )}
+                        {pricesExist && (
+                            <Precio
+                                setTotalCuenta={setTotalCuenta}
+                                totalCuenta={totalCuenta}
+                                setSumaTotal={setSumaTotal}
+                                sumaTotal={sumaTotal}
+                                setButtonContinue={setButtonContinue}
+                                buttonContinue={buttonContinue}
+                                terapeuticosCount={terapeuticosCount}
+                                preventivosCount={preventivosCount}
+                                revisionCount={revisionCount}
+                                prices={prices}
+                            />
+                        )}
+
+                        {!buttonContinue && (
+                            <CreatePDF
+                                finca={finca}
+                                direccion={direccion}
+                                cliente={cliente}
+                                lugar={lugar}
+                                totalCuenta={totalCuenta}
+                                listaVacas={listaVacas}
+                                fechaHoyFormateada={fechaHoyFormateada}
+                                nit={nit}
+                                tel={tel}
+                                sumaTotal={sumaTotal}
+                            />
+                        )}
+                    </ScrollView>
+                </KeyboardAvoidingView>
             )
         }}
     </Formik>
