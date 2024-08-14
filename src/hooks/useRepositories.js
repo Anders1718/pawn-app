@@ -121,6 +121,22 @@ export async function historialVacas(id) {
     return { vacas: vacas };
 }
 
+export async function editHistorialVacas(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+
+    await db.runAsync('UPDATE historial_vacas SET nombre_vaca = ?, enfermedades = ?, fecha = ?, sala = ?, nota = ?, tratamiento = ? WHERE id = ?', values.id_animal, values.enfermedades, values.fecha, values.sala, values.nota, values.tratamientos, values.id);
+}
+
+export async function deleteHistorialVacas(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.runAsync('DELETE FROM historial_vacas WHERE id = ?', values.id);
+}
+
 export async function ultimaHistoriaVaca(id, nombre_vaca) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);

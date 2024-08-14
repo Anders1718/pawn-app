@@ -147,16 +147,19 @@ export default function PawPage() {
     const [modalCowAddOpen, setModalCowAddOpen] = useState(false)
     const [cowList, setCowList] = useState([])
     const [iscowSelected, setIsCowSelected] = useState(false)
-    const [cowName, setCowName] = useState(null)
+    const [cowName, setCowName] = useState('')
     const [terapeutic, isTerapeuctic] = useState(false)
     const [isRevision, setRevision] = useState(false)
-    const [pawn, setPawn] = useState(null);
+    const [pawn, setPawn] = useState('');
     const [note, setNote] = useState('');
     const [sala, setSala] = useState('');
     const [modalEnfermedadesOpen, setModalEnfermedadesOpen] = useState(false);
     const [enfermedades, setEnfermedades] = useState([]);
 
     const [seleccionarAnimal, setSeleccionarAnimal] = useState('');
+
+    const [defaultValue, setDefaultValue] = useState('');
+    const [salaAdd, setSalaAdd] = useState('');
 
     // Paws 
     const [pawList, setPawList] = useState([false, false, false, false, false, false, false, false]);
@@ -172,10 +175,9 @@ export default function PawPage() {
     const [firstPartSick, setFirstPartSick] = useState('')
     const [pawnSide, setPawnSide] = useState([])
     const [secondPartSick, setSecondPartSick] = useState([])
-    const [contadorBotones, setContadorBotones] = useState(0);
-    const [tratamiento, setTratamiento] = useState(null);
+    const [tratamiento, setTratamiento] = useState('');
 
-    const [ultimoTratamiento, setUltimoTratamiento] = useState(null);
+    const [ultimoTratamiento, setUltimoTratamiento] = useState('');
 
     //Save pawns
     const [numberPawnSave, setNumberPawnSave] = useState([[], [], [], []])
@@ -207,14 +209,14 @@ export default function PawPage() {
         setModalCowAddOpen(false);
         setCowList([]);
         setIsCowSelected(false);
-        setCowName(null);
+        setCowName('');
         isTerapeuctic(false);
         setRevision(false)
-        setPawn(null);
+        setPawn('');
         setNote('');
         setSala('');
         setPawList([false, false, false, false, false, false, false, false]);
-        setIdPaw(null);
+        setIdPaw('');
         setNumberPawnPart([], [], [], []);
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
@@ -222,12 +224,11 @@ export default function PawPage() {
         setFirstPartSick('');
         setPawnSide([]);
         setSecondPartSick([]);
-        setContadorBotones(0);
         setNumberPawnSave([[], [], [], []])
         setNumberSickSave([[], [], [], []])
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
-        setUltimoTratamiento(null);
+        setUltimoTratamiento('');
 
         actualizarVacas();
     };
@@ -236,10 +237,10 @@ export default function PawPage() {
         setModalCowAddOpen(false);
         isTerapeuctic(false);
         setRevision(false);
-        setPawn(null);
+        setPawn('');
         setNote('');
         setPawList([false, false, false, false, false, false, false, false]);
-        setIdPaw(null);
+        setIdPaw('');
         setNumberPawnPart([], [], [], []);
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
@@ -247,17 +248,26 @@ export default function PawPage() {
         setFirstPartSick('');
         setPawnSide([]);
         setSecondPartSick([]);
-        setContadorBotones(0);
         setNumberPawnSave([[], [], [], []]);
         setNumberSickSave([[], [], [], []]);
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
-        setUltimoTratamiento(null);
+        setUltimoTratamiento('');
     };
 
     const actualizarVacas = async () => {
         const resultado = await fetchVacasId(id);
         setCowList(resultado);
+        setDefaultValue(resultado[0].value);
+        setSalaAdd(resultado[0].sala);
+    };
+
+    const actualizarVacasAdd = async () => {
+        const resultado = await fetchVacasId(id);
+        setCowList(resultado);
+        setDefaultValue(resultado[0].value);
+        setSalaAdd(resultado[0].sala);
+        handleChangeDropdown(resultado[0].value, resultado[0].label, resultado[0].sala);
     };
 
     const actualizarEnfermedades = async () => {
@@ -317,14 +327,13 @@ export default function PawPage() {
         const notaCompleta = note ? note : 'N/A';
 
         if (terapeutic || isRevision) {
-            const stringUnido = sickList.join(" ");
+            const stringUnido = sickList.join(" "); 
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
-            console.log("enfermedades", enfermedades)
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         } else {
-            const enfermedades = 'Libre de enfermedades, se hizo tratamiento preventivo';
+            const enfermedades = 'Libre de enfermedades';
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
@@ -371,6 +380,7 @@ export default function PawPage() {
                             onChange={handleChangeDropdown}
                             data={cowList}
                             placeholder="🐮 Lista de animales"
+                            defaultValue={defaultValue}
                         />
                         <ModalPaw isOpen={modalCowAddOpen}>
                             <View style={styles.modalView}>
@@ -379,7 +389,7 @@ export default function PawPage() {
                                 }}>
                                     <StyledText style={{ fontSize: 20 }}> X </StyledText>
                                 </Pressable>
-                                <CowValidation finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacas} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                                <CowValidation finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
                             </View>
                         </ModalPaw>
                         <ModalPaw isOpen={isEdit}>
@@ -461,31 +471,29 @@ export default function PawPage() {
                                         < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
                                         {idPaw &&
                                             <>
-                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} />
+                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />
                                                 <View style={{ flexDirection: 'row', marginBottom: 35 }}>
-                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} />
-                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} />
+                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
+                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
                                                 </View>
-                                                <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
                                                 <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
-                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
-                                                <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} setContadorBotones={setContadorBotones} contadorBotones={contadorBotones} />
+                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
+                                                <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} />
                                                 <StyledTextInput
                                                     placeholder='Nota (opcional)'
                                                     placeholderTextColor="#c2c0c0"
                                                     onChangeText={(text) => addNote(text)}
                                                     style={styles.textInput}
                                                 />
-                                                {contadorBotones >= 3 && (
-                                                    <View>
-                                                        <TouchableOpacity
-                                                            style={styles.button}
-                                                            onPress={handleSubmit}
-                                                        >
-                                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
-                                                        </TouchableOpacity>
-                                                    </View>
-                                                )}
+                                                <View>
+                                                    <TouchableOpacity
+                                                        style={styles.button}
+                                                        onPress={handleSubmit}
+                                                    >
+                                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
+                                                    </TouchableOpacity>
+                                                </View>
                                             </>
                                         }
                                     </>

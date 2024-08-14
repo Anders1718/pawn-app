@@ -14,9 +14,7 @@ const ComponentButton =
         setPawn,
         setFirstPartSick,
         setSecondPartSick,
-        setContadorBotones,
         modificarPosicionSick,
-        contadorBotones,
         setNumberPawnPart,
         numberPawnPart,
         optionsSelectedSave,
@@ -83,28 +81,22 @@ const ComponentButton =
                                         setIdPaw(repo.value)
                                     }
                                     if (cardSelected === index) {
-                                        if (setContadorBotones) {
-                                            const valor = contadorBotones - 1;
-                                            setContadorBotones(valor);
-                                        }
                                         setCardSelected(-1)
                                     } else {
-                                        if (setContadorBotones) {
-                                            const valor = contadorBotones + 1;
-                                            setContadorBotones(valor);
-                                        }
-                                        setCardSelected(index)
+                                        setCardSelected(index);
                                     }
-                                    if (modificarPosicionSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberSeverSave, numberSeverSave)
-                                        modificarPosicionSick(idPaw, true);
-                                        modificarPosicion(idPaw, repo.value)
-                                    } else if (setSecondPartSick) {
+                                    if (modificarPosicion) {
+                                        modificarPosicion(idPaw, repo.value);
+                                        if (modificarPosicionSick) {
+                                            updateArrayAtPosition(idPaw, repo.number, setNumberSeverSave, numberSeverSave)
+                                            modificarPosicionSick(idPaw, repo.value);
+                                        }
+                                    } if (setSecondPartSick) {
                                         updateArrayAtPosition(idPaw, repo.number, setNumberTratSave, numberTratSave)
                                         toggleString(repo.value);
-                                    } else if (setFirstPartSick) {
+                                    } if (setFirstPartSick) {
                                         updateArrayAtPosition(idPaw, repo.number, setNumberSickSave, numberSickSave)
-                                        setFirstPartSick(repo.value)
+                                        setFirstPartSick(repo.value);
                                     }
                                 }}
                             >

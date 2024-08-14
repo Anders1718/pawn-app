@@ -65,7 +65,6 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const saveRevision = (values) => {
-        console.log('values', values)
         const total = values.cantidadRevision * values.valorRevision;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
@@ -142,7 +141,6 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                 initialValues={initialValuePrice(preventivosCount, terapeuticosCount, revisionCount, name)}
                 validationSchema={precioValidation}
                 onSubmit={(values) => {
-                    console.log('llega a submit')
                     if (terapeuticosCount > 0) {
                         saveTerapeuticos(values);
                     }

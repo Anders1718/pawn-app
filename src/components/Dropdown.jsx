@@ -2,10 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
 
-const DropdownItems = ({data, onChange, placeholder}) => {
-
-
-  const [value, setValue] = useState(null);
+const DropdownItems = ({data, onChange, placeholder, defaultValue}) => {
 
   return (
     <Dropdown
@@ -21,7 +18,7 @@ const DropdownItems = ({data, onChange, placeholder}) => {
       valueField="value"
       placeholder={placeholder}
       searchPlaceholder="Buscar..."
-      value={value}
+      value={defaultValue}
       onChange={item => {
         onChange(item.value, item.label, item.sala);
       }}

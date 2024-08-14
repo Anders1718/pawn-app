@@ -61,6 +61,7 @@ export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, 
                         placeholder='Id del animal'
                         placeholderTextColor="#c2c0c0"
                         keyboardType="numeric"
+                        autoFocus={true}
                     />
                     <FormikInputValue
                         name='sala'

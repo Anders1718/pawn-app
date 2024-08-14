@@ -1,8 +1,11 @@
-import React from 'react'
-import { View, StyleSheet, Image } from "react-native"
+import React, { useState } from 'react'
+import { View, StyleSheet, Image, Pressable, TouchableWithoutFeedback } from "react-native"
 import StyledText from './StyledText'
 import theme from '../theme'
-import { Link } from 'react-router-native'
+import { ModalPaw } from './ModalPaw'
+import LogInPage from './EditHistorialVaca'
+
+
 
 const RepositoryItemHeader = (props) => {
 
@@ -31,11 +34,48 @@ const RepositoryItemHeader = (props) => {
     )
 }
 
-const RepositoryHistorial = (props) => (
+const CardEditHistorial = (props) => {
+
+    return (
+        <ModalPaw
+            isOpen={props.isLong}
+        >
+            <View style={styles.modalView}>
+                <Pressable onPress={() => props.setIsLong(false)}>
+                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
+                </Pressable>
+                <LogInPage fetchFincas={props.fetchFincas} isEdit setIsOpen={props.setIsLong} {...props} />
+            </View>
+        </ModalPaw>
+    )
+}
+
+const MenuHistorialEdit = (props) => {
+
+    const longPress = () => {
+        props.setIsLong(true);
+    };
+
+    return (
+        <TouchableWithoutFeedback
+            onLongPress={longPress}
+        >
+            <View>
+                <RepositoryItemHeader {...props} />
+            </View>
+        </TouchableWithoutFeedback>
+    )
+}
+
+const RepositoryHistorial = (props) => {
+    const [isLong, setIsLong] = useState(false)
+    return (
     <View key={props.id} style={styles.container}>
-        <RepositoryItemHeader {...props} />
+        <MenuHistorialEdit setIsLong={setIsLong} isLong={isLong} {...props} />
+        <CardEditHistorial fetchFincas={props.fetchFincas} isLong={isLong} setIsLong={setIsLong} {...props} />
     </View>
-)
+    )
+}
 
 const styles = StyleSheet.create({
     container: {
@@ -63,7 +103,22 @@ const styles = StyleSheet.create({
         backgroundColor: '#94ACD4',
         padding: 10,
         borderRadius: 4,
-    }
+    },
+    modalView: {
+        // margin: 20,
+        width: 400,
+        backgroundColor: '#0f172a',
+        borderRadius: 20,
+        padding: 35,
+        shadowColor: '#000',
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 5,
+    },
 })
 
 export default RepositoryHistorial

@@ -22,13 +22,15 @@ const HistorialFinca = () => {
     const [filterData, setfilterData] = useState([])
     const [masterData, setmasterData] = useState([])
     const [modalVisible, setModalVisible] = useState(false);
+    
+    const fetchFincas = async () => {
+        const resultado = await historialVacas(id);
+        setfilterData(resultado.vacas);
+        setmasterData(resultado.vacas);
+    };
 
     useEffect(() => {
-        const fetchFincas = async () => {
-            const resultado = await historialVacas(id);
-            setfilterData(resultado.vacas);
-            setmasterData(resultado.vacas);
-        };
+
 
         fetchFincas();
     }, []);
@@ -65,7 +67,7 @@ const HistorialFinca = () => {
                     <Pressable style={styles.closeButton} onPress={() => setModalVisible(false)}>
                         <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>X</StyledText>
                     </Pressable>
-                    <GenerarInforme  id={id} finca={finca} cliente={cliente} lugar={lugar} setIsOpen={setModalVisible}/>
+                    <GenerarInforme id={id} finca={finca} cliente={cliente} lugar={lugar} setIsOpen={setModalVisible} />
                 </View>
             </ModalPaw>
             <TouchableOpacity
@@ -85,7 +87,7 @@ const HistorialFinca = () => {
                 data={filterData}
                 ItemSeparatorComponent={() => <Text> </Text>}
                 renderItem={({ item: repo }) => (
-                    <RepositoryHistorial {...repo} />
+                    <RepositoryHistorial fetchFincas={fetchFincas} {...repo} />
                 )}
             />
         </View>
@@ -135,7 +137,7 @@ const styles = StyleSheet.create({
         padding: 15,
         borderRadius: 15,
         borderWidth: 10,
-        marginBottom:20,
+        marginBottom: 20,
         marginHorizontal: 20,
     },
 });

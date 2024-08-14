@@ -14,9 +14,7 @@ const ComponentButton =
         setPawn,
         setFirstPartSick,
         setSecondPartSick,
-        setContadorBotones,
         modificarPosicionSick,
-        contadorBotones,
         setNumberPawnPart,
         numberPawnPart,
         optionsSelectedSave,
@@ -97,16 +95,8 @@ const ComponentButton =
                                         setIdPaw(repo.value)
                                     }
                                     if (cardSelected === index) {
-                                        if (setContadorBotones) {
-                                            const valor = contadorBotones - 1;
-                                            setContadorBotones(valor);
-                                        }
                                         setCardSelected(-1)
                                     } else {
-                                        if (setContadorBotones) {
-                                            const valor = contadorBotones + 1;
-                                            setContadorBotones(valor);
-                                        }
                                         setCardSelected(index)
                                     }
                                     if (modificarPosicionSick) {

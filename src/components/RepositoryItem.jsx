@@ -2,10 +2,9 @@ import React, { useState } from 'react'
 import { View, StyleSheet, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
 import StyledText from './StyledText'
 import theme from '../theme'
-import { Link, useNavigate } from 'react-router-native';
+import { useNavigate } from 'react-router-native';
 import { ModalPaw } from './ModalPaw';
 import LogInPage from './EditFinca';
-import { useRepositories } from '../hooks/useRepositories';
 
 const CardFarm = (props) => (
     <View style={styles.card} >

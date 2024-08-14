@@ -92,3 +92,24 @@ export const precioValidation = yup.object().shape({
         .string()
         .required('Campo requerido'),
 })
+
+export const historialVacasValidation = yup.object().shape({
+    id_animal: yup
+        .string()
+        .required('Id es requerido'),
+    enfermedades: yup
+        .string()
+        .required('Enfermedades es requerida'),
+    fecha: yup
+        .string()
+        .required('Fecha es requerida'),
+    sala: yup
+        .string()
+        .required('Sala es requerida'),
+    nota: yup
+        .string()
+        .required('Nota es requerida'),
+    tratamientos: yup
+        .string()
+        .required('Tratamientos es requerido'),
+})
