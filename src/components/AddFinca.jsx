@@ -34,18 +34,17 @@ const addFincas = async (values, actualizarFincas, setIsOpen) => {
     setIsOpen(false);
 };
 
-const FormikInputValue = ({ name, ...props }) => {
+const FormikInputValue = ({ name, onSubmitEditing, ...props }) => {
     const [field, meta, helpers] = useField(name)
 
     return (
         <>
             <StyledTextInput
-                error={meta.error}
                 value={field.value}
                 onChangeText={value => helpers.setValue(value)}
+                onSubmitEditing={onSubmitEditing}
                 {...props}
             />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
         </>
 
     )
@@ -55,38 +54,56 @@ export default function LogInPage({actualizarFincas, setIsOpen}) {
     return <Formik validationSchema={farmValidation} initialValues={initialValues} onSubmit={values => {
         addFincas(values, actualizarFincas, setIsOpen)
     }}>
-        {({ handleChange, handleSubmit, values }) => {
+        {({ handleChange, handleSubmit, values, isValid }) => {
             return (
                 <View style={styles.form}>
                     <FormikInputValue
                         name='finca'
                         placeholder='Finca'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <FormikInputValue
                         name='nombre'
                         placeholder='Cliente'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <FormikInputValue
                         name='nit'
                         placeholder='NIT/C.C'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <FormikInputValue
                         name='tel'
                         placeholder='Tel'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <FormikInputValue
                         name='ubicacion'
                         placeholder='Ubicación'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <FormikInputValue
                         name='direccion'
                         placeholder='Dirección'
                         placeholderTextColor="#c2c0c0"
+                        onSubmitEditing={() => {
+                            if (isValid) handleSubmit();
+                        }}
                     />
                     <Button onPress={handleSubmit} title='Guardar' />
                 </View>
