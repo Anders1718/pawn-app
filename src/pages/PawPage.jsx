@@ -327,7 +327,7 @@ export default function PawPage() {
         const notaCompleta = note ? note : 'N/A';
 
         if (terapeutic || isRevision) {
-            const stringUnido = sickList.join(" "); 
+            const stringUnido = sickList.join(" ");
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();

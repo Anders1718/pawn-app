@@ -33,8 +33,21 @@ const ComponentButton =
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
             // Hacemos una copia del array actual
             const newArray = [...actualArray];
+
+            const arrayPoscion = actualArray[index]
+
+            const itemsArray = actualArray[index].indexOf(newValue);
+
+            if (itemsArray === -1) {
+                // Si el elemento no existe en el array, añadirlo
+                arrayPoscion.push(newValue);
+            } else {
+                // Si el elemento existe en el array, eliminarlo
+                arrayPoscion.splice(itemsArray, 1);
+            }
+
             // Modificamos el valor en la posición especificada
-            newArray[index] = newValue;
+            newArray[index] = arrayPoscion;
             // Actualizamos el estado con el array modificado
             setArray(newArray);
         };
@@ -63,8 +76,10 @@ const ComponentButton =
                         ItemSeparatorComponent={() => <Text> </Text>}
                         renderItem={({ item: repo, index }) => {
                             let isTurnedOver = false;
+                            const numberSearch = index + 1;
                             if (optionsSelectedSave) {
-                                isTurnedOver = index === optionsSelectedSave[idPaw] - 1;
+                                console.log(optionsSelectedSave) 
+                                isTurnedOver = optionsSelectedSave[idPaw - 1].indexOf(numberSearch) !== -1 ? true : false;
                             } else {
                                 isTurnedOver = cardSelected === index;
                             }
@@ -73,7 +88,7 @@ const ComponentButton =
                                 isTurnedOver={isTurnedOver}
                                 onPress={() => {
                                     if (setNumberPawnPart) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberPawnSave, numberPawnSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberPawnSave, numberPawnSave)
                                         setNumberPawnPart(repo.label)
                                     }
                                     if (setPawn) {
@@ -86,16 +101,16 @@ const ComponentButton =
                                         setCardSelected(index);
                                     }
                                     if (modificarPosicion) {
-                                        modificarPosicion(idPaw, repo.value);
+                                        modificarPosicion(idPaw - 1, repo.value);
                                         if (modificarPosicionSick) {
-                                            updateArrayAtPosition(idPaw, repo.number, setNumberSeverSave, numberSeverSave)
-                                            modificarPosicionSick(idPaw, repo.value);
+                                            updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeverSave, numberSeverSave)
+                                            modificarPosicionSick(idPaw - 1, repo.value);
                                         }
                                     } if (setSecondPartSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberTratSave, numberTratSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberTratSave, numberTratSave)
                                         toggleString(repo.value);
                                     } if (setFirstPartSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberSickSave, numberSickSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSickSave, numberSickSave)
                                         setFirstPartSick(repo.value);
                                     }
                                 }}

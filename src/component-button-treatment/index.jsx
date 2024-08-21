@@ -78,7 +78,7 @@ const ComponentButton =
                             let isTurnedOver = false;
                             const numberSearch = index + 1;
                             if (optionsSelectedSave) {
-                                isTurnedOver = optionsSelectedSave[idPaw].indexOf(numberSearch) !== -1 ? true : false;
+                                isTurnedOver = optionsSelectedSave[idPaw - 1].indexOf(numberSearch) !== -1 ? true : false;
                             } else {
                                 isTurnedOver = cardSelected === index;
                             }
@@ -87,7 +87,7 @@ const ComponentButton =
                                 isTurnedOver={isTurnedOver}
                                 onPress={() => {
                                     if (setNumberPawnPart) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberPawnSave, numberPawnSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberPawnSave, numberPawnSave)
                                         setNumberPawnPart(repo.label)
                                     }
                                     if (setPawn) {
@@ -100,14 +100,14 @@ const ComponentButton =
                                         setCardSelected(index)
                                     }
                                     if (modificarPosicionSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberSeverSave, numberSeverSave)
-                                        modificarPosicionSick(idPaw, true);
-                                        modificarPosicion(idPaw, repo.value)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeverSave, numberSeverSave)
+                                        modificarPosicionSick(idPaw - 1, true);
+                                        modificarPosicion(idPaw - 1, repo.value)
                                     } else if (setSecondPartSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberTratSave, numberTratSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberTratSave, numberTratSave)
                                         toggleString(repo.value);
                                     } else if (setFirstPartSick) {
-                                        updateArrayAtPosition(idPaw, repo.number, setNumberSickSave, numberSickSave)
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSickSave, numberSickSave)
                                         setFirstPartSick(repo.value)
                                     }
                                 }}

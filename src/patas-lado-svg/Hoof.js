@@ -5,9 +5,7 @@ import Svg, { Path, G, Circle } from 'react-native-svg';
 import paths from './hoofpaths3'; // Importa las rutas de los `Path`
 const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart}) => {
   const [selectedZone, setSelectedZone] = useState(null);
-  const lengthColors = Array(paths.length).fill("#D2B48C");
-  const [colors, setColors] = useState([lengthColors, lengthColors, lengthColors, lengthColors]);
-  const [pawColor, setPawColor] = useState(colors[idPaw]);
+  const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -21,14 +19,10 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
 
   const handlePress = (index, pathData) => {
     if (index >= 2) return; // Evita la selección para los dos últimos paths
-    const newColors = colors;
-    const indexModify = newColors[idPaw];
-
+    const newColors = [...colors];
     // Select the new element
-    indexModify[index] = indexModify[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
-    newColors[idPaw] = indexModify;
+    newColors[index] = newColors[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
     setColors(newColors);
-    setPawColor(newColors[idPaw]);
     setSelectedZone(index);
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
@@ -68,7 +62,7 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
               disabled={index >= 2} // Deshabilita la selección para los dos últimos paths
             >
               <G>
-                <Path d={pathData.d} fill={pawColor[index]} />
+                <Path d={pathData.d} fill={colors[index]} />
                 {index < 2 && (
                   <>
                     <Path d={pathData.d} fill="transparent" stroke="transparent" strokeWidth="20" />
