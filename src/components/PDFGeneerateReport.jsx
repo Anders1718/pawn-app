@@ -18,7 +18,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         </h1>
         <table class="animal-table">
             <tr>
-                <th>ID</th>
+                <th></th>
                 <th>ID-Animal</th>
                 <th>Descripción</th>
                 <th>Observación</th>
@@ -124,10 +124,6 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         <tr>
             <td>PI = posterior izquierdo</td>
             <td>PD = posterior derecho</td>
-        </tr>
-        <tr>
-            <td>DL = dígito lateral </td>
-            <td>DM = dígito medial</td>
         </tr>
     </table>
 
