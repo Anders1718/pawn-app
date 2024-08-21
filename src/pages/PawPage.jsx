@@ -149,6 +149,7 @@ export default function PawPage() {
     const [iscowSelected, setIsCowSelected] = useState(false)
     const [cowName, setCowName] = useState('')
     const [terapeutic, isTerapeuctic] = useState(false)
+    const [preventive, isPreventive] = useState(false)
     const [isRevision, setRevision] = useState(false)
     const [pawn, setPawn] = useState('');
     const [note, setNote] = useState('');
@@ -458,7 +459,7 @@ export default function PawPage() {
                                                 style={styles.button}
                                                 onPress={() => {
                                                     setTratamiento('Preventivo');
-                                                    handleSubmit();
+                                                    isPreventive(true);
                                                 }}
                                             >
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
@@ -466,7 +467,7 @@ export default function PawPage() {
                                         }
                                     </>
                                 </View>
-                                {(terapeutic || isRevision) &&
+                                {(terapeutic || isRevision || preventive) &&
                                     <>
                                         < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
                                         {idPaw &&
