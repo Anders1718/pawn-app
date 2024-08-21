@@ -78,7 +78,6 @@ const ComponentButton =
                             let isTurnedOver = false;
                             const numberSearch = index + 1;
                             if (optionsSelectedSave) {
-                                console.log(optionsSelectedSave) 
                                 isTurnedOver = optionsSelectedSave[idPaw - 1].indexOf(numberSearch) !== -1 ? true : false;
                             } else {
                                 isTurnedOver = cardSelected === index;

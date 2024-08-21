@@ -327,14 +327,9 @@ export default function PawPage() {
 
         const notaCompleta = note ? note : 'N/A';
 
-        if (terapeutic || isRevision) {
+        if (terapeutic || isRevision || preventive) {
             const stringUnido = sickList.join(" ");
             const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
-            clearAllData();
-            return Alert.alert('Guardado con éxito');
-        } else {
-            const enfermedades = 'Libre de enfermedades';
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
@@ -429,7 +424,7 @@ export default function PawPage() {
                                 <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
                                     <>
 
-                                        {!isRevision &&
+                                        {!isRevision && !preventive &&
                                             <TouchableOpacity
                                                 style={styles.button}
                                                 onPress={() => {
@@ -440,7 +435,7 @@ export default function PawPage() {
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
                                             </TouchableOpacity>
                                         }
-                                        {!terapeutic &&
+                                        {!terapeutic && !preventive &&
 
                                             <TouchableOpacity
                                                 style={styles.button}
