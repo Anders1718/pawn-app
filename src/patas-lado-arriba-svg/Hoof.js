@@ -27,7 +27,7 @@ const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPar
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
       toggleString(pathData.name, setNumberPawnPart)
-      modificarPosicion(idPaw, true)
+      modificarPosicion(idPaw - 1, pathData.name)
     }
   };
 

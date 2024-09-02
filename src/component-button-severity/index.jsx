@@ -4,7 +4,7 @@ import { SafeAreaView, StyleSheet, Text, View, FlatList } from "react-native";
 import Card from "./card/Card";
 
 
-const ComponentButton =
+const ComponentButtonSeverity =
     ({
         title,
         options,
@@ -25,14 +25,22 @@ const ComponentButton =
         setNumberPawnSave,
         setNumberSickSave,
         setNumberTratSave,
-        setNumberSeverSave
+        setNumberSeverSave,
+        setNumberSeveritySave,
+        numberSeveritySave,
+        setSeverity,
+
     }) => {
 
         const [cardSelected, setCardSelected] = React.useState(null);
 
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
+
+            console.log(actualArray)
             // Hacemos una copia del array actual
             const newArray = [...actualArray];
+
+            console.log(newArray);
 
             const arrayPoscion = actualArray[index]
 
@@ -48,19 +56,22 @@ const ComponentButton =
 
             // Modificamos el valor en la posición especificada
             newArray[index] = arrayPoscion;
+
+            console.log('newArray', newArray);
+
             // Actualizamos el estado con el array modificado
             setArray(newArray);
         };
 
         const toggleString = (str) => {
             setSecondPartSick((prevState) => {
-              if (prevState.includes(str)) {
-                return prevState.filter(item => item !== str);
-              } else {
-                return [...prevState, str];
-              }
+                if (prevState.includes(str)) {
+                    return prevState.filter(item => item !== str);
+                } else {
+                    return [...prevState, str];
+                }
             });
-          };
+        };
 
         return (
             <SafeAreaView style={styles.container}>
@@ -106,10 +117,13 @@ const ComponentButton =
                                         setFirstPartSick(repo.value);
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberSickSave, numberSickSave)
                                     }
+                                    if (setNumberSeveritySave) {
+                                        setSeverity(repo.value);
+                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeveritySave, numberSeveritySave);
+                                    }
                                     if (modificarPosicion) {
-                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeverSave, numberSeverSave)
                                         modificarPosicion(idPaw - 1, repo.value);
-                                    } 
+                                    }
                                 }}
                             >
                                 {repo.label}
@@ -122,7 +136,7 @@ const ComponentButton =
         );
     }
 
-export default ComponentButton;
+export default ComponentButtonSeverity;
 
 const styles = StyleSheet.create({
     container: {

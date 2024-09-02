@@ -7,6 +7,7 @@ import Card from "../component-button/card/Card";
 
 import ComponentButton from "../component-button";
 import ComponentButtonTreatment from "../component-button-treatment";
+import ComponentButtonSeverity from "../component-button-severity";
 import StyledText from "../components/StyledText";
 import { Link } from "react-router-native";
 import { useLocation } from 'react-router-native';
@@ -108,6 +109,18 @@ const styles = StyleSheet.create({
         borderRadius: 15,
         borderWidth: 10
     },
+    buttonFree: {
+        borderColor: "#334155",
+        borderRadius: "25%",
+        borderRadius: "25%",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 15,
+        borderWidth: 10,
+        marginTop: 20
+    },
     buttonContinue: {
         borderColor: "#334155",
         borderRadius: "25%",
@@ -172,11 +185,12 @@ export default function PawPage() {
 
     //Sicks
     // Crear un nuevo string con las partes que si tengan texto
-    const [sickList, setSickList] = useState(['', '', '', '', '', '', '', ''])
+    const [sickList, setSickList] = useState(['', '', '', ''])
     const [firstPartSick, setFirstPartSick] = useState('')
     const [pawnSide, setPawnSide] = useState([])
     const [secondPartSick, setSecondPartSick] = useState([])
     const [tratamiento, setTratamiento] = useState('');
+    const [severity, setSeverity] = useState('');
 
     const [ultimoTratamiento, setUltimoTratamiento] = useState('');
 
@@ -185,6 +199,7 @@ export default function PawPage() {
     const [numberSickSave, setNumberSickSave] = useState([[], [], [], []])
     const [numberTratSave, setNumberTratSave] = useState([[], [], [], []])
     const [numberSeverSave, setNumberSeverSave] = useState([[], [], [], []])
+    const [numberSeveritySave, setNumberSeveritySave] = useState([[], [], [], []])
 
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
@@ -221,7 +236,7 @@ export default function PawPage() {
         setNumberPawnPart([], [], [], []);
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
-        setSickList(['', '', '', '', '', '', '', '']);
+        setSickList(['', '', '', '']);
         setFirstPartSick('');
         setPawnSide([]);
         setSecondPartSick([]);
@@ -245,7 +260,7 @@ export default function PawPage() {
         setNumberPawnPart([], [], [], []);
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
-        setSickList(['', '', '', '', '', '', '', '']);
+        setSickList(['', '', '', '']);
         setFirstPartSick('');
         setPawnSide([]);
         setSecondPartSick([]);
@@ -291,24 +306,13 @@ export default function PawPage() {
             segundaParte = 'venda + oxi'
         }
 
-        const identificadorPata = `${pawn}: ${pawnSide} ${firstPartSick} ${segundaParte} ${value} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} `
-
+        const identificadorPata = `${pawn}:${pawnSide} ${firstPartSick} ${segundaParte} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} ${severity} ${value}`;
         // Clonar el array original
         const nuevoPaws = [...sickList];
         // Modificar la posición deseada
         nuevoPaws[index] = identificadorPata;
         // Actualizar el estado
         setSickList(nuevoPaws);
-    };
-
-    const modificarPosicionSick = (index, newValue) => {
-
-        // Clonar el array original
-        const nuevoPaws = [...pawList];
-        // Modificar la posición deseada
-        nuevoPaws[index] = newValue;
-        // Actualizar el estado
-        setPawList(nuevoPaws);
     };
 
     const handleChangeDropdown = (value, label, sala) => {
@@ -328,9 +332,11 @@ export default function PawPage() {
         const notaCompleta = note ? note : 'N/A';
 
         if (terapeutic || isRevision || preventive) {
+
             const stringUnido = sickList.join(" ");
-            const enfermedades = stringUnido ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento);
+
+            const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
@@ -464,6 +470,17 @@ export default function PawPage() {
                                 </View>
                                 {(terapeutic || isRevision || preventive) &&
                                     <>
+                                        { preventive &&
+                                            <TouchableOpacity
+                                                style={styles.buttonFree}
+                                                onPress={() => {
+                                                    setTratamiento('Libre');
+                                                    handleSubmit();
+                                                }}
+                                            >
+                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Libre de enfermedades</StyledText>
+                                            </TouchableOpacity>
+                                        }
                                         < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
                                         {idPaw &&
                                             <>
@@ -475,7 +492,7 @@ export default function PawPage() {
                                                 <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
                                                 <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
                                                 <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <ComponentButton title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} optionsSelectedSave={numberSeverSave} setNumberSeverSave={setNumberSeverSave} modificarPosicionSick={modificarPosicionSick} modificarPosicion={modificarPosicion} idPaw={idPaw} />
+                                                <ComponentButtonSeverity title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
                                                 <StyledTextInput
                                                     placeholder='Nota (opcional)'
                                                     placeholderTextColor="#c2c0c0"

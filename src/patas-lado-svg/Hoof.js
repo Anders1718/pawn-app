@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Svg, { Path, G, Circle } from 'react-native-svg';
 // import paths from './hoofpaths'; // Importa las rutas de los `Path`
 import paths from './hoofpaths3'; // Importa las rutas de los `Path`
-const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart}) => {
+const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, modificarPosicion}) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
 
@@ -27,6 +27,7 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart})
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
       toggleString(pathData.name, setNumberPawnPart)
+      modificarPosicion(idPaw - 1, pathData.name)
     }
   };
 

@@ -5,7 +5,7 @@ import paths from './hoofpaths';
 // Importa las rutas de los `Path`
 import StyledText from '../components/StyledText';
 
-const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide }) => {
+const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide, modificarPosicion }) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
 
@@ -38,7 +38,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
     });
   }
 
-  const handlePress = (index, pathData) => {
+  const handlePress = async (index, pathData) => {
     if (index >= paths.length - 2) return; // Evita la selección para los dos últimos paths
     // Deselect all elements first
     const newColors = [...colors];
@@ -49,6 +49,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
     if (setNumberPawnPart) {
       updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
       toggleString(pathData.name, setNumberPawnPart)
+      modificarPosicion(idPaw - 1, pathData.name)
     }
 
   };
