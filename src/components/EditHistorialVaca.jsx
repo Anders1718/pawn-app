@@ -10,6 +10,7 @@ const initialValues = (props) => {
     return {
         id_animal: props.nombre_vaca,
         enfermedades: props.enfermedades,
+        extremidad: props.extremidad,
         tratamientos: props.tratamiento,
         nota: props.nota,
         fecha: props.fecha,
@@ -94,6 +95,11 @@ export default function LogInPage(props) {
                     <FormikInputValue
                         name='id_animal'
                         placeholder='Animal'
+                        placeholderTextColor="#c2c0c0"
+                    />
+                    <FormikInputValue
+                        name='extremidad'
+                        placeholder='Extremidad'
                         placeholderTextColor="#c2c0c0"
                     />
                     <FormikInputValue

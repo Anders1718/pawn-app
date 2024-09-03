@@ -22,14 +22,15 @@ const RepositoryItemHeader = (props) => {
 
     return (
         <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-                <View style={styles.card} >
-                    <StyledText fontWeight='bold' style={{fontSize: 22}}>ID Animal: {props.nombre_vaca}</StyledText>
-                    <StyledText style={{fontSize: 22}}>Enfermedades: {props.enfermedades}</StyledText>
-                    <StyledText style={styles.language}  >Fecha: {convertirFecha(props.fecha)}</StyledText>
-                    {props.nota && <StyledText style={{fontSize: 22}}>Nota: {props.nota}</StyledText>}
-                    <StyledText style={styles.language} >Sala: {props.sala}</StyledText>
-                    <StyledText style={styles.language} >Tratamiento: {props.tratamiento}</StyledText>
-                </View>
+            <View style={styles.card} >
+                <StyledText fontWeight='bold' style={{ fontSize: 22 }}>ID Animal: {props.nombre_vaca}</StyledText>
+                <StyledText style={{ fontSize: 22 }}>Enfermedades: {props.enfermedades}</StyledText>
+                <StyledText style={{ fontSize: 22 }}>Extremidad: {props.extremidad || 'N/A'}</StyledText>
+                <StyledText style={styles.language}  >Fecha: {convertirFecha(props.fecha)}</StyledText>
+                {props.nota && <StyledText style={{ fontSize: 22 }}>Nota: {props.nota}</StyledText>}
+                <StyledText style={styles.language} >Sala: {props.sala}</StyledText>
+                <StyledText style={styles.language} >Tratamiento: {props.tratamiento}</StyledText>
+            </View>
         </View>
     )
 }
@@ -70,10 +71,10 @@ const MenuHistorialEdit = (props) => {
 const RepositoryHistorial = (props) => {
     const [isLong, setIsLong] = useState(false)
     return (
-    <View key={props.id} style={styles.container}>
-        <MenuHistorialEdit setIsLong={setIsLong} isLong={isLong} {...props} />
-        <CardEditHistorial fetchFincas={props.fetchFincas} isLong={isLong} setIsLong={setIsLong} {...props} />
-    </View>
+        <View key={props.id} style={styles.container}>
+            <MenuHistorialEdit setIsLong={setIsLong} isLong={isLong} {...props} />
+            <CardEditHistorial fetchFincas={props.fetchFincas} isLong={isLong} setIsLong={setIsLong} {...props} />
+        </View>
     )
 }
 

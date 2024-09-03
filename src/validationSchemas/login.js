@@ -97,6 +97,9 @@ export const historialVacasValidation = yup.object().shape({
     id_animal: yup
         .string()
         .required('Id es requerido'),
+    extremidad: yup
+        .string()
+        .required('Extremidad es requerida'),
     enfermedades: yup
         .string()
         .required('Enfermedades es requerida'),

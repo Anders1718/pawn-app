@@ -2,6 +2,15 @@ import * as SQLite from 'expo-sqlite'
 
 const databaseName = 'cowdatabasetest5.db';
 
+async function addExtremidadColumnIfNotExists(db) {
+    const tableInfo = await db.getAllAsync("PRAGMA table_info(historial_vacas)");
+    const extremidadColumnExists = tableInfo.some(column => column.name === 'extremidad');
+    
+    if (!extremidadColumnExists) {
+      await db.execAsync('ALTER TABLE historial_vacas ADD COLUMN extremidad VARCHAR(255)');
+    }
+  }
+
 export async function useRepositories() {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
@@ -113,7 +122,9 @@ export async function historialVacas(id) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
 
-    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))'); 
+    // Agregar la nueva columna si no existe
+    await addExtremidadColumnIfNotExists(db);
 
     const vacas = await db.getAllAsync(`SELECT * FROM historial_vacas  WHERE finca = ${id} ORDER BY id DESC`);
 
@@ -126,8 +137,11 @@ export async function editHistorialVacas(values) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
     await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    
+    // Agregar la nueva columna si no existe
+    await addExtremidadColumnIfNotExists(db);
 
-    await db.runAsync('UPDATE historial_vacas SET nombre_vaca = ?, enfermedades = ?, fecha = ?, sala = ?, nota = ?, tratamiento = ? WHERE id = ?', values.id_animal, values.enfermedades, values.fecha, values.sala, values.nota, values.tratamientos, values.id);
+    await db.runAsync('UPDATE historial_vacas SET nombre_vaca = ?, enfermedades = ?, fecha = ?, sala = ?, nota = ?, tratamiento = ?, extremidad = ? WHERE id = ?', values.id_animal, values.enfermedades, values.fecha, values.sala, values.nota, values.tratamientos, values.extremidad, values.id);
 }
 
 export async function deleteHistorialVacas(values) {
@@ -142,6 +156,8 @@ export async function ultimaHistoriaVaca(id, nombre_vaca) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
     await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    // Agregar la nueva columna si no existe
+    await addExtremidadColumnIfNotExists(db);
 
     const vacas = await db.getAllAsync(`SELECT * FROM historial_vacas WHERE finca = ${id} AND nombre_vaca = ${nombre_vaca} ORDER BY id DESC LIMIT 1`);
 
@@ -149,12 +165,16 @@ export async function ultimaHistoriaVaca(id, nombre_vaca) {
     return vacas;
 }
 
-export async function addHistorialVacas(id, nombre, enfermedades, fecha, sala, nota, tratamiento) {
+export async function addHistorialVacas(id, nombre, enfermedades, fecha, sala, nota, tratamiento, extremidad) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
+    // Crear la tabla si no existe
     await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
-    await db.runAsync('INSERT INTO historial_vacas (nombre_vaca, enfermedades, fecha, finca, sala, nota, tratamiento) VALUES (?, ?, ?, ?, ?, ?, ?)', nombre, enfermedades, fecha, id, sala, nota, tratamiento);
+    // Agregar la nueva columna si no existe
+    await addExtremidadColumnIfNotExists(db);
     
+    // Insertar nuevo registro con la nueva columna
+    await db.runAsync('INSERT INTO historial_vacas (nombre_vaca, enfermedades, fecha, finca, sala, nota, tratamiento, extremidad) VALUES (?, ?, ?, ?, ?, ?, ?, ?)', nombre, enfermedades, fecha, id, sala, nota, tratamiento, extremidad);
 }
 
 export async function addEnfermedades(id, enfermedades) {
@@ -183,6 +203,8 @@ export async function fetchHistorialVacas(id, startDate, endDate) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
     await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    // Agregar la nueva columna si no existe
+    await addExtremidadColumnIfNotExists(db);
     
     const historialVacas = await db.getAllAsync(
         'SELECT * FROM historial_vacas WHERE fecha BETWEEN ? AND ? AND finca = ?',
@@ -190,7 +212,7 @@ export async function fetchHistorialVacas(id, startDate, endDate) {
     );
 
     const listaVacas = historialVacas.map(function (item) {
-        return { nombre_vaca: item.nombre_vaca, enfermedades: item.enfermedades, fecha: item.fecha, sala: item.sala, nota: item.nota, tratamiento: item.tratamiento };
+        return { nombre_vaca: item.nombre_vaca, enfermedades: item.enfermedades, fecha: item.fecha, sala: item.sala, nota: item.nota, extremidad: item.extremidad || 'N/A' , tratamiento: item.tratamiento };
     });
 
     return listaVacas;

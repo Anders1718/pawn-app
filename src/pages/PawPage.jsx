@@ -306,7 +306,7 @@ export default function PawPage() {
             segundaParte = 'venda + oxi'
         }
 
-        const identificadorPata = `${pawn}:${pawnSide} ${firstPartSick} ${segundaParte} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart} ${severity} ${value}`;
+        const identificadorPata = `${firstPartSick} ${segundaParte}-${severity} ${value}`;
         // Clonar el array original
         const nuevoPaws = [...sickList];
         // Modificar la posición deseada
@@ -335,8 +335,10 @@ export default function PawPage() {
 
             const stringUnido = sickList.join(" ");
 
+            const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
+
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento);
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento, extremidad);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
