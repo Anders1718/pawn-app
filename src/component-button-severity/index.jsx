@@ -35,13 +35,8 @@ const ComponentButtonSeverity =
         const [cardSelected, setCardSelected] = React.useState(null);
 
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
-
-            console.log(actualArray)
             // Hacemos una copia del array actual
             const newArray = [...actualArray];
-
-            console.log(newArray);
-
             const arrayPoscion = actualArray[index]
 
             const itemsArray = actualArray[index].indexOf(newValue);
@@ -56,8 +51,6 @@ const ComponentButtonSeverity =
 
             // Modificamos el valor en la posición especificada
             newArray[index] = arrayPoscion;
-
-            console.log('newArray', newArray);
 
             // Actualizamos el estado con el array modificado
             setArray(newArray);
@@ -122,7 +115,7 @@ const ComponentButtonSeverity =
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeveritySave, numberSeveritySave);
                                     }
                                     if (modificarPosicion) {
-                                        modificarPosicion(idPaw - 1, repo.value);
+                                        modificarPosicion(idPaw - 1, '');
                                     }
                                 }}
                             >

@@ -228,6 +228,7 @@ export default function PawPage() {
         setCowName('');
         isTerapeuctic(false);
         setRevision(false)
+        isPreventive(false);
         setPawn('');
         setNote('');
         setSala('');
@@ -245,7 +246,7 @@ export default function PawPage() {
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
         setUltimoTratamiento('');
-
+        
         actualizarVacas();
     };
 
@@ -253,6 +254,7 @@ export default function PawPage() {
         setModalCowAddOpen(false);
         isTerapeuctic(false);
         setRevision(false);
+        isPreventive(false);
         setPawn('');
         setNote('');
         setPawList([false, false, false, false, false, false, false, false]);
