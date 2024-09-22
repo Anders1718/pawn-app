@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, StyleSheet, Text, View, FlatList } from "react-native";
 import Card from "./card/Card";
@@ -12,27 +12,21 @@ const ComponentButtonSeverity =
         setIdPaw,
         modificarPosicion,
         setPawn,
-        setFirstPartSick,
-        setSecondPartSick,
-        modificarPosicionSick,
         setNumberPawnPart,
-        numberPawnPart,
         optionsSelectedSave,
         numberPawnSave,
-        numberSickSave,
-        numberTratSave,
-        numberSeverSave,
         setNumberPawnSave,
-        setNumberSickSave,
-        setNumberTratSave,
-        setNumberSeverSave,
         setNumberSeveritySave,
         numberSeveritySave,
         setSeverity,
-
+        severity
     }) => {
 
         const [cardSelected, setCardSelected] = React.useState(null);
+
+        useEffect(() => {
+            modificarPosicion(idPaw - 1, '');
+        }, [severity])
 
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
             // Hacemos una copia del array actual
@@ -56,8 +50,8 @@ const ComponentButtonSeverity =
             setArray(newArray);
         };
 
-        const toggleString = (str) => {
-            setSecondPartSick((prevState) => {
+        const toggleStringSeverity = (str) => {
+            setSeverity((prevState) => {
                 if (prevState.includes(str)) {
                     return prevState.filter(item => item !== str);
                 } else {
@@ -103,19 +97,9 @@ const ComponentButtonSeverity =
                                     } else {
                                         setCardSelected(index);
                                     }
-                                    if (setSecondPartSick) {
-                                        toggleString(repo.value);
-                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberTratSave, numberTratSave)
-                                    } if (setFirstPartSick) {
-                                        setFirstPartSick(repo.value);
-                                        updateArrayAtPosition(idPaw - 1, repo.number, setNumberSickSave, numberSickSave)
-                                    }
                                     if (setNumberSeveritySave) {
-                                        setSeverity(repo.value);
+                                        toggleStringSeverity(repo.value);
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberSeveritySave, numberSeveritySave);
-                                    }
-                                    if (modificarPosicion) {
-                                        modificarPosicion(idPaw - 1, '');
                                     }
                                 }}
                             >

@@ -50,11 +50,20 @@ const styles = StyleSheet.create({
 const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado) => {
     const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
 
-    const terapeuticosCount = response.filter(item => item.tratamiento === "Terapéutico").length;
-    const preventivosCount = response.filter(item => item.tratamiento === "Preventivo").length;
-    const revisionCount = response.filter(item => item.tratamiento === "Revisión").length;
+    const uniqueVacas = response.reduce((acc, current) => {
+        const x = acc.find(item => item.nombre_vaca === current.nombre_vaca);
+        if (!x) {
+            return acc.concat([current]);
+        } else {
+            return acc;
+        }
+    }, []);
 
-    setResponse(response);
+    const terapeuticosCount = uniqueVacas.filter(item => item.tratamiento === "Terapéutico").length;
+    const preventivosCount = uniqueVacas.filter(item => item.tratamiento === "Preventivo").length;
+    const revisionCount = uniqueVacas.filter(item => item.tratamiento === "Revisión").length;
+
+    setResponse(uniqueVacas);
     setTerapeuticosCount(terapeuticosCount);
     setPreventivosCount(preventivosCount);
     setRevisionCount(revisionCount);
