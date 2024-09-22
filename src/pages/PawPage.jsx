@@ -20,7 +20,7 @@ import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '.
 import Hoof from '../pata-svg/Hoof';
 import HoofSide from "../patas-lado-svg/Hoof";
 import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
-import StyledTextInput from "../components/StyledTextInput";
+import StyledTextInput from "../components/StyledTextInput"; 
 import Enfermedades from "../components/AddEnfermedad";
 import { formatDate } from "../utils/transformDate";
 import ListaVacas from "../components/ListaVacas";
@@ -77,11 +77,11 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between',
     },
     returnMenu: {
-        fontSize: 17,
+        fontSize: 34,
         marginBottom: 15,
         fontWeight: 300,
-        width: 80,
-        color: 'gray'
+        width: 140,
+        color: 'gray',
     },
     cowName: {
         textAlign: 'center',
@@ -496,7 +496,7 @@ export default function PawPage() {
                                                 <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
                                                 <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
                                                 <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <ComponentButtonSeverity title="Severidad" options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
+                                                <ComponentButtonSeverity title="Severidad" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
                                                 <StyledTextInput
                                                     placeholder='Nota (opcional)'
                                                     placeholderTextColor="#c2c0c0"
