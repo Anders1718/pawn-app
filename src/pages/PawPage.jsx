@@ -20,7 +20,7 @@ import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '.
 import Hoof from '../pata-svg/Hoof';
 import HoofSide from "../patas-lado-svg/Hoof";
 import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
-import StyledTextInput from "../components/StyledTextInput"; 
+import StyledTextInput from "../components/StyledTextInput";
 import Enfermedades from "../components/AddEnfermedad";
 import { formatDate } from "../utils/transformDate";
 import ListaVacas from "../components/ListaVacas";
@@ -107,7 +107,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#1e293b',
         padding: 15,
         borderRadius: 15,
-        borderWidth: 10
+        borderWidth: 10,
+        marginBottom: 20
     },
     buttonFree: {
         borderColor: "#334155",
@@ -246,9 +247,13 @@ export default function PawPage() {
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
         setUltimoTratamiento('');
-        
+
         actualizarVacas();
     };
+
+    const clearPartialCowData = async () => {
+        setModalCowAddOpen(false);
+    }
 
     const clearCowData = async () => {
         setModalCowAddOpen(false);
@@ -345,6 +350,27 @@ export default function PawPage() {
             return Alert.alert('Guardado con éxito');
         }
 
+    }
+
+    const onSubmitPartialCow = async () => {
+        var fechaHoy = new Date();
+
+        const diferenciaZonaHoraria = fechaHoy.getTimezoneOffset() * 60000;
+        const fechaLocal = new Date(fechaHoy.getTime() - diferenciaZonaHoraria);
+
+        const notaCompleta = note ? note : 'N/A';
+
+        if (terapeutic || isRevision || preventive) {
+
+            const stringUnido = sickList.join(" ");
+
+            const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
+
+            const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento, extremidad);
+            clearPartialCowData();
+            return Alert.alert('Guardado con éxito');
+        }
     }
 
 
@@ -504,6 +530,12 @@ export default function PawPage() {
                                                     style={styles.textInput}
                                                 />
                                                 <View>
+                                                    <TouchableOpacity
+                                                        style={styles.button}
+                                                        onPress={onSubmitPartialCow}
+                                                    >
+                                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardado parcial</StyledText>
+                                                    </TouchableOpacity>
                                                     <TouchableOpacity
                                                         style={styles.button}
                                                         onPress={handleSubmit}

@@ -3,9 +3,23 @@ import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Svg, { Path, G, Circle } from 'react-native-svg';
 // import paths from './hoofpaths'; // Importa las rutas de los `Path`
 import paths from './hoofpaths3'; // Importa las rutas de los `Path`
+import { useWindowDimensions } from 'react-native';
+
+const useOrientation = () => {
+  const { width, height } = useWindowDimensions();
+  const orientation = width > height ? 'LANDSCAPE' : 'PORTRAIT';
+  return orientation;
+};
+
 const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, modificarPosicion}) => {
   const [selectedZone, setSelectedZone] = useState(null);
   const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
+
+  const orientation = useOrientation();
+
+  const svgDimensions = orientation === 'LANDSCAPE' 
+    ? { width: 500, height: 500 } 
+    : { width: 250, height: 250 };
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -54,7 +68,7 @@ const HoofSide = ({numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, 
 
   return (
     <View style={styles.container}>
-      <Svg height="250" width="250" viewBox="0 0 1024 480">
+      <Svg height={svgDimensions.height} width={svgDimensions.width} viewBox="0 0 1024 480">
         <G>
           {paths.map((pathData, index) => (
             <TouchableWithoutFeedback 

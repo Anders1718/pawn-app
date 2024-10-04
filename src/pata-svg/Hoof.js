@@ -4,6 +4,13 @@ import Svg, { Path, G, Circle } from 'react-native-svg';
 import paths from './hoofpaths';
 // Importa las rutas de los `Path`
 import StyledText from '../components/StyledText';
+import { useWindowDimensions } from 'react-native';
+
+const useOrientation = () => {
+  const { width, height } = useWindowDimensions();
+  const orientation = width > height ? 'LANDSCAPE' : 'PORTRAIT';
+  return orientation;
+};
 
 const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide, modificarPosicion }) => {
   const [selectedZone, setSelectedZone] = useState(null);
@@ -76,6 +83,13 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
     setArray(newArray);
   };
 
+  const orientation = useOrientation();
+
+  const svgDimensions = orientation === 'LANDSCAPE' 
+    ? { width: 500, height: 500 } 
+    : { width: 350, height: 350 };
+
+
   return (
     <View style={styles.container}>
       <View style={styles.hoof}>
@@ -84,7 +98,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
         >
           <StyledText style={{color: colorSide[0]}} fontSize='title'>Lateral</StyledText>
         </TouchableWithoutFeedback>
-        <Svg height="350" width="350" viewBox="0 0 612 792">
+        <Svg height={svgDimensions.height} width={svgDimensions.width} viewBox="0 0 612 792">
           <G>
             {paths.map((pathData, index) => (
               <TouchableWithoutFeedback
