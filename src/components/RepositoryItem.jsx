@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Alert, TouchableWithoutFeedback, Pressable } from "react-native"
+import { View, StyleSheet, Alert, TouchableOpacity, Pressable } from "react-native"
 import StyledText from './StyledText'
 import theme from '../theme'
 import { useNavigate } from 'react-router-native';
@@ -35,11 +35,12 @@ const CardFarmEdit = (props) => {
 
 
 const RepositoryItemHeader = (props) => {
-
     const navigate = useNavigate();
+    let touchStartTime = 0;
 
     const handlePress = () => {
-        if (!props.isLong) {
+        const touchDuration = new Date().getTime() - touchStartTime;
+        if (touchDuration < 500 && !props.isLong) {
             if (props?.isBill) {
                 navigate(`/bill?finca=${props.nombre_finca}&cliente=${props.nombre_propietario}&lugar=${props.ubicacion}&direccion=${props.direccion}&nit=${props.nit}&tel=${props.telefono}&id=${props.id}`);
             } else {
@@ -48,19 +49,25 @@ const RepositoryItemHeader = (props) => {
         }
     };
 
-    const longPress = () => {
+    const handlePressIn = () => {
+        touchStartTime = new Date().getTime();
+    };
+
+    const handleLongPress = () => {
         props.setIsLong(true);
     };
 
     return (
-        <TouchableWithoutFeedback
-            onPressOut={handlePress}
-            onLongPress={longPress}
+        <TouchableOpacity
+            onPress={handlePress}
+            onPressIn={handlePressIn}
+            onLongPress={handleLongPress}
+            delayLongPress={500}
         >
             <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
                 <CardFarm {...props} />
             </View>
-        </TouchableWithoutFeedback>
+        </TouchableOpacity>
     )
 }
 

@@ -86,7 +86,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
   const orientation = useOrientation();
 
   const svgDimensions = orientation === 'LANDSCAPE' 
-    ? { width: 500, height: 500 } 
+    ? { width: 550, height: 550 } 
     : { width: 350, height: 350 };
 
 
@@ -136,14 +136,19 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
+    paddingTop: 20, // Ajusta este valor según necesites
+    height: '15%', // Ajusta este porcentaje para recortar desde abajo
   },
   hoof: {
     justifyContent: 'center',
     alignItems: 'center',
     flexDirection: 'row',
+  },
+  svgWrapper: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   selectedText: {
     marginTop: 0,

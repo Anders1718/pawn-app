@@ -29,6 +29,7 @@
     "react-native": "0.74.3",
     "react-native-element-dropdown": "^2.10.4",
     "react-native-fs": "^2.20.0",
+    "react-native-gesture-handler": "^2.20.0",
     "react-native-pdf-lib": "^1.0.0",
     "react-native-svg": "^15.3.0",
     "react-native-web": "~0.19.6",

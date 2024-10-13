@@ -171,6 +171,8 @@ export default function PawPage() {
     const [modalEnfermedadesOpen, setModalEnfermedadesOpen] = useState(false);
     const [enfermedades, setEnfermedades] = useState([]);
 
+    const [cardSelected, setCardSelected] = useState(null);
+
     const [seleccionarAnimal, setSeleccionarAnimal] = useState('');
 
     const [defaultValue, setDefaultValue] = useState('');
@@ -247,12 +249,31 @@ export default function PawPage() {
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
         setUltimoTratamiento('');
+        setSeverity('');
 
         actualizarVacas();
     };
 
     const clearPartialCowData = async () => {
         setModalCowAddOpen(false);
+        setPawn('');
+        setNote('');
+        setPawList([false, false, false, false, false, false, false, false]);
+        setIdPaw('');
+        setNumberPawnPart([], [], [], []);
+        setNumberSidePawnPart([], [], [], []);
+        setNumberUpPawnPart([], [], [], []);
+        setSickList(['', '', '', '']);
+        setFirstPartSick('');
+        setPawnSide([]);
+        setSecondPartSick([]);
+        setNumberPawnSave([[], [], [], []])
+        setNumberSickSave([[], [], [], []])
+        setNumberTratSave([[], [], [], []]);
+        setNumberSeverSave([[], [], [], []]);
+        setUltimoTratamiento('');
+        setSeverity('');
+        setCardSelected(null);
     }
 
     const clearCowData = async () => {
@@ -276,6 +297,8 @@ export default function PawPage() {
         setNumberTratSave([[], [], [], []]);
         setNumberSeverSave([[], [], [], []]);
         setUltimoTratamiento('');
+        setSeverity('');
+        setCardSelected(null);
     };
 
     const actualizarVacas = async () => {
@@ -511,7 +534,7 @@ export default function PawPage() {
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Libre de enfermedades</StyledText>
                                             </TouchableOpacity>
                                         }
-                                        < ComponentButton title="Pata" options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
+                                        < ComponentButton title="Pata" cardSelected={cardSelected} setCardSelected={setCardSelected} options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
                                         {idPaw &&
                                             <>
                                                 <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />

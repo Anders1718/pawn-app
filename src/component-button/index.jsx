@@ -25,10 +25,12 @@ const ComponentButton =
         setNumberPawnSave,
         setNumberSickSave,
         setNumberTratSave,
-        setNumberSeverSave
+        setNumberSeverSave,
+        cardSelected,
+        setCardSelected
     }) => {
 
-        const [cardSelected, setCardSelected] = React.useState(null);
+        
 
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
             // Hacemos una copia del array actual
