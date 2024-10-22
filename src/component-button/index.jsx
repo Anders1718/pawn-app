@@ -96,10 +96,13 @@ const ComponentButton =
                                         setPawn(repo.label)
                                         setIdPaw(repo.value)
                                     }
+                                    console.log("cardSelected", cardSelected)
+                                    if (!optionsSelectedSave) {
                                     if (cardSelected === index) {
                                         setCardSelected(-1)
                                     } else {
                                         setCardSelected(index);
+                                        }
                                     }
                                     if (setSecondPartSick) {
                                         toggleString(repo.value);
