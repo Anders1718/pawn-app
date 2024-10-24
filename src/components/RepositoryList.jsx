@@ -64,8 +64,9 @@ const RepositoryList = () => {
             <View
                 style={styles.container}
             >
-                <ScrollView
+                <View
                     showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ paddingBottom: 40 }}
                 >
                     <View style={styles.title}>
                         <Link to='/'>
@@ -73,7 +74,7 @@ const RepositoryList = () => {
                         </Link>
                         {!isBill &&
                             <Pressable onPress={() => { setIsOpen(true) }}>
-                                <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>+ Agregar Finca</StyledText>
+                                <StyledText fontWeight='bold' fontSize='subheading' style={styles.addFincaButton}>+ Agregar Finca</StyledText>
                             </Pressable>
                         }
                         <ModalPaw
@@ -81,7 +82,7 @@ const RepositoryList = () => {
                         >
                             <View style={styles.modalView}>
                                 <Pressable onPress={() => setIsOpen(false)}>
-                                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
+                                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.addFincaButton}>x</StyledText>
                                 </Pressable>
                                 <LogInPage actualizarFincas={actualizarFincas} setIsOpen={setIsOpen} />
                             </View>
@@ -94,7 +95,7 @@ const RepositoryList = () => {
                         onChangeText={(text) => searchFilter(text)}
                         style={styles.textInput}
                     />
-                </ScrollView>
+                </View>
                 <FlatList
                     data={filterData}
                     ItemSeparatorComponent={() => <Text> </Text>}
@@ -116,11 +117,20 @@ const RepositoryList = () => {
 const styles = StyleSheet.create({
     container: {
         marginTop: 60,
+        marginBottom: 160
     },
     list: {
         marginTop: 10
     },
     returnButton: {
+        fontSize: 34,
+        marginBottom: 15,
+        fontWeight: 300,
+        width: 140,
+        color: 'gray',
+        marginLeft: 20
+    },
+    addFincaButton: {
         paddingHorizontal: 20
     },
     title: {
@@ -145,7 +155,8 @@ const styles = StyleSheet.create({
         elevation: 5,
     },
     textInput: {
-        marginHorizontal: 20
+        marginHorizontal: 20,
+        marginBottom: 20
     }
 });
 
