@@ -42,8 +42,12 @@ const styles = StyleSheet.create({
         marginHorizontal: 80,
     },
     returnButton: {
-        marginTop: 20,
-        marginHorizontal: 40,
+        fontSize: 34,
+        marginBottom: 15,
+        fontWeight: 300,
+        width: 140,
+        color: 'gray',
+        marginLeft: 20
     }
 })
 

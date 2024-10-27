@@ -97,7 +97,8 @@ const HistorialFinca = () => {
 const styles = StyleSheet.create({
     container: {
         marginTop: 60,
-        height: 790
+        height: 790,
+        paddingBottom: 40
     },
     list: {
         marginTop: 10

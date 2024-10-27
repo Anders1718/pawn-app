@@ -250,6 +250,7 @@ export default function PawPage() {
         setNumberSeverSave([[], [], [], []]);
         setUltimoTratamiento('');
         setSeverity('');
+        setNumberSeveritySave([[], [], [], []]);
 
         actualizarVacas();
     };
@@ -274,6 +275,7 @@ export default function PawPage() {
         setUltimoTratamiento('');
         setSeverity('');
         setCardSelected(null);
+        setNumberSeveritySave([[], [], [], []]);
     }
 
     const clearCowData = async () => {
@@ -299,6 +301,7 @@ export default function PawPage() {
         setUltimoTratamiento('');
         setSeverity('');
         setCardSelected(null);
+        setNumberSeveritySave([[], [], [], []]);
     };
 
     const actualizarVacas = async () => {
