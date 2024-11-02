@@ -10,6 +10,56 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
 
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
 
+    const ids = [];
+
+    const verifyId = (id, n) => {
+        const itemsArray = ids.indexOf(id);
+
+        if (itemsArray === -1) {
+            // Si el elemento no existe en el array, añadirlo
+            ids.push(id);
+            return n
+        }
+        // Si el elemento existe en el array, eliminarlo
+        return '';
+    }
+
+    const count = (id) => {
+        const itemsArray = ids.indexOf(id);
+
+        if (itemsArray === -1) {
+            return true
+        }
+        return false;
+    }
+
+    const convertExtremidad = (value) => {
+        
+        // Si value es undefined o null, retornar el valor original
+        if (!value) return value;
+        
+        // Dividir el string por comas y luego por espacios
+        const secciones = value.split(',');
+        
+        const resultado = secciones.map(seccion => {
+            const palabras = seccion.trim().split(' ');
+            
+            // Procesar cada palabra
+            return palabras.map(palabra => {
+                // Si la palabra contiene números
+                if (/\d/.test(palabra)) {
+                    // Extraer solo los números de esa palabra
+                    return palabra.replace(/[^\d]/g, '');
+                }
+                // Si no contiene números, mantener la palabra original
+                return palabra;
+            }).join(' ');
+        }).join(', '); // Unir las secciones con coma y espacio
+        
+        return resultado;
+    }
+    
+
     let tablaVacas = '';
     uniqueSalas.forEach(sala => {
         tablaVacas += `
@@ -28,20 +78,22 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         `;
         let index = 1; // Inicializar el contador para cada sala
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
+            const countIds = count(vaca.nombre_vaca); 
             tablaVacas += `
             <tr>
-                <td>${index}</td>
+                <td>${verifyId(vaca.nombre_vaca, index)}</td>
                 <td>${vaca.nombre_vaca}</td>
-                <td>${vaca.extremidad}</td>
+                <td>${convertExtremidad(vaca.extremidad)}</td>
                 <td>${vaca.enfermedades}</td>
                 <td>${vaca.nota}</td>
                 <td>${vaca.tratamiento}</td>
             </tr>
             `;
-            index++; // Incrementar el contador después de cada fila
+            if (countIds) index ++;
+                
         });
         tablaVacas += `</table>`;
-    });    
+    });
 
     const html = `
 <html>
@@ -144,7 +196,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
 </body>
 
 </html>
-`;  
+`;
 
     const isFirstRender = useRef(true);
 
@@ -153,7 +205,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
             isFirstRender.current = false;
             return;
         }
-       printToFile();
+        printToFile();
     }, [report]);
 
     const printToFile = async () => {

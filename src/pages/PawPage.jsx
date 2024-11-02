@@ -399,6 +399,32 @@ export default function PawPage() {
         }
     }
 
+    const convertExtremidad = (value) => {
+        
+        // Si value es undefined o null, retornar el valor original
+        if (!value) return value;
+        
+        // Dividir el string por comas y luego por espacios
+        const secciones = value.split(',');
+        
+        const resultado = secciones.map(seccion => {
+            const palabras = seccion.trim().split(' ');
+            
+            // Procesar cada palabra
+            return palabras.map(palabra => {
+                // Si la palabra contiene números
+                if (/\d/.test(palabra)) {
+                    // Extraer solo los números de esa palabra
+                    return palabra.replace(/[^\d]/g, '');
+                }
+                // Si no contiene números, mantener la palabra original
+                return palabra;
+            }).join(' ');
+        }).join(', '); // Unir las secciones con coma y espacio
+        
+        return resultado;
+    }
+
 
     return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => {
         onSubmitCow()
@@ -478,6 +504,8 @@ export default function PawPage() {
                                         <StyledText fontSize='subheading' style={{ fontSize: 22, textAlign: 'center', marginBottom: 10 }}>Última historia</StyledText>
                                         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <StyledText style={{ fontSize: 18 }}>Enfermedad: {ultimoTratamiento[0].enfermedades}</StyledText>
+                                            <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(ultimoTratamiento[0].extremidad)}</StyledText> 
+                                            <StyledText style={{ fontSize: 18 }}>Tratamiento: {ultimoTratamiento[0].tratamiento}</StyledText> 
                                             <StyledText style={{ fontSize: 18 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
                                             <StyledText style={{ fontSize: 18 }}>Nota: {ultimoTratamiento[0].nota}</StyledText>
                                         </View>

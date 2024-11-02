@@ -20,12 +20,40 @@ const RepositoryItemHeader = (props) => {
         return dia + '/' + mes + '/' + año;
     }
 
+    const convertExtremidad = (value) => {
+        
+        // Si value es undefined o null, retornar el valor original
+        if (!value) return value;
+        
+        // Dividir el string por comas y luego por espacios
+        const secciones = value.split(',');
+        
+        const resultado = secciones.map(seccion => {
+            const palabras = seccion.trim().split(' ');
+            
+            // Procesar cada palabra
+            return palabras.map(palabra => {
+                // Si la palabra contiene números
+                if (/\d/.test(palabra)) {
+                    // Extraer solo los números de esa palabra
+                    return palabra.replace(/[^\d]/g, '');
+                }
+                // Si no contiene números, mantener la palabra original
+                return palabra;
+            }).join(' ');
+        }).join(', '); // Unir las secciones con coma y espacio
+        
+        return resultado;
+    }
+
+
+
     return (
         <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
             <View style={styles.card} >
                 <StyledText fontWeight='bold' style={{ fontSize: 22 }}>ID Animal: {props.nombre_vaca}</StyledText>
                 <StyledText style={{ fontSize: 22 }}>Enfermedades: {props.enfermedades}</StyledText>
-                <StyledText style={{ fontSize: 22 }}>Extremidad: {props.extremidad || 'N/A'}</StyledText>
+                <StyledText style={{ fontSize: 22 }}>Extremidad: {convertExtremidad(props.extremidad) || 'N/A'}</StyledText>
                 <StyledText style={styles.language}  >Fecha: {convertirFecha(props.fecha)}</StyledText>
                 {props.nota && <StyledText style={{ fontSize: 22 }}>Nota: {props.nota}</StyledText>}
                 <StyledText style={styles.language} >Sala: {props.sala}</StyledText>

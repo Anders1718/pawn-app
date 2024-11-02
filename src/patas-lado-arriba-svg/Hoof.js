@@ -34,7 +34,7 @@ const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPar
     setColors(newColors);
     setSelectedZone(index);
     if (setNumberPawnPart) {
-      updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
+      updateArrayAtPosition(idPaw - 1, pathData.name, setNumberPawnSave, numberPawnSave)
       toggleString(pathData.name, setNumberPawnPart)
       modificarPosicion(idPaw - 1, pathData.name)
     }

@@ -54,7 +54,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
     setColors(newColors);
     setSelectedZone(index);
     if (setNumberPawnPart) {
-      updateArrayAtPosition(idPaw, pathData.name, setNumberPawnSave, numberPawnSave)
+      updateArrayAtPosition(idPaw - 1, pathData.name, setNumberPawnSave, numberPawnSave)
       toggleString(pathData.name, setNumberPawnPart)
       modificarPosicion(idPaw - 1, pathData.name)
     }
@@ -62,7 +62,6 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
   };
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
-
     const newArray = [...actualArray];
 
     const arrayPoscion = actualArray[index]
