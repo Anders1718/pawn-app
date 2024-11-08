@@ -20,7 +20,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     const [first, setFirst] = useState(false);
     const [second, setSecond] = useState(false);
 
-    const [name, setName] = useState(['Terapéuticos', 'Preventivos', 'Revisión']);
+    const [name, setName] = useState(['Recorte Terapéutico', 'Recorte Preventivo', 'Revisión']);
 
     const [total, setTotal] = useState([]);
 
