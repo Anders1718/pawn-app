@@ -71,7 +71,7 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     setTerapeuticosCount(terapeuticosCount);
     setPreventivosCount(preventivosCount);
     setRevisionCount(revisionCount);
-    setPrices([terapeuticosCount, preventivosCount]);
+    setPrices([terapeuticosCount, revisionCount, preventivosCount]);
     setPricesExist(true);
     setHabilitado(false);
 }
