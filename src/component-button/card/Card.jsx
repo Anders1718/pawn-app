@@ -1,11 +1,13 @@
 import * as React from "react";
 import { Text, StyleSheet, TouchableOpacity } from "react-native";
 
-export default function Card({ onPress, isTurnedOver, children }) {
+export default function Card({ onPress, isTurnedOver, children, handleLongPress }) {
     return (
         <TouchableOpacity
             style={!isTurnedOver ? styles.cardDown : styles.cardUp}
             onPress={onPress}
+            onLongPress={handleLongPress}
+            delayLongPress={500}
         >
             <Text style={styles.text}>{children}</Text>
         </TouchableOpacity>

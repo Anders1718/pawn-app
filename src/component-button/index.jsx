@@ -27,10 +27,11 @@ const ComponentButton =
         setNumberTratSave,
         setNumberSeverSave,
         cardSelected,
-        setCardSelected
+        setCardSelected,
+        handleLongPress,
     }) => {
 
-        
+
 
         const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
             // Hacemos una copia del array actual
@@ -78,15 +79,15 @@ const ComponentButton =
                         ItemSeparatorComponent={() => <Text> </Text>}
                         renderItem={({ item: repo, index }) => {
                             let isTurnedOver = false;
-                            const numberSearch = index + 1;
                             if (optionsSelectedSave) {
-                                isTurnedOver = optionsSelectedSave[idPaw - 1].indexOf(numberSearch) !== -1 ? true : false;
+                                isTurnedOver = optionsSelectedSave[idPaw - 1].indexOf(repo.number) !== -1 ? true : false;
                             } else {
                                 isTurnedOver = cardSelected === index;
                             }
                             return (<Card
                                 key={index}
                                 isTurnedOver={isTurnedOver}
+                                handleLongPress={() => handleLongPress({...repo})}
                                 onPress={() => {
                                     if (setNumberPawnPart) {
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberPawnSave, numberPawnSave)
@@ -96,7 +97,6 @@ const ComponentButton =
                                         setPawn(repo.label)
                                         setIdPaw(repo.value)
                                     }
-                                    console.log("cardSelected", cardSelected)
                                     if (!optionsSelectedSave) {
                                     if (cardSelected === index) {
                                         setCardSelected(-1)

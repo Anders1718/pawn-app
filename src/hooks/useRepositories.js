@@ -9,7 +9,7 @@ async function addExtremidadColumnIfNotExists(db) {
     if (!extremidadColumnExists) {
       await db.execAsync('ALTER TABLE historial_vacas ADD COLUMN extremidad VARCHAR(255)');
     }
-  }
+}
 
 export async function useRepositories() {
 
@@ -183,6 +183,22 @@ export async function addEnfermedades(id, enfermedades) {
 
     await db.runAsync('CREATE TABLE IF NOT EXISTS lista_enfermedades (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_enfermedad VARCHAR(255) NOT NULL, id_enfermedad VARCHAR(255) NOT NULL)');
     await db.runAsync('INSERT INTO lista_enfermedades (nombre_enfermedad, id_enfermedad) VALUES (?, ?)', enfermedades, id);
+}
+
+export async function updateEnfermedades(values, idEditPawn) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.runAsync('CREATE TABLE IF NOT EXISTS lista_enfermedades (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_enfermedad VARCHAR(255) NOT NULL, id_enfermedad VARCHAR(255) NOT NULL)');
+    await db.runAsync('UPDATE lista_enfermedades SET nombre_enfermedad = ?, id_enfermedad = ? WHERE id = ?', values.nombre, values.id, idEditPawn);
+}
+
+export async function deleteEnfermedad(id) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.runAsync('CREATE TABLE IF NOT EXISTS lista_enfermedades (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_enfermedad VARCHAR(255) NOT NULL, id_enfermedad VARCHAR(255) NOT NULL)');
+    await db.runAsync('DELETE FROM lista_enfermedades WHERE id = ?', id);
 }
 
 export async function fetchEnfermedades() {

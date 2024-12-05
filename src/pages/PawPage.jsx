@@ -22,6 +22,7 @@ import HoofSide from "../patas-lado-svg/Hoof";
 import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
 import StyledTextInput from "../components/StyledTextInput";
 import Enfermedades from "../components/AddEnfermedad";
+import EditEnfermedad from "../components/EditEnfermedad";
 import { formatDate } from "../utils/transformDate";
 import ListaVacas from "../components/ListaVacas";
 
@@ -169,6 +170,7 @@ export default function PawPage() {
     const [note, setNote] = useState('');
     const [sala, setSala] = useState('');
     const [modalEnfermedadesOpen, setModalEnfermedadesOpen] = useState(false);
+    const [modalEditSick, setModalEditSick] = useState(false);
     const [enfermedades, setEnfermedades] = useState([]);
 
     const [cardSelected, setCardSelected] = useState(null);
@@ -185,6 +187,11 @@ export default function PawPage() {
     const [numberSidePawnPart, setNumberSidePawnPart] = useState([], [], [], []);
     const [numberUpPawnPart, setNumberUpPawnPart] = useState([], [], [], []);
 
+
+    // Modal edit pwan
+    const [idEditPawn, setIdEditPawn] = useState('');
+    const [valueEditPawn, setValueEditPawn] = useState('');
+    const [namePawn, setNamePawn] = useState('');
 
     //Sicks
     // Crear un nuevo string con las partes que si tengan texto
@@ -400,16 +407,16 @@ export default function PawPage() {
     }
 
     const convertExtremidad = (value) => {
-        
+
         // Si value es undefined o null, retornar el valor original
         if (!value) return value;
-        
+
         // Dividir el string por comas y luego por espacios
         const secciones = value.split(',');
-        
+
         const resultado = secciones.map(seccion => {
             const palabras = seccion.trim().split(' ');
-            
+
             // Procesar cada palabra
             return palabras.map(palabra => {
                 // Si la palabra contiene números
@@ -421,9 +428,18 @@ export default function PawPage() {
                 return palabra;
             }).join(' ');
         }).join(', '); // Unir las secciones con coma y espacio
-        
+
         return resultado;
     }
+
+    let touchStartTime = 0;
+
+    const handleLongPress = ({number, value, label}) => {
+        setIdEditPawn(number)
+        setValueEditPawn(value)
+        setNamePawn(label)
+        setModalEditSick(true);
+    };
 
 
     return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => {
@@ -457,7 +473,7 @@ export default function PawPage() {
                                     setIsEdit(true);
                                 }}
                             >
-                                <StyledText style={styles.farmName}>Añadir vaca +</StyledText>
+                                <StyledText style={styles.farmName}>Añadir animal +</StyledText>
                             </TouchableOpacity>
                         </View>
                         <Dropdown
@@ -497,6 +513,20 @@ export default function PawPage() {
                                 />
                             </View>
                         </ModalPaw>
+                        <ModalPaw isOpen={modalEditSick}>
+                            <View style={styles.modalView}>
+                                <Pressable onPress={() => { setModalEditSick(false) }}>
+                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
+                                </Pressable>
+                                <EditEnfermedad
+                                    actualizarEnfermedades={actualizarEnfermedades}
+                                    setModalEditSick={setModalEditSick}
+                                    idEditPawn={idEditPawn}
+                                    valueEditPawn={valueEditPawn}
+                                    namePawn={namePawn}
+                                />
+                            </View>
+                        </ModalPaw>
                         {iscowSelected &&
                             <>
                                 {ultimoTratamiento && ultimoTratamiento.length > 0 && (
@@ -504,8 +534,8 @@ export default function PawPage() {
                                         <StyledText fontSize='subheading' style={{ fontSize: 22, textAlign: 'center', marginBottom: 10 }}>Última historia</StyledText>
                                         <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
                                             <StyledText style={{ fontSize: 18 }}>Enfermedad: {ultimoTratamiento[0].enfermedades}</StyledText>
-                                            <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(ultimoTratamiento[0].extremidad)}</StyledText> 
-                                            <StyledText style={{ fontSize: 18 }}>Tratamiento: {ultimoTratamiento[0].tratamiento}</StyledText> 
+                                            <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(ultimoTratamiento[0].extremidad)}</StyledText>
+                                            <StyledText style={{ fontSize: 18 }}>Tratamiento: {ultimoTratamiento[0].tratamiento}</StyledText>
                                             <StyledText style={{ fontSize: 18 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
                                             <StyledText style={{ fontSize: 18 }}>Nota: {ultimoTratamiento[0].nota}</StyledText>
                                         </View>
@@ -573,7 +603,7 @@ export default function PawPage() {
                                                     <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
                                                     <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
                                                 </View>
-                                                <ComponentButton title="Enfermedades" options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
+                                                <ComponentButton title="Enfermedades"  handleLongPress={handleLongPress} options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
                                                 <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
                                                 <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
                                                 <ComponentButtonSeverity title="Severidad" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />

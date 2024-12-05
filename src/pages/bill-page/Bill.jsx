@@ -4,7 +4,8 @@ import { StyleSheet, View, ScrollView, TouchableOpacity, KeyboardAvoidingView, P
 import StyledTextInput from '../../components/StyledTextInput'
 import StyledText from '../../components/StyledText'
 import { loginValidationSchema } from '../../validationSchemas/login'
-import CreatePDF from '../../components/PDFGeneerate'
+import CreatePDF from '../../components/PDFGeneerate';
+import CreatereportPDF from '../../components/PDFBillReport';
 import { useLocation } from 'react-router-native';
 import queryString from 'query-string';
 import { Link } from 'react-router-native';
@@ -51,9 +52,9 @@ const styles = StyleSheet.create({
     }
 })
 
-const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado) => {
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport) => {
     const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
-
+    setReport(response);
     const uniqueVacas = response.reduce((acc, current) => {
         const x = acc.find(item => item.nombre_vaca === current.nombre_vaca);
         if (!x) {
@@ -66,7 +67,7 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     const terapeuticosCount = uniqueVacas.filter(item => item.tratamiento === "Terapéutico").length;
     const preventivosCount = uniqueVacas.filter(item => item.tratamiento === "Preventivo").length;
     const revisionCount = uniqueVacas.filter(item => item.tratamiento === "Revisión").length;
-
+    
     setResponse(uniqueVacas);
     setTerapeuticosCount(terapeuticosCount);
     setPreventivosCount(preventivosCount);
@@ -114,11 +115,12 @@ export default function BillPage() {
     const [habilitado, setHabilitado] = useState(true);
 
     const [pricesExist, setPricesExist] = useState(false);
-
+    
     const [prices, setPrices] = useState([terapeuticosCount, preventivosCount, revisionCount]);
-
+    
     const [response, setResponse] = useState([]);
-
+    
+    const [report, setReport] = useState([]);
     const [startDate, setStartDate] = useState(() => {
         const date = new Date();
         date.setHours(0, 0, 0, 0);
@@ -141,6 +143,7 @@ export default function BillPage() {
             const location = useLocation();
             const queryParams = queryString.parse(location.search);
             const { id, finca, cliente, lugar, nit, tel, direccion } = queryParams;
+
 
             return (
                 <KeyboardAvoidingView
@@ -168,7 +171,7 @@ export default function BillPage() {
 
                             <TouchableOpacity
                                 style={styles.button}
-                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setHabilitado)}
+                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport)}
                             >
                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
                             </TouchableOpacity>
@@ -189,18 +192,33 @@ export default function BillPage() {
                         )}
 
                         {!buttonContinue && (
-                            <CreatePDF
-                                finca={finca}
-                                direccion={direccion}
-                                cliente={cliente}
-                                lugar={lugar}
-                                totalCuenta={totalCuenta}
-                                listaVacas={listaVacas}
-                                fechaHoyFormateada={fechaHoyFormateada}
-                                nit={nit}
-                                tel={tel}
-                                sumaTotal={sumaTotal}
-                            />
+                            <>
+                                <CreatePDF
+                                    finca={finca}
+                                    direccion={direccion}
+                                    cliente={cliente}
+                                    lugar={lugar}
+                                    totalCuenta={totalCuenta}
+                                    listaVacas={listaVacas}
+                                    fechaHoyFormateada={fechaHoyFormateada}
+                                    nit={nit}
+                                    tel={tel}
+                                    sumaTotal={sumaTotal}
+                                />
+                                <CreatereportPDF
+                                    finca={finca}
+                                    direccion={direccion}
+                                    cliente={cliente}
+                                    lugar={lugar}
+                                    totalCuenta={totalCuenta}
+                                    listaVacas={listaVacas}
+                                    fechaHoyFormateada={fechaHoyFormateada}
+                                    nit={nit}
+                                    tel={tel}
+                                    sumaTotal={sumaTotal}
+                                    report={report}
+                                />
+                            </>
                         )}
                     </ScrollView>
                 </KeyboardAvoidingView>
