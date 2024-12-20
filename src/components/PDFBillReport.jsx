@@ -65,6 +65,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             ${sala}
         </h1>
         <table class="animal-table">
+        <thead>
             <tr>
                 <th></th>
                 <th>ID-Animal</th>
@@ -73,6 +74,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                 <th>Observación</th>
                 <th>Tratamiento</th>
             </tr>
+        </thead>
         `;
         let index = 1; // Inicializar el contador para cada sala
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
@@ -113,8 +115,12 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     <meta name="viewport"
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <style>
-    @page {
-            margin: 40pt; /* Márgenes de la página */
+        @page {
+            size: A4;
+            margin: 2cm;
+        }
+        body {
+            padding: 2cm;
         }
         .animal-table {
             margin-top: 50px;
@@ -133,11 +139,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             width: 100%;
             border-collapse: collapse;
             font-family: Helvetica Neue;
-            page-break-inside: avoid;
         }
         th,td {
             text-align: center;
-            page-break-inside: avoid;
         }
         th {
             background-color: #f2f2f2;
@@ -158,10 +162,16 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         .info-table .bold {
             font-weight: bold;
         }
+        thead {
+            display: table-header-group;
+        }
+        tr {
+            page-break-inside: avoid;
+        }
     </style>
 </head>
 
-<body style=" margin: 40px;">
+<body>
    <h2 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; ">
    Fecha: ${fechaHoyFormateada}
    </h2>
@@ -222,10 +232,16 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         </tr>
     </table>
 
-     <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-        INFORME
-    </h1>
+    <div style="page-break-before: always;">
+        <div style="height: 50px;"></div>
+        <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
+            INFORME
+        </h1>
+    </div>
+
+        <tbody>
         ${tablaVacas}
+        </tbody>
 
     <table class="paws-table">
         <tr>

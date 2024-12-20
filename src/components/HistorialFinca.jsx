@@ -56,8 +56,8 @@ const HistorialFinca = () => {
     return (
         <View style={styles.container}>
             <View style={styles.title}>
-                <Link to='/home'>
-                    <StyledText fontWeight='bold' color='secondary' fontSize='subheading' >⬅ Volver</StyledText>
+                <Link to='/home' style={styles.returnMenu}>
+                    <StyledText style={styles.returnMenu} fontWeight='bold' color='secondary' fontSize='subheading' >⬅ Volver</StyledText>
                 </Link>
             </View>
             <ModalPaw
@@ -140,6 +140,13 @@ const styles = StyleSheet.create({
         borderWidth: 10,
         marginBottom: 20,
         marginHorizontal: 20,
+    },
+    returnMenu: {
+        fontSize: 34,
+        marginBottom: 15,
+        fontWeight: 300,
+        width: 140,
+        color: 'gray',
     },
 });
 
