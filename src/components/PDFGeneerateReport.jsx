@@ -77,7 +77,25 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
             </tr>
         `;
         let index = 1; // Inicializar el contador para cada sala
+        let elementCount = 0; // Contador para el control de página
+
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
+            if (elementCount > 0 && elementCount % 23 === 0) {
+                tablaVacas += `
+                </table>
+                <div style="page-break-after: always;"></div>
+                <table class="animal-table">
+                    <tr>
+                        <th></th>
+                        <th>ID-Animal</th>
+                        <th>Extremidad</th>
+                        <th>Descripción</th>
+                        <th>Observación</th>
+                        <th>Tratamiento</th>
+                    </tr>
+                `;
+            }
+
             const countIds = count(vaca.nombre_vaca); 
             tablaVacas += `
             <tr>
@@ -89,8 +107,8 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
                 <td>${vaca.tratamiento}</td>
             </tr>
             `;
-            if (countIds) index ++;
-                
+            if (countIds) index++;
+            elementCount++;
         });
         tablaVacas += `</table>`;
     });

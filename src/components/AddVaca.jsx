@@ -6,9 +6,11 @@ import StyledText from './StyledText'
 import { cowValidation } from '../validationSchemas/login'
 import { addVaca } from '../hooks/useRepositories'
 
-const initialValues = {
-    nombre: '',
-    sala: '',
+const initialValues = (salaReport) => {
+    return {
+        nombre: '',
+        sala: salaReport,
+    }
 }
 
 const styles = StyleSheet.create({
@@ -24,11 +26,12 @@ const styles = StyleSheet.create({
     }
 })
 
-const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal) => {
+const addFincas = async (values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal, setSalaReport) => {
     await addVaca(id, values.id, values.sala ? values.sala : finca);
-    setSeleccionarAnimal({nombre: values.id, sala: values.sala ? values.sala : finca});
+    setSeleccionarAnimal({ nombre: values.id, sala: values.sala ? values.sala : finca });
     actualizarVacas();
     setModalCowAddOpen(false)
+    setSalaReport(values.sala ? values.sala : '');
 };
 
 const FormikInputValue = ({ name, onSubmitEditing, ...props }) => {
@@ -48,13 +51,13 @@ const FormikInputValue = ({ name, onSubmitEditing, ...props }) => {
     )
 }
 
-export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, finca, setSeleccionarAnimal}) {
+export default function CowValidation({ actualizarVacas, id, setModalCowAddOpen, finca, setSeleccionarAnimal, salaReport, setSalaReport }) {
     return (
-        <Formik 
-            validationSchema={cowValidation} 
-            initialValues={initialValues} 
+        <Formik
+            validationSchema={cowValidation}
+            initialValues={initialValues(salaReport)}
             onSubmit={values => {
-                addFincas(values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal)
+                addFincas(values, id, actualizarVacas, setModalCowAddOpen, finca, setSeleccionarAnimal, setSalaReport)
             }}
         >
             {({ handleSubmit, isValid }) => (
@@ -77,9 +80,9 @@ export default function CowValidation({actualizarVacas, id, setModalCowAddOpen, 
                             if (isValid) handleSubmit()
                         }}
                     />
-                    <Button 
-                        onPress={handleSubmit} 
-                        title='Guardar' 
+                    <Button
+                        onPress={handleSubmit}
+                        title='Guardar'
                     />
                 </View>
             )}

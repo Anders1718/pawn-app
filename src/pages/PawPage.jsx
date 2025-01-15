@@ -211,6 +211,8 @@ export default function PawPage() {
     const [numberSeverSave, setNumberSeverSave] = useState([[], [], [], []])
     const [numberSeveritySave, setNumberSeveritySave] = useState([[], [], [], []])
 
+    const [salaReport, setSalaReport] = useState('');
+
     const location = useLocation();
     // Parsea la cadena de consulta para obtener los parámetros
     const queryParams = queryString.parse(location.search);
@@ -489,7 +491,7 @@ export default function PawPage() {
                                 }}>
                                     <StyledText style={{ fontSize: 20 }}> X </StyledText>
                                 </Pressable>
-                                <CowValidation finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                                <CowValidation salaReport={salaReport} setSalaReport={setSalaReport} finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
                             </View>
                         </ModalPaw>
                         <ModalPaw isOpen={isEdit}>
