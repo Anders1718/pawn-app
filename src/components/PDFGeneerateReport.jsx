@@ -80,7 +80,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         let elementCount = 0; // Contador para el control de página
 
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
-            if (elementCount > 0 && elementCount % 23 === 0) {
+            if (elementCount > 0 && elementCount % 27 === 0) {
                 tablaVacas += `
                 </table>
                 <div style="page-break-after: always;"></div>
