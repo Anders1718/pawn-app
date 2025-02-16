@@ -11,7 +11,7 @@ import queryString from 'query-string';
 import { Link } from 'react-router-native';
 import Precio from './components/precio'
 import DateRangePicker from '../../components/DatePicker'
-import { fetchHistorialVacas } from '../../hooks/useRepositories';
+import { fetchHistorialVacas, fetchUsers } from '../../hooks/useRepositories';
 
 const initialValues = {
     email: '',
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     }
 })
 
-const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport) => {
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport, setUsers) => {
     const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
     setReport(response);
     const uniqueVacas = response.reduce((acc, current) => {
@@ -67,6 +67,9 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     const terapeuticosCount = uniqueVacas.filter(item => item.tratamiento === "Terapéutico").length;
     const preventivosCount = uniqueVacas.filter(item => item.tratamiento === "Preventivo").length;
     const revisionCount = uniqueVacas.filter(item => item.tratamiento === "Revisión").length;
+
+    const users = await fetchUsers();
+    setUsers(users[0]);
     
     setResponse(uniqueVacas);
     setTerapeuticosCount(terapeuticosCount);
@@ -111,6 +114,8 @@ export default function BillPage() {
     const [terapeuticosCount, setTerapeuticosCount] = useState(0);
     const [preventivosCount, setPreventivosCount] = useState(0);
     const [revisionCount, setRevisionCount] = useState(0);
+
+    const [users, setUsers] = useState([]);
 
     const [habilitado, setHabilitado] = useState(true);
 
@@ -171,7 +176,7 @@ export default function BillPage() {
 
                             <TouchableOpacity
                                 style={styles.button}
-                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport)}
+                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport, setUsers)}
                             >
                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
                             </TouchableOpacity>
@@ -204,6 +209,7 @@ export default function BillPage() {
                                     nit={nit}
                                     tel={tel}
                                     sumaTotal={sumaTotal}
+                                    users={users}
                                 />
                                 <CreatereportPDF
                                     finca={finca}
@@ -217,6 +223,7 @@ export default function BillPage() {
                                     tel={tel}
                                     sumaTotal={sumaTotal}
                                     report={report}
+                                    users={users}
                                 />
                             </>
                         )}

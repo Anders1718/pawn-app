@@ -6,7 +6,7 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report }) {
+export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
     const ids = [];
 
@@ -213,13 +213,13 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         DEBE A
     </h1>
     <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        Alejandro Cardona Tobón
+        ${users.nombre} ${users.apellido}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        CC: 1041326066 Tel 3016546869
+        CC: ${users.documento} Tel ${users.telefono}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        Medellín Antioquia
+        ${users.direccion}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
         POR CONCEPTO DE
@@ -241,10 +241,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     </table>
     <table class="info-table">
         <tr>
-            <td class="right-column">Favor consignar a la cuenta de ahorros Bancolombia</td>
+            <td class="right-column">Favor consignar a la cuenta ${users.tipoCuenta} ${users.banco}</td>
         </tr>
         <tr>
-            <td class="right-column">xxxxxxxxx</td>
+            <td class="right-column">${users.numeroCuenta}</td>
         </tr>
     </table>
 
@@ -253,6 +253,20 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
             INFORME
         </h1>
+        <table class="info-table">
+        <tr>
+            <td class="left-column bold">Cliente:</td>
+            <td class="left-column">${cliente}</td>
+            <td class="right-column bold">Finca:</td>
+            <td class="right-column">${finca}</td>
+        </tr>
+        <tr>
+            <td class="left-column bold">Ubicación:</td>
+            <td class="left-column">${lugar}</td>
+            <td class="right-column bold">Fecha:</td>
+            <td class="right-column">${fechaHoyFormateada}</td>
+        </tr>
+    </table>
     </div>
 
         <tbody>
@@ -272,13 +286,13 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
     <table class="info-table">
         <tr>
-            <td class="left-column">Alejandro Cardona Tobón </td>
+            <td class="left-column">${users.nombre} ${users.apellido} </td>
         </tr>
         <tr>
-            <td class="left-column">Médico Veterinario Zootecnista </td>
+            <td class="left-column">${users.profesion} </td>
         </tr>
         <tr>
-            <td class="left-column">Universidad CES </td>
+            <td class="left-column">${users.universidad} </td>
         </tr>
     </table>
 </body>

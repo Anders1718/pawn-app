@@ -7,6 +7,7 @@ import PawPage from "../pages/PawPage.jsx";
 import HistorialFinca from "./HistorialFinca.jsx";
 import ItemMenu from "./ItemsMenu.jsx";
 import BillPage from "../pages/bill-page/Bill.jsx";
+import User from "../pages/User.jsx";
 
 const Main = () => {
     return (
@@ -19,6 +20,7 @@ const Main = () => {
                 <Route path='/historial' element={<HistorialFinca/>} />
                 <Route path='/bill' element={<BillPage/>} />
                 <Route path='*' element={<Navigate to='/' />} />
+                <Route path='/user' element={<User/>} />
             </Routes>
         </View>
     )

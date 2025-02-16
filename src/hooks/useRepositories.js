@@ -233,3 +233,36 @@ export async function fetchHistorialVacas(id, startDate, endDate) {
 
     return listaVacas;
 }
+
+export async function fetchUsers() {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.getAllAsync('CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(255) NOT NULL, telefono VARCHAR(255) NOT NULL, documento VARCHAR(255) NOT NULL, direccion VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, profesion VARCHAR(255) NOT NULL, universidad VARCHAR(255) NOT NULL, banco VARCHAR(255) NOT NULL, tipoCuenta VARCHAR(255) NOT NULL, numeroCuenta VARCHAR(255) NOT NULL)');
+
+    const users = await db.getAllAsync('SELECT * FROM user');
+
+    return users;
+}
+
+export async function addUser(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.getAllAsync('CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(255) NOT NULL, telefono VARCHAR(255) NOT NULL, documento VARCHAR(255) NOT NULL, direccion VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, profesion VARCHAR(255) NOT NULL, universidad VARCHAR(255) NOT NULL, banco VARCHAR(255) NOT NULL, tipoCuenta VARCHAR(255) NOT NULL, numeroCuenta VARCHAR(255) NOT NULL)');
+    await db.runAsync('INSERT INTO user (nombre, apellido, profesion, universidad, banco, tipoCuenta, numeroCuenta, telefono, documento, direccion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion);
+}
+
+export async function deleteUser(id) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.runAsync('DELETE FROM user WHERE id = ?', id);
+}
+
+export async function editUser(values) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.runAsync('UPDATE user SET nombre = ?, apellido = ?, profesion = ?, universidad = ?, banco = ?, tipoCuenta = ?, numeroCuenta = ?, telefono = ?, documento = ?, direccion = ? WHERE id = ?', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion, values.id);
+}

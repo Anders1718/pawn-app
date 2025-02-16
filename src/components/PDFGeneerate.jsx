@@ -6,7 +6,7 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal }) {
+export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, users }) {
 
     let tablaCuenta = '';
     totalCuenta.forEach((cuenta, index) => {
@@ -101,13 +101,13 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         DEBE A
     </h1>
     <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        Alejandro Cardona Tobón
+        ${users.nombre} ${users.apellido}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        CC: 1041326066 Tel 3016546869
+        CC: ${users.documento} Tel ${users.telefono}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center;">
-        Medellín Antioquia
+        ${users.direccion}
     </h1>
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
         POR CONCEPTO DE
@@ -129,15 +129,15 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
     </table>
     <table class="info-table">
         <tr>
-            <td class="left-column">Alejandro Cardona Tobón </td>
-            <td class="right-column">Favor consignar a la cuenta de ahorros Bancolombia</td>
+            <td class="left-column">${users.nombre} ${users.apellido} </td>
+            <td class="right-column">Favor consignar a la cuenta ${users.tipoCuenta} ${users.banco}</td>
         </tr>
         <tr>
-            <td class="left-column">Médico Veterinario Zootecnista </td>
-            <td class="right-column">xxxxxxxxx</td>
+            <td class="left-column">${users.profesion} </td>
+            <td class="right-column">${users.numeroCuenta}</td>
         </tr>
         <tr>
-            <td class="left-column">Universidad CES </td>
+            <td class="left-column">${users.universidad} </td>
         </tr>
     </table>
 </body>
