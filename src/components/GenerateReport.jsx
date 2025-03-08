@@ -1,10 +1,10 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Formik, useField } from 'formik'
 import { Button, StyleSheet, TextInput, View, TouchableOpacity } from 'react-native'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
 import { reportValidation } from '../validationSchemas/login'
-import { fetchHistorialVacas } from '../hooks/useRepositories'
+import { fetchHistorialVacas, fetchUsers } from '../hooks/useRepositories'
 import DateRangePicker from './DatePicker'
 import GenerateReport from './PDFGeneerateReport'
 
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     },
 })
 
-const obtenerHistorialVacas = async (values, id, startDate, endDate, setReport, setIsOpen) => {
+const obtenerHistorialVacas = async (values, id, startDate, endDate, setReport, setIsOpen, setUsers) => {
     const report = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
     setReport(report);
 };
@@ -85,7 +85,7 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
         return date;
     });
     const [report, setReport] = useState([]);
-
+    const [users, setUsers] = useState([]);
     const formatDate = (date) => {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -95,8 +95,17 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
 
     const fechaHoyFormateada = formatDate(new Date());
 
+    const fetchUsersData = async () => {
+        const users = await fetchUsers();
+        setUsers(users[0]);
+    }
+
+    useEffect(() => {
+        fetchUsersData();
+    }, []);
+
     return <Formik validationSchema={reportValidation} initialValues={initialValues} onSubmit={values => {
-        obtenerHistorialVacas(values, id, startDate, endDate, setReport, setIsOpen)
+        obtenerHistorialVacas(values, id, startDate, endDate, setReport, setIsOpen, setUsers)
     }}>
         {({ handleChange, handleSubmit, values }) => {
 
@@ -135,6 +144,7 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             lugar={lugar}
                             fechaHoyFormateada={fechaHoyFormateada}
                             setIsOpen={setIsOpen}
+                            users={users}
                         />
                         </>
                     )}

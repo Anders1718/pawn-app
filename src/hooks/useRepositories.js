@@ -11,6 +11,15 @@ async function addExtremidadColumnIfNotExists(db) {
     }
 }
 
+async function addLogoColumnIfNotExists(db) {
+    const tableInfo = await db.getAllAsync("PRAGMA table_info(user)");
+    const logoColumnExists = tableInfo.some(column => column.name === 'logo');
+
+    if (!logoColumnExists) {
+        await db.runAsync("ALTER TABLE user ADD COLUMN logo TEXT");
+    }
+}
+
 export async function useRepositories() {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
@@ -248,9 +257,12 @@ export async function fetchUsers() {
 export async function addUser(values) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
+    
+    // Add logo column if it doesn't exist
+    await addLogoColumnIfNotExists(db);
 
-    await db.getAllAsync('CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(255) NOT NULL, telefono VARCHAR(255) NOT NULL, documento VARCHAR(255) NOT NULL, direccion VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, profesion VARCHAR(255) NOT NULL, universidad VARCHAR(255) NOT NULL, banco VARCHAR(255) NOT NULL, tipoCuenta VARCHAR(255) NOT NULL, numeroCuenta VARCHAR(255) NOT NULL)');
-    await db.runAsync('INSERT INTO user (nombre, apellido, profesion, universidad, banco, tipoCuenta, numeroCuenta, telefono, documento, direccion) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion);
+    await db.getAllAsync('CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(255) NOT NULL, telefono VARCHAR(255) NOT NULL, documento VARCHAR(255) NOT NULL, direccion VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, profesion VARCHAR(255) NOT NULL, universidad VARCHAR(255) NOT NULL, banco VARCHAR(255) NOT NULL, tipoCuenta VARCHAR(255) NOT NULL, numeroCuenta VARCHAR(255) NOT NULL, logo TEXT)');
+    await db.runAsync('INSERT INTO user (nombre, apellido, profesion, universidad, banco, tipoCuenta, numeroCuenta, telefono, documento, direccion, logo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion, values.logo || null);
 }
 
 export async function deleteUser(id) {
@@ -263,6 +275,9 @@ export async function deleteUser(id) {
 export async function editUser(values) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);
+    
+    // Add logo column if it doesn't exist
+    await addLogoColumnIfNotExists(db);
 
-    await db.runAsync('UPDATE user SET nombre = ?, apellido = ?, profesion = ?, universidad = ?, banco = ?, tipoCuenta = ?, numeroCuenta = ?, telefono = ?, documento = ?, direccion = ? WHERE id = ?', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion, values.id);
+    await db.runAsync('UPDATE user SET nombre = ?, apellido = ?, profesion = ?, universidad = ?, banco = ?, tipoCuenta = ?, numeroCuenta = ?, telefono = ?, documento = ?, direccion = ?, logo = ? WHERE id = ?', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion, values.logo || null, values.id);
 }

@@ -6,8 +6,7 @@ import { shareAsync } from 'expo-sharing';
 
 
 
-export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormateada, report, setIsOpen }) {
-
+export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormateada, report, setIsOpen, users }) {
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
 
     const ids = [];
@@ -80,20 +79,39 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         let elementCount = 0; // Contador para el control de página
 
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
-            if (elementCount > 0 && elementCount % 27 === 0) {
-                tablaVacas += `
-                </table>
-                <div style="page-break-after: always;"></div>
-                <table class="animal-table">
-                    <tr>
-                        <th></th>
-                        <th>ID-Animal</th>
-                        <th>Extremidad</th>
-                        <th>Descripción</th>
-                        <th>Observación</th>
-                        <th>Tratamiento</th>
-                    </tr>
-                `;
+            if (elementCount > 0) {
+                // Primera página: 22 elementos
+                if (elementCount === 22) {
+                    tablaVacas += `
+                    </table>
+                    <div style="page-break-after: always;"></div>
+                    <table class="animal-table">
+                        <tr>
+                            <th></th>
+                            <th>ID-Animal</th>
+                            <th>Extremidad</th>
+                            <th>Descripción</th>
+                            <th>Observación</th>
+                            <th>Tratamiento</th>
+                        </tr>
+                    `;
+                }
+                // Páginas intermedias: 25 elementos por página
+                else if (elementCount > 22 && (elementCount - 22) % 25 === 0) {
+                    tablaVacas += `
+                    </table>
+                    <div style="page-break-after: always;"></div>
+                    <table class="animal-table">
+                        <tr>
+                            <th></th>
+                            <th>ID-Animal</th>
+                            <th>Extremidad</th>
+                            <th>Descripción</th>
+                            <th>Observación</th>
+                            <th>Tratamiento</th>
+                        </tr>
+                    `;
+                }
             }
 
             const countIds = count(vaca.nombre_vaca); 
@@ -165,25 +183,85 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         .info-table .bold {
             font-weight: bold;
         }
+
+        .logo-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            text-align: right;
+        }
+
+        .logo-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 5px;
+            object-fit: cover;
+        }
+        
+        .header-container {
+            position: relative;
+            height: 80px; /* Para dar espacio al logo */
+            margin-bottom: 20px;
+        }
+        
+        /* Estilos para hacer que los campos de información del cliente estén más juntos */
+        .client-info td {
+            padding: 0 3px; /* Reduce aún más el padding entre celdas */
+        }
+        
+        .client-info .label {
+            width: 1%; /* Hace que la celda de la etiqueta sea lo más estrecha posible */
+            white-space: nowrap; /* Evita que el texto se rompa */
+            padding-right: 0; /* Elimina el padding derecho */
+        }
+        
+        .client-info .value {
+            padding-right: 15px; /* Reduce el espacio a la derecha para separar los pares de campos */
+        }
+        
+        /* Estilos específicos para campos especiales */
+        .client-info .tight-pair {
+            width: 1%; /* Hace que la celda sea lo más estrecha posible */
+            white-space: nowrap; /* Evita que el texto se rompa */
+        }
+        
+        .client-info .tight-label {
+            padding-right: 0; /* Elimina el padding derecho */
+            margin-right: 0; /* Elimina el margen derecho */
+        }
+        
+        .client-info .tight-value {
+            padding-left: 0; /* Elimina el padding izquierdo */
+            margin-left: 0; /* Elimina el margen izquierdo */
+        }
+        
+        /* Estilo para separar las etiquetas de sus valores */
+        .label-text {
+            margin-right: 10px; /* Espacio entre la etiqueta y su valor */
+            display: inline-block; /* Para asegurar que el margen se aplique correctamente */
+        }
     </style>
 </head>
 
 <body style=" margin: 40px;">
+    <div class="header-container">
+        ${users.logo ? `
+        <div class="logo-container">
+            <img src="${users.logo}" class="logo-image" alt="Logo">
+        </div>
+        ` : ''}
+    </div>
     <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
         INFORME
     </h1>
-    <table class="info-table">
+    <table class="info-table client-info">
         <tr>
-            <td class="left-column bold">Cliente:</td>
-            <td class="left-column">${cliente}</td>
-            <td class="right-column bold">Finca:</td>
-            <td class="right-column">${finca}</td>
+            <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
+            <td class="right-column" style="text-align: right"><span class="bold label-text">Finca:</span>${finca}</td>
         </tr>
         <tr>
-            <td class="left-column bold">Ubicación:</td>
-            <td class="left-column">${lugar}</td>
-            <td class="right-column bold">Fecha:</td>
-            <td class="right-column">${fechaHoyFormateada}</td>
+            <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
+            <td class="right-column" style="text-align: right"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
         </tr>
     </table>
         ${tablaVacas}
@@ -201,14 +279,21 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
 
     <table class="info-table">
         <tr>
-            <td class="left-column">Alejandro Cardona Tobón </td>
+            <td class="left-column">${users.nombre} ${users.apellido} </td>
         </tr>
         <tr>
-            <td class="left-column">Médico Veterinario Zootecnista </td>
+            <td class="left-column">${users.profesion} </td>
         </tr>
         <tr>
-            <td class="left-column">Universidad CES </td>
+            <td class="left-column">${users.universidad} </td>
         </tr>
+        ${users.logo ? `
+        <tr>
+            <td class="left-column">
+                <img src="${users.logo}" style="width: 60px; height: 60px; border-radius: 5px; object-fit: cover; margin-top: 10px;" alt="Logo">
+            </td>
+        </tr>
+        ` : ''}
     </table>
     
 </body>
