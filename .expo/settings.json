@@ -5,6 +5,6 @@
   "minify": false,
   "urlRandomness": "uV1LYCk",
   "https": false,
-  "scheme": null,
+  "scheme": "com.anders17.cowfootapp",
   "devClient": false
 }

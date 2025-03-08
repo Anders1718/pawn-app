@@ -40,3 +40,7 @@ yarn-error.*
 *.tsbuildinfo
 
 # @end expo-cli
+
+# Add these lines to your .gitignore file
+/android
+/ios
