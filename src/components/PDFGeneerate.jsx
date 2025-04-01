@@ -66,7 +66,8 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         }
 
         .info-table .right-column {
-            text-align: right;
+            text-align: left;
+            padding-left: 30%;
         }
 
         .info-table .bold {
@@ -110,9 +111,9 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         }
         
         .logo-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 5px;
+            width: 150px;
+            height: 100px;
+            border-radius: 10px;
             object-fit: cover;
         }
         
@@ -142,6 +143,14 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
             border-collapse: collapse;
             margin-bottom: 15px;
         }
+
+        /* Estilo para mejorar la alineación en la columna derecha */
+        .info-table .right-column .label-text {
+            display: inline-block;
+            min-width: 50px;
+            margin-right: 5px;
+            text-align: left;
+        }
     </style>
 </head>
 
@@ -164,11 +173,11 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
     <table class="info-table">
         <tr>
             <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Nit:</span>${nit}</td>
+            <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
         </tr>
         <tr>
             <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Tel:</span>${tel}</td>
+            <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
         </tr>
     </table>
 
@@ -207,7 +216,7 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
                 ${users.nombre} ${users.apellido}
                 ${users.logo ? `
                 <div style="margin-top: 10px;">
-                    <img src="${users.logo}" style="width: 60px; height: 60px; border-radius: 5px; object-fit: cover;">
+                    <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover;">
                 </div>
                 ` : ''}
             </td>

@@ -177,7 +177,15 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         }
 
         .info-table .right-column {
-            text-align: right;
+            text-align: left;
+            padding-left: 30%;
+        }
+
+        .info-table .right-column .label-text {
+            display: inline-block;
+            min-width: 50px;
+            margin-right: 5px;
+            text-align: left;
         }
 
         .info-table .bold {
@@ -192,9 +200,9 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         }
 
         .logo-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 5px;
+            width: 150px;
+            height: 100px;
+            border-radius: 10px;
             object-fit: cover;
         }
         
@@ -257,11 +265,11 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
     <table class="info-table client-info">
         <tr>
             <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Finca:</span>${finca}</td>
+            <td class="right-column" ><span class="bold label-text">Finca:</span>${finca}</td>
         </tr>
         <tr>
             <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
+            <td class="right-column" ><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
         </tr>
     </table>
         ${tablaVacas}
@@ -290,7 +298,7 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         ${users.logo ? `
         <tr>
             <td class="left-column">
-                <img src="${users.logo}" style="width: 60px; height: 60px; border-radius: 5px; object-fit: cover; margin-top: 10px;" alt="Logo">
+                <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px;" alt="Logo">
             </td>
         </tr>
         ` : ''}

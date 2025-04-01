@@ -269,9 +269,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         }
         
         .logo-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 5px;
+            width: 150px;
+            height: 100px;
+            border-radius: 10px;
             object-fit: cover;
         }
         
@@ -285,6 +285,20 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             position: absolute;
             left: 0;
             bottom: 0;
+        }
+
+        /* Estilo para mejorar la alineación en la columna derecha */
+        .info-table .right-column {
+            text-align: left;
+            padding-left: 30%;
+        }
+        
+        /* Asegura que las etiquetas y valores en la columna derecha estén alineados */
+        .info-table .right-column .label-text {
+            display: inline-block;
+            min-width: 50px;
+            margin-right: 5px;
+            text-align: left;
         }
     </style>
 </head>
@@ -308,11 +322,11 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     <table class="info-table client-info">
         <tr>
             <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Nit:</span>${nit}</td>
+            <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
         </tr>
         <tr>
             <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
-            <td class="right-column" style="text-align: right"><span class="bold label-text">Tel:</span>${tel}</td>
+            <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
         </tr>
     </table>
 
@@ -412,7 +426,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         ${users.logo ? `
         <tr>
             <td class="left-column">
-                <img src="${users.logo}" style="width: 60px; height: 60px; border-radius: 30px; object-fit: cover;">
+                <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover;">
             </td>
         </tr>
         ` : ''}

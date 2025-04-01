@@ -46,9 +46,9 @@ const styles = StyleSheet.create({
         textAlign: 'center',
     },
     logoImage: {
-        width: 100,
+        width: 150,
         height: 100,
-        borderRadius: 50,
+        borderRadius: 10,
         marginBottom: 10,
         backgroundColor: '#e0e0e0',
     }
@@ -145,7 +145,6 @@ export default function RegisterUserPage() {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
-            aspect: [1, 1],
             quality: 1,
             base64: true,
         });
