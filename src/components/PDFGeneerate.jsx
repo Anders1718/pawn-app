@@ -214,11 +214,6 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         <tr>
             <td class="left-column">
                 ${users.nombre} ${users.apellido}
-                ${users.logo ? `
-                <div style="margin-top: 10px;">
-                    <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover;">
-                </div>
-                ` : ''}
             </td>
             <td class="right-column">Favor consignar a la cuenta</td>
         </tr>
