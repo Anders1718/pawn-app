@@ -1,12 +1,18 @@
 import * as React from 'react';
-import { View, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Text } from 'react-native';
+import Slider from '@react-native-community/slider';
 import StyledText from './StyledText';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
-
-
+import { WebView } from 'react-native-webview';
 
 export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
+    const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
+    const [htmlContent, setHtmlContent] = React.useState('');
+    const [logoSize, setLogoSize] = React.useState(150);
+    const [logoPosition, setLogoPosition] = React.useState({ top: 0.5, right: 0.5 });
+    const [textAlignment, setTextAlignment] = React.useState('center');
+    
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
     const ids = [];
 
@@ -143,7 +149,8 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     `;
     });
 
-    const html = `
+    const generateHTML = () => {
+        return `
 <html>
 
 <head>
@@ -263,14 +270,14 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         
         .logo-container {
             position: absolute;
-            top: 0.5cm;
-            right: 0.5cm;
+            top: ${logoPosition.top}cm;
+            right: ${logoPosition.right}cm;
             text-align: right;
         }
         
         .logo-image {
-            width: 150px;
-            height: 100px;
+            width: ${logoSize}px;
+            height: ${Math.round(logoSize * 0.67)}px;
             border-radius: 10px;
             object-fit: cover;
         }
@@ -300,6 +307,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             margin-right: 5px;
             text-align: left;
         }
+        
+        h1, h2 {
+            text-align: ${textAlignment};
+        }
     </style>
 </head>
 
@@ -316,7 +327,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
        ` : ''}
    </div>
    
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-bottom: 15px; margin-top: 20px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 20px;">
         CUENTA DE COBRO
     </h1>
     <table class="info-table client-info">
@@ -330,19 +341,19 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         </tr>
     </table>
 
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-bottom: 15px; margin-top: 25px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
         DEBE A
     </h1>
-    <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: center; margin-top: 5px; margin-bottom: 5px;">
+    <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
         ${users.nombre} ${users.apellido}
     </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center; margin-top: 5px; margin-bottom: 5px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
         CC: ${users.documento} Tel ${users.telefono}
     </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: center; margin-top: 5px; margin-bottom: 5px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
         ${users.direccion}
     </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-bottom: 15px; margin-top: 25px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
         POR CONCEPTO DE
     </h1>
     <table class="animal-table">
@@ -383,7 +394,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             </div>
             ` : ''}
         </div>
-        <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
+        <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
             INFORME
         </h1>
         <table class="info-table">
@@ -426,7 +437,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         ${users.logo ? `
         <tr>
             <td class="left-column">
-                <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover;">
+                <img src="${users.logo}" style="width: ${logoSize}px; height: ${Math.round(logoSize * 0.67)}px; border-radius: 10px; object-fit: cover;">
             </td>
         </tr>
         ` : ''}
@@ -435,12 +446,19 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
 </html>
 `;
+    };
+
+    const showPreview = () => {
+        setHtmlContent(generateHTML());
+        setIsPreviewVisible(true);
+    };
 
     const printToFile = async () => {
         // On iOS/android prints the given html. On web prints the HTML from the current page.
-        const { uri } = await Print.printToFileAsync({ html });
+        const { uri } = await Print.printToFileAsync({ html: htmlContent || generateHTML() });
         console.log('File has been saved to:', uri);
         await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
+        setIsPreviewVisible(false);
     };
 
     return (
@@ -448,10 +466,124 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             <View style={styles.spacer} />
             <TouchableOpacity
                 style={styles.button}
-                onPress={printToFile}
+                onPress={showPreview}
             >
-                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar factura y reporte</StyledText>
+                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Previsualizar factura y reporte</StyledText>
             </TouchableOpacity>
+            
+            <Modal
+                animationType="slide"
+                transparent={false}
+                visible={isPreviewVisible}
+                onRequestClose={() => setIsPreviewVisible(false)}
+            >
+                <View style={styles.modalContainer}>
+                    <View style={styles.controlPanel}>
+                        <TouchableOpacity 
+                            style={styles.closeButton}
+                            onPress={() => setIsPreviewVisible(false)}
+                        >
+                            <Text style={styles.buttonText}>Cerrar</Text>
+                        </TouchableOpacity>
+                        
+                        <View style={styles.controlRow}>
+                            <Text style={styles.controlLabel}>Tamaño del logo:</Text>
+                            <Slider
+                                style={styles.slider}
+                                minimumValue={50}
+                                maximumValue={250}
+                                step={5}
+                                value={logoSize}
+                                onValueChange={value => {
+                                    setLogoSize(value);
+                                    setHtmlContent(generateHTML());
+                                }}
+                            />
+                            <Text>{Math.round(logoSize)}px</Text>
+                        </View>
+                        
+                        <View style={styles.controlRow}>
+                            <Text style={styles.controlLabel}>Posición vertical:</Text>
+                            <Slider
+                                style={styles.slider}
+                                minimumValue={0}
+                                maximumValue={2}
+                                step={0.1}
+                                value={logoPosition.top}
+                                onValueChange={value => {
+                                    setLogoPosition({...logoPosition, top: value});
+                                    setHtmlContent(generateHTML());
+                                }}
+                            />
+                            <Text>{logoPosition.top.toFixed(1)}cm</Text>
+                        </View>
+                        
+                        <View style={styles.controlRow}>
+                            <Text style={styles.controlLabel}>Posición horizontal:</Text>
+                            <Slider
+                                style={styles.slider}
+                                minimumValue={0}
+                                maximumValue={2}
+                                step={0.1}
+                                value={logoPosition.right}
+                                onValueChange={value => {
+                                    setLogoPosition({...logoPosition, right: value});
+                                    setHtmlContent(generateHTML());
+                                }}
+                            />
+                            <Text>{logoPosition.right.toFixed(1)}cm</Text>
+                        </View>
+                        
+                        <View style={styles.controlRow}>
+                            <Text style={styles.controlLabel}>Alineación de texto:</Text>
+                            <View style={styles.alignmentButtons}>
+                                <TouchableOpacity 
+                                    style={[styles.alignButton, textAlignment === 'left' && styles.activeButton]}
+                                    onPress={() => {
+                                        setTextAlignment('left');
+                                        setHtmlContent(generateHTML());
+                                    }}
+                                >
+                                    <Text>Izquierda</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.alignButton, textAlignment === 'center' && styles.activeButton]}
+                                    onPress={() => {
+                                        setTextAlignment('center');
+                                        setHtmlContent(generateHTML());
+                                    }}
+                                >
+                                    <Text>Centro</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity 
+                                    style={[styles.alignButton, textAlignment === 'right' && styles.activeButton]}
+                                    onPress={() => {
+                                        setTextAlignment('right');
+                                        setHtmlContent(generateHTML());
+                                    }}
+                                >
+                                    <Text>Derecha</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+
+                        <TouchableOpacity 
+                            style={styles.generateButton}
+                            onPress={printToFile}
+                        >
+                            <Text style={styles.buttonText}>Generar PDF</Text>
+                        </TouchableOpacity>
+                    </View>
+                    
+                    <View style={styles.previewContainer}>
+                        <WebView
+                            originWhitelist={['*']}
+                            source={{ html: htmlContent }}
+                            style={styles.webView}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -471,13 +603,76 @@ const styles = StyleSheet.create({
     },
     button: {
         borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
+        borderRadius: 15,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: '#1e293b',
         padding: 15,
-        borderRadius: 15,
         borderWidth: 10
+    },
+    modalContainer: {
+        flex: 1,
+        flexDirection: 'column',
+    },
+    controlPanel: {
+        padding: 15,
+        backgroundColor: '#f0f0f0',
+        borderBottomWidth: 1,
+        borderBottomColor: '#ccc',
+    },
+    controlRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 8,
+    },
+    controlLabel: {
+        width: 120,
+        marginRight: 10,
+    },
+    slider: {
+        flex: 1,
+        height: 40,
+    },
+    previewContainer: {
+        flex: 1,
+    },
+    webView: {
+        flex: 1,
+    },
+    closeButton: {
+        backgroundColor: '#ccc',
+        padding: 10,
+        borderRadius: 5,
+        alignSelf: 'flex-end',
+        marginBottom: 10,
+    },
+    generateButton: {
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 5,
+        alignItems: 'center',
+        marginTop: 15,
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
+    },
+    alignmentButtons: {
+        flexDirection: 'row',
+    },
+    alignButton: {
+        padding: 8,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        marginRight: 10,
+    },
+    activeButton: {
+        backgroundColor: '#1e293b',
+        borderColor: '#1e293b',
+    },
+    activeButton: {
+        backgroundColor: '#1e293b',
+        borderColor: '#1e293b',
     },
 });
