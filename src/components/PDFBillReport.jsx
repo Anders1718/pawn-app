@@ -5,13 +5,32 @@ import StyledText from './StyledText';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
 import { WebView } from 'react-native-webview';
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 
 export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
     const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
     const [htmlContent, setHtmlContent] = React.useState('');
     const [logoSize, setLogoSize] = React.useState(150);
-    const [logoPosition, setLogoPosition] = React.useState({ top: 0.5, right: 0.5 });
+    const [logoPosition, setLogoPosition] = React.useState({ top: 0.7, right: -0.5 });
     const [textAlignment, setTextAlignment] = React.useState('center');
+    const [logoBase64, setLogoBase64] = React.useState('');
+    
+    // Cargar la imagen como Base64 al iniciar el componente
+    React.useEffect(() => {
+        (async () => {
+            try {
+                // Intentar cargar la imagen desde los assets
+                const asset = Asset.fromModule(require('../img/logo-podologo.png'));
+                await asset.downloadAsync();
+                const base64 = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+                setLogoBase64(`data:image/png;base64,${base64}`);
+            } catch (error) {
+                console.error('Error al cargar la imagen:', error);
+                // Si falla, puedes proporcionar una imagen predeterminada o mostrar un mensaje
+            }
+        })();
+    }, []);
     
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
     const ids = [];
@@ -276,8 +295,15 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         }
         
         .logo-image {
-            width: ${logoSize}px;
-            height: ${Math.round(logoSize * 0.67)}px;
+            width: 200px;
+            height: 70px;
+            border-radius: 10px;
+            object-fit: cover;
+        }
+
+        .logo-image-2 {
+            width: 200px;
+            height: 70px;
             border-radius: 10px;
             object-fit: cover;
         }
@@ -320,11 +346,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
            Fecha: ${fechaHoyFormateada}
        </h2>
        
-       ${users.logo ? `
        <div class="logo-container">
-           <img src="${users.logo}" class="logo-image" alt="Logo">
+           <img src="${logoBase64}" class="logo-image" alt="Logo">
        </div>
-       ` : ''}
    </div>
    
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 20px;">
@@ -388,11 +412,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
     <div style="page-break-before: always;">
         <div class="header-container">
-            ${users.logo ? `
             <div class="logo-container">
-                <img src="${users.logo}" class="logo-image" alt="Logo">
+                <img src="${logoBase64}" class="logo-image-2" alt="Logo">
             </div>
-            ` : ''}
         </div>
         <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
             INFORME
@@ -434,13 +456,6 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         <tr>
             <td class="left-column">${users.universidad} </td>
         </tr>
-        ${users.logo ? `
-        <tr>
-            <td class="left-column">
-                <img src="${users.logo}" style="width: ${logoSize}px; height: ${Math.round(logoSize * 0.67)}px; border-radius: 10px; object-fit: cover;">
-            </td>
-        </tr>
-        ` : ''}
     </table>
 </body>
 

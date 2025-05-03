@@ -1,12 +1,12 @@
 import * as React from 'react';
-import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Text } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Text, Image } from 'react-native';
 import Slider from '@react-native-community/slider';
 import StyledText from './StyledText';
 import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
 import { WebView } from 'react-native-webview';
-
-
+import * as FileSystem from 'expo-file-system';
+import { Asset } from 'expo-asset';
 
 export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, users }) {
     const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
@@ -14,7 +14,24 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
     const [logoSize, setLogoSize] = React.useState(150);
     const [logoPosition, setLogoPosition] = React.useState({ top: 20, right: 20 });
     const [textAlignment, setTextAlignment] = React.useState('center');
+    const [logoBase64, setLogoBase64] = React.useState('');
 
+    // Cargar la imagen como Base64 al iniciar el componente
+    React.useEffect(() => {
+        (async () => {
+            try {
+                // Intentar cargar la imagen desde los assets
+                const asset = Asset.fromModule(require('../img/logo-podologo.png'));
+                await asset.downloadAsync();
+                const base64 = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
+                setLogoBase64(`data:image/png;base64,${base64}`);
+            } catch (error) {
+                console.error('Error al cargar la imagen:', error);
+                // Si falla, puedes proporcionar una imagen predeterminada o mostrar un mensaje
+            }
+        })();
+    }, []);
+    
     let tablaCuenta = '';
     totalCuenta.forEach((cuenta, index) => {
         tablaCuenta += `
@@ -119,8 +136,8 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         }
         
         .logo-image {
-            width: ${logoSize}px;
-            height: ${Math.round(logoSize * 0.67)}px;
+            width: 200px;
+            height: 70px;
             border-radius: 10px;
             object-fit: cover;
         }
@@ -172,11 +189,9 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
        Fecha: ${fechaHoyFormateada}
        </h2>
        
-       ${users.logo ? `
        <div class="logo-container">
-           <img src="${users.logo}" class="logo-image" alt="Logo">
+           <img src="${logoBase64}" class="logo-image" alt="Logo">
        </div>
-       ` : ''}
    </div>
    
     <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
