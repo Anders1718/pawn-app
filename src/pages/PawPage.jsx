@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
         fontWeight: 400
     },
     farmName: {
-        fontSize: 17,
+        fontSize: 27,
     },
     title: {
         display: 'flex',

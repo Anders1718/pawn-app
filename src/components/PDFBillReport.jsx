@@ -162,8 +162,8 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         <tr>
             <td>${cuenta.cantidad}</td>
             <td>${cuenta.descripcion}</td>
-            <td>${cuenta.valor}</td>
-            <td>${cuenta.total}</td>
+            <td>$ ${cuenta.valor}</td>
+            <td>$ ${cuenta.total}</td>
         </tr>
     `;
     });
@@ -177,11 +177,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <style>
         @page {
-            size: A4;
-            margin: 2cm;
-        }
-        body {
-            padding: 2cm;
+            margin: 40pt; /* Márgenes de la página */
         }
         .animal-table {
             margin-top: 50px;
@@ -192,6 +188,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         }
         .paws-table {
             margin-bottom: 50px;
+            width: 60%; /* Hacer la tabla más angosta */
+            margin-left: auto; /* Centrar la tabla */
+            margin-right: auto; /* Centrar la tabla */
             th, td {
                 border: 1px solid black;
             };
@@ -289,7 +288,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         
         .logo-container {
             position: absolute;
-            top: ${logoPosition.top}cm;
+            top: -20px;
             right: ${logoPosition.right}cm;
             text-align: right;
         }
@@ -310,7 +309,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         
         .header-container {
             position: relative;
-            height: 80px; /* Para dar espacio al logo */
+            height: 30px; /* Para dar espacio al logo */
             margin-bottom: 20px;
         }
         
@@ -337,10 +336,25 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         h1, h2 {
             text-align: ${textAlignment};
         }
+
+        .informe-heder{
+            margin-top: 40px; /* Aumentar el margen superior */
+        }
+        .informe-menu{
+            margin-top: 70px; /* Aumentar el margen superior */
+        }
+        
+        /* Estilos para el documento */
+        body {
+            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: black;
+        }
     </style>
 </head>
 
-<body>
+<body style=" margin: 40px;">
    <div class="header-container">
        <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
            Fecha: ${fechaHoyFormateada}
@@ -351,7 +365,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
        </div>
    </div>
    
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 20px;">
+    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
         CUENTA DE COBRO
     </h1>
     <table class="info-table client-info">
@@ -392,7 +406,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     <table class="info-table total-table">
         <tr>
             <td class="right-column bold">Total:</td>
-            <td class="right-column">${sumaTotal}</td>
+            <td class="right-column">$ ${sumaTotal}</td>
         </tr>
     </table>
     <table class="info-table">
@@ -410,12 +424,19 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         </tr>
     </table>
 
-    <div style="page-break-before: always;">
-        <div class="header-container">
-            <div class="logo-container">
-                <img src="${logoBase64}" class="logo-image-2" alt="Logo">
+    <div style="page-break-before: always; padding-top: 30px;">
+        <div class="informe-heder">
+            <div class="header-container">
+                <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
+                    Fecha: ${fechaHoyFormateada}
+                </h2>
+                
+                <div class="logo-container">
+                    <img src="${logoBase64}" class="logo-image-2" alt="Logo">
+                </div>
             </div>
         </div>
+        <div class="informe-menu">
         <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
             INFORME
         </h1>
@@ -428,7 +449,8 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
             <td class="right-column"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
         </tr>
-    </table>
+         </table>
+         </div>
     </div>
 
         <tbody>

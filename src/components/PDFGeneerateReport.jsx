@@ -150,6 +150,9 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         }
         .paws-table {
             margin-bottom: 50px;
+            width: 60%; /* Hacer la tabla más angosta */
+            margin-left: auto; /* Centrar la tabla */
+            margin-right: auto; /* Centrar la tabla */
             th, td {
                 border: 1px solid black;
             };
@@ -200,8 +203,8 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         }
 
         .logo-image {
-            width: 150px;
-            height: 100px;
+            width: 200px;
+            height: 70px;
             border-radius: 10px;
             object-fit: cover;
         }
@@ -295,13 +298,6 @@ export default function GenerateReport({ finca, cliente, lugar, fechaHoyFormatea
         <tr>
             <td class="left-column">${users.universidad} </td>
         </tr>
-        ${users.logo ? `
-        <tr>
-            <td class="left-column">
-                <img src="${users.logo}" style="width: 150px; height: 100px; border-radius: 10px; object-fit: cover; margin-top: 10px;" alt="Logo">
-            </td>
-        </tr>
-        ` : ''}
     </table>
     
 </body>

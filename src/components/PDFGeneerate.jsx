@@ -106,7 +106,16 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
         }
         
         .total-table td {
-            padding: 0 5px; /* Reduce el padding entre celdas */
+            padding: 5px 10px; /* Aumenta el padding para mejor espaciado */
+            white-space: nowrap; /* Evita que el texto se divida en líneas */
+        }
+        
+        /* Estilo específico para el valor del total */
+        .total-value {
+            font-size: 16px;
+            font-weight: bold;
+            white-space: nowrap; /* Evita saltos de línea dentro del valor */
+            display: inline-block; /* Mantiene el valor en una sola línea */
         }
         
         /* Estilo para separar las etiquetas de sus valores */
@@ -234,7 +243,8 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
     </table>
     <table class="info-table total-table">
         <tr>
-            <td class="right-column"><span class="bold label-text">Total:</span>${sumaTotal}</td>
+            <td class="right-column bold">Total:</td>
+            <td class="right-column total-value">$${sumaTotal}</td>
         </tr>
     </table>
     <table class="info-table">
