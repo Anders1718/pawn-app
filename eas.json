@@ -5,15 +5,32 @@
   "build": {
     "development": {
       "developmentClient": true,
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "image": "latest"
+      }
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "ios": {
+        "image": "latest"
+      }
     },
-    "production": {},
+    "production": {
+      "ios": {
+        "image": "latest"
+      }
+    },
+    "production-prebuild": {
+      "ios": {
+        "image": "latest"
+      },
+      "prebuildCommand": "npx expo prebuild --clean"
+    },
     "local": {
       "ios": {
-        "simulator": true
+        "simulator": true,
+        "buildConfiguration": "Debug"
       }
     }
   },
