@@ -90,53 +90,21 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             ${sala}
         </h1>
         <table class="animal-table">
-            <tr>
-                <th></th>
-                <th>ID-Animal</th>
-                <th>Extremidad</th>
-                <th>Descripción</th>
-                <th>Observación</th>
-                <th>Tratamiento</th>
-            </tr>
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>ID-Animal</th>
+                    <th>Extremidad</th>
+                    <th>Descripción</th>
+                    <th>Observación</th>
+                    <th>Tratamiento</th>
+                </tr>
+            </thead>
+            <tbody>
         `;
         let index = 1; // Inicializar el contador para cada sala
-        let elementCount = 0; // Contador para el control de página
 
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
-            if (elementCount > 0) {
-                // Primera página: 22 elementos
-                if (elementCount === 22) {
-                    tablaVacas += `
-                    </table>
-                    <div style="page-break-after: always;"></div>
-                    <table class="animal-table">
-                        <tr>
-                            <th></th>
-                            <th>ID-Animal</th>
-                            <th>Extremidad</th>
-                            <th>Descripción</th>
-                            <th>Observación</th>
-                            <th>Tratamiento</th>
-                        </tr>
-                    `;
-                }
-                // Páginas intermedias: 25 elementos por página
-                else if (elementCount > 22 && (elementCount - 22) % 25 === 0) {
-                    tablaVacas += `
-                    </table>
-                    <div style="page-break-after: always;"></div>
-                    <table class="animal-table">
-                        <tr>
-                            <th></th>
-                            <th>ID-Animal</th>
-                            <th>Extremidad</th>
-                            <th>Descripción</th>
-                            <th>Observación</th>
-                            <th>Tratamiento</th>
-                        </tr>
-                    `;
-                }
-            }
 
             const countIds = count(vaca.nombre_vaca);
             tablaVacas += `
@@ -150,9 +118,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             </tr>
             `;
             if (countIds) index++;
-            elementCount++;
         });
-        tablaVacas += `</table>`;
+        tablaVacas += `
+            </tbody>
+        </table>`;
     });
 
 
