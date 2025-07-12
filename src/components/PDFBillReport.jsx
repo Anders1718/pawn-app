@@ -100,15 +100,17 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     };
 
     // Función para dividir las vacas en páginas
-    const paginateVacas = (vacas, maxPageHeight = 650) => {
+    const paginateVacas = (vacas, maxPageHeight = 650, isFirstInformePage = false) => {
         const pages = [];
         let currentPage = [];
+        // Si es la primera página del informe, reducir el espacio disponible por el header
+        const adjustedMaxHeight = isFirstInformePage ? 400 : maxPageHeight;
         let currentHeight = 60; // Altura del header de la tabla (reducida)
         
         vacas.forEach(vaca => {
             const rowHeight = estimateRowHeight(vaca);
             
-            if (currentHeight + rowHeight > maxPageHeight && currentPage.length > 0) {
+            if (currentHeight + rowHeight > adjustedMaxHeight && currentPage.length > 0) {
                 // Iniciar nueva página
                 pages.push(currentPage);
                 currentPage = [vaca];
@@ -129,7 +131,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     let tablaVacas = '';
     uniqueSalas.forEach((sala, salaIndex) => {
         const vacasEnSala = report.filter(vaca => vaca.sala === sala);
-        const paginasVacas = paginateVacas(vacasEnSala);
+        // Determinar si esta es la primera sala (que aparecerá en la página del informe)
+        const isFirstSala = salaIndex === 0;
+        const paginasVacas = paginateVacas(vacasEnSala, 650, isFirstSala);
         
         paginasVacas.forEach((paginaVacas, paginaIndex) => {
             // Si no es la primera página de la primera sala, agregar salto de página
