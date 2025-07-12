@@ -100,21 +100,24 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     };
 
     // Función para dividir las vacas en páginas
-    const paginateVacas = (vacas, maxPageHeight = 650, isFirstInformePage = false) => {
+    const paginateVacas = (vacas, maxPageHeight = 650, isFirstPageOfReport = false) => {
         const pages = [];
         let currentPage = [];
-        // Si es la primera página del informe, reducir el espacio disponible por el header
-        const adjustedMaxHeight = isFirstInformePage ? 400 : maxPageHeight;
         let currentHeight = 60; // Altura del header de la tabla (reducida)
+        let isFirstPage = true;
         
         vacas.forEach(vaca => {
             const rowHeight = estimateRowHeight(vaca);
             
-            if (currentHeight + rowHeight > adjustedMaxHeight && currentPage.length > 0) {
+            // Solo aplicar altura reducida en la primera página del informe
+            const currentMaxHeight = (isFirstPageOfReport && isFirstPage) ? 400 : maxPageHeight;
+            
+            if (currentHeight + rowHeight > currentMaxHeight && currentPage.length > 0) {
                 // Iniciar nueva página
                 pages.push(currentPage);
                 currentPage = [vaca];
                 currentHeight = 60 + rowHeight; // Header + primera fila
+                isFirstPage = false; // Ya no es la primera página
             } else {
                 currentPage.push(vaca);
                 currentHeight += rowHeight;
@@ -131,7 +134,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     let tablaVacas = '';
     uniqueSalas.forEach((sala, salaIndex) => {
         const vacasEnSala = report.filter(vaca => vaca.sala === sala);
-        // Determinar si esta es la primera sala (que aparecerá en la página del informe)
+        // Solo la primera sala puede tener su primera página en la página del informe
         const isFirstSala = salaIndex === 0;
         const paginasVacas = paginateVacas(vacasEnSala, 650, isFirstSala);
         
