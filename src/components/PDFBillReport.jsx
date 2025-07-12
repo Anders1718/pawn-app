@@ -84,7 +84,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
     // Función para estimar la altura de una fila basada en el contenido
     const estimateRowHeight = (vaca) => {
-        const baseHeight = 30; // Altura base de una fila en puntos
+        const baseHeight = 25; // Altura base de una fila en puntos (reducida)
         const charWidth = 6; // Ancho promedio de un carácter en puntos
         const cellWidth = 100; // Ancho promedio de una celda en puntos
         
@@ -100,10 +100,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     };
 
     // Función para dividir las vacas en páginas
-    const paginateVacas = (vacas, maxPageHeight = 600) => {
+    const paginateVacas = (vacas, maxPageHeight = 650) => {
         const pages = [];
         let currentPage = [];
-        let currentHeight = 80; // Altura del header de la tabla
+        let currentHeight = 60; // Altura del header de la tabla (reducida)
         
         vacas.forEach(vaca => {
             const rowHeight = estimateRowHeight(vaca);
@@ -112,7 +112,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                 // Iniciar nueva página
                 pages.push(currentPage);
                 currentPage = [vaca];
-                currentHeight = 80 + rowHeight; // Header + primera fila
+                currentHeight = 60 + rowHeight; // Header + primera fila
             } else {
                 currentPage.push(vaca);
                 currentHeight += rowHeight;
@@ -140,13 +140,13 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             // Solo mostrar el título de la sala en la primera página de cada sala
             if (paginaIndex === 0) {
                 tablaVacas += `
-                <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 20px; margin-bottom: 20px;">
+                <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 15px; margin-bottom: 15px;">
                     ${sala}
                 </h1>`;
             }
             
             tablaVacas += `
-            <table class="animal-table" style="margin-top: 20px; margin-bottom: 40px;">
+            <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
                 <thead>
                     <tr>
                         <th style="width: 8%;">#</th>
@@ -170,12 +170,12 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                 const countIds = count(vaca.nombre_vaca);
                 tablaVacas += `
                 <tr>
-                    <td style="padding: 8px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
-                    <td style="padding: 8px; vertical-align: top;">${vaca.nombre_vaca}</td>
-                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
-                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
-                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
-                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
+                    <td style="padding: 4px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
+                    <td style="padding: 4px; vertical-align: top;">${vaca.nombre_vaca}</td>
+                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
+                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
+                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
+                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
                 </tr>
                 `;
                 if (countIds) index++;
@@ -222,14 +222,14 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             border-collapse: collapse;
             font-family: Helvetica Neue;
             margin-top: 20px;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
             page-break-inside: avoid;
         }
         .animal-table th,
         .animal-table td {
             border: 1px solid black;
             text-align: center;
-            padding: 8px;
+            padding: 4px;
             vertical-align: top;
             word-wrap: break-word;
             overflow-wrap: break-word;
