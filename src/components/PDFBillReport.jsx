@@ -183,62 +183,89 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             tablaVacas += `<div style="page-break-before: always;"></div>`;
         }
         
-        // Determinar qué salas aparecen en esta página y sus títulos
-        const salasEnPagina = [...new Set(paginaVacas.map(vaca => vaca.salaOriginal))];
+        // Determinar si necesitamos mostrar títulos de sala en esta página
+        let lastSala = '';
+        let hasAddedTable = false;
         
-        salasEnPagina.forEach(sala => {
-            const vacasDeSalaEnPagina = paginaVacas.filter(vaca => vaca.salaOriginal === sala);
-            const esPrimerVacaDeSala = vacasDeSalaEnPagina.some(vaca => vaca.esPrimeraVacaDeSala);
-            
-            // Solo mostrar título si es la primera aparición de esta sala
-            if (esPrimerVacaDeSala) {
+        paginaVacas.forEach((vaca, vacaIndex) => {
+            // Si cambia la sala, mostrar el título
+            if (vaca.salaOriginal !== lastSala) {
+                // Si ya habíamos abierto una tabla, cerrarla
+                if (hasAddedTable) {
+                    tablaVacas += `
+                        </tbody>
+                    </table>`;
+                }
+                
+                // Mostrar título de la nueva sala
                 tablaVacas += `
                 <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 15px; margin-bottom: 15px;">
-                    ${sala}
+                    ${vaca.salaOriginal}
                 </h1>`;
-            }
-            
-            tablaVacas += `
-            <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
-                <thead>
-                    <tr>
-                        <th style="width: 8%;">#</th>
-                        <th style="width: 15%;">ID-Animal</th>
-                        <th style="width: 15%;">Extremidad</th>
-                        <th style="width: 25%;">Descripción</th>
-                        <th style="width: 17%;">Observación</th>
-                        <th style="width: 20%;">Tratamiento</th>
-                    </tr>
-                </thead>
-                <tbody>
-            `;
-            
-            let index = 1;
-            // Resetear IDs solo si es la primera aparición de la sala
-            if (esPrimerVacaDeSala) {
-                ids.length = 0;
-            }
-            
-            vacasDeSalaEnPagina.forEach(vaca => {
-                const countIds = count(vaca.nombre_vaca);
+                
+                // Abrir nueva tabla
                 tablaVacas += `
-                <tr>
-                    <td style="padding: 4px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
-                    <td style="padding: 4px; vertical-align: top;">${vaca.nombre_vaca}</td>
-                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
-                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
-                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
-                    <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
-                </tr>
+                <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">#</th>
+                            <th style="width: 15%;">ID-Animal</th>
+                            <th style="width: 15%;">Extremidad</th>
+                            <th style="width: 25%;">Descripción</th>
+                            <th style="width: 17%;">Observación</th>
+                            <th style="width: 20%;">Tratamiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
                 `;
-                if (countIds) index++;
-            });
+                
+                hasAddedTable = true;
+                lastSala = vaca.salaOriginal;
+                
+                // Resetear IDs cuando cambia de sala
+                if (vaca.esPrimeraVacaDeSala) {
+                    ids.length = 0;
+                }
+            } else if (!hasAddedTable) {
+                // Si es la misma sala pero no hemos abierto tabla aún (continuación de página anterior)
+                tablaVacas += `
+                <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">#</th>
+                            <th style="width: 15%;">ID-Animal</th>
+                            <th style="width: 15%;">Extremidad</th>
+                            <th style="width: 25%;">Descripción</th>
+                            <th style="width: 17%;">Observación</th>
+                            <th style="width: 20%;">Tratamiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                `;
+                hasAddedTable = true;
+            }
             
+            // Agregar la fila de la vaca
+            let index = 1; // Este índice debería ser calculado correctamente
+            const countIds = count(vaca.nombre_vaca);
             tablaVacas += `
-                </tbody>
-            </table>
+            <tr>
+                <td style="padding: 4px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
+                <td style="padding: 4px; vertical-align: top;">${vaca.nombre_vaca}</td>
+                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
+                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
+                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
+                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
+            </tr>
             `;
         });
+        
+        // Cerrar la tabla al final de la página
+        if (hasAddedTable) {
+            tablaVacas += `
+                </tbody>
+            </table>`;
+        }
     });
 
 
