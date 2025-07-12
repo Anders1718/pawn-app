@@ -132,13 +132,41 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     };
 
     let tablaVacas = '';
+    let isVeryFirstPage = true; // Variable global para controlar la primera página del informe
+    
     uniqueSalas.forEach((sala, salaIndex) => {
         const vacasEnSala = report.filter(vaca => vaca.sala === sala);
-        // Solo la primera sala puede tener su primera página en la página del informe
-        const isFirstSala = salaIndex === 0;
-        const paginasVacas = paginateVacas(vacasEnSala, 650, isFirstSala);
         
-        paginasVacas.forEach((paginaVacas, paginaIndex) => {
+        // Paginación manual mejorada
+        const pages = [];
+        let currentPage = [];
+        let currentHeight = 60; // Altura del header de la tabla
+        
+        vacasEnSala.forEach(vaca => {
+            const rowHeight = estimateRowHeight(vaca);
+            
+            // Solo la primera página del informe tiene espacio reducido
+            const maxHeight = isVeryFirstPage ? 400 : 650;
+            
+            if (currentHeight + rowHeight > maxHeight && currentPage.length > 0) {
+                // Guardar página actual y empezar nueva
+                pages.push(currentPage);
+                currentPage = [vaca];
+                currentHeight = 60 + rowHeight;
+                isVeryFirstPage = false; // Ya no es la primera página del informe
+            } else {
+                currentPage.push(vaca);
+                currentHeight += rowHeight;
+            }
+        });
+        
+        // Agregar la última página si tiene contenido
+        if (currentPage.length > 0) {
+            pages.push(currentPage);
+        }
+        
+        // Generar HTML para cada página
+        pages.forEach((paginaVacas, paginaIndex) => {
             // Si no es la primera página de la primera sala, agregar salto de página
             if (salaIndex > 0 || paginaIndex > 0) {
                 tablaVacas += `<div style="page-break-before: always;"></div>`;
