@@ -545,12 +545,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             </tr>
             ${tablaCuenta}
         </table>
-        <table class="info-table total-table">
-            <tr>
-                <td class="right-column bold">Total:</td>
-                <td class="right-column">$ ${sumaTotal}</td>
-            </tr>
-        </table>
+        
+        <div style="text-align: right; font-weight: bold; font-size: 18px; margin-top: 15px; margin-bottom: 15px; white-space: nowrap;">
+            Total: $ ${sumaTotal}
+        </div>
         <table class="info-table">
             <tr>
                 <td class="left-column">${users.nombre} ${users.apellido} </td>
@@ -569,9 +567,6 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         <div style="page-break-before: always; padding-top: 30px;">
             <div class="informe-heder">
                 <div class="header-container">
-                    <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-                        Fecha: ${fechaHoyFormateada}
-                    </h2>
                     
                     <div class="logo-container">
                         <img src="${logoBase64}" class="logo-image-2" alt="Logo">
