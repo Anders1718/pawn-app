@@ -146,7 +146,10 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <style>
         @page {
-            margin: 40pt; /* Márgenes de la página */
+            margin: 0; /* Reset browser default margins */
+        }
+        .page-content {
+            padding: 40pt; /* Our desired margin */
         }
         .animal-table {
             margin-top: 50px;
@@ -195,7 +198,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             display: table-header-group;
         }
         tr {
-            page-break-inside: avoid;
+            page-break-inside: avoid !important;
         }
         .total-table {
             width: auto;
@@ -304,6 +307,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         
         h1, h2 {
             text-align: ${textAlignment};
+            page-break-after: avoid !important;
         }
 
         .informe-heder{
@@ -323,131 +327,133 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     </style>
 </head>
 
-<body style=" margin: 40px;">
-   <div class="header-container">
-       <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-           Fecha: ${fechaHoyFormateada}
-       </h2>
-       
-       <div class="logo-container">
-           <img src="${logoBase64}" class="logo-image" alt="Logo">
+<body>
+   <div class="page-content">
+       <div class="header-container">
+           <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
+               Fecha: ${fechaHoyFormateada}
+           </h2>
+           
+           <div class="logo-container">
+               <img src="${logoBase64}" class="logo-image" alt="Logo">
+           </div>
        </div>
-   </div>
-   
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
-        CUENTA DE COBRO
-    </h1>
-    <table class="info-table client-info">
-        <tr>
-            <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
-        </tr>
-        <tr>
-            <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
-            <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
-        </tr>
-    </table>
+       
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
+            CUENTA DE COBRO
+        </h1>
+        <table class="info-table client-info">
+            <tr>
+                <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
+                <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
+            </tr>
+            <tr>
+                <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
+                <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
+            </tr>
+        </table>
 
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
-        DEBE A
-    </h1>
-    <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        ${users.nombre} ${users.apellido}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        CC: ${users.documento} Tel ${users.telefono}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        ${users.direccion}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
-        POR CONCEPTO DE
-    </h1>
-    <table class="animal-table">
-        <tr>
-            <th>Cantidad</th>
-            <th>Descripción</th>
-            <th>Valor/und</th>
-            <th>Valor</th>
-        </tr>
-        ${tablaCuenta}
-    </table>
-    <table class="info-table total-table">
-        <tr>
-            <td class="right-column bold">Total:</td>
-            <td class="right-column">$ ${sumaTotal}</td>
-        </tr>
-    </table>
-    <table class="info-table">
-        <tr>
-            <td class="left-column">${users.nombre} ${users.apellido} </td>
-            <td class="right-column">Favor consignar a la cuenta</td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.profesion} </td>
-            <td class="right-column">${users.tipoCuenta} ${users.banco}</td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.universidad} </td>
-            <td class="right-column">${users.numeroCuenta}</td>
-        </tr>
-    </table>
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
+            DEBE A
+        </h1>
+        <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+            ${users.nombre} ${users.apellido}
+        </h1>
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+            CC: ${users.documento} Tel ${users.telefono}
+        </h1>
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+            ${users.direccion}
+        </h1>
+        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
+            POR CONCEPTO DE
+        </h1>
+        <table class="animal-table">
+            <tr>
+                <th>Cantidad</th>
+                <th>Descripción</th>
+                <th>Valor/und</th>
+                <th>Valor</th>
+            </tr>
+            ${tablaCuenta}
+        </table>
+        <table class="info-table total-table">
+            <tr>
+                <td class="right-column bold">Total:</td>
+                <td class="right-column">$ ${sumaTotal}</td>
+            </tr>
+        </table>
+        <table class="info-table">
+            <tr>
+                <td class="left-column">${users.nombre} ${users.apellido} </td>
+                <td class="right-column">Favor consignar a la cuenta</td>
+            </tr>
+            <tr>
+                <td class="left-column">${users.profesion} </td>
+                <td class="right-column">${users.tipoCuenta} ${users.banco}</td>
+            </tr>
+            <tr>
+                <td class="left-column">${users.universidad} </td>
+                <td class="right-column">${users.numeroCuenta}</td>
+            </tr>
+        </table>
 
-    <div style="page-break-before: always; padding-top: 30px;">
-        <div class="informe-heder">
-            <div class="header-container">
-                <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-                    Fecha: ${fechaHoyFormateada}
-                </h2>
-                
-                <div class="logo-container">
-                    <img src="${logoBase64}" class="logo-image-2" alt="Logo">
+        <div style="page-break-before: always; padding-top: 30px;">
+            <div class="informe-heder">
+                <div class="header-container">
+                    <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
+                        Fecha: ${fechaHoyFormateada}
+                    </h2>
+                    
+                    <div class="logo-container">
+                        <img src="${logoBase64}" class="logo-image-2" alt="Logo">
+                    </div>
                 </div>
             </div>
+            <div class="informe-menu">
+            <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
+                INFORME
+            </h1>
+            <table class="info-table">
+            <tr>
+                <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
+                <td class="right-column"><span class="bold label-text">Finca:</span>${finca}</td>
+            </tr>
+            <tr>
+                <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
+                <td class="right-column"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
+            </tr>
+             </table>
+             </div>
         </div>
-        <div class="informe-menu">
-        <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
-            INFORME
-        </h1>
+
+            <tbody>
+            ${tablaVacas}
+            </tbody>
+
+        <table class="paws-table">
+            <tr>
+                <td>AI = anterior izquierdo</td>
+                <td>AD = anterior derecho</td>
+            </tr>
+            <tr>
+                <td>PI = posterior izquierdo</td>
+                <td>PD = posterior derecho</td>
+            </tr>
+        </table>
+
         <table class="info-table">
-        <tr>
-            <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column"><span class="bold label-text">Finca:</span>${finca}</td>
-        </tr>
-        <tr>
-            <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
-            <td class="right-column"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
-        </tr>
-         </table>
-         </div>
-    </div>
-
-        <tbody>
-        ${tablaVacas}
-        </tbody>
-
-    <table class="paws-table">
-        <tr>
-            <td>AI = anterior izquierdo</td>
-            <td>AD = anterior derecho</td>
-        </tr>
-        <tr>
-            <td>PI = posterior izquierdo</td>
-            <td>PD = posterior derecho</td>
-        </tr>
-    </table>
-
-    <table class="info-table">
-        <tr>
-            <td class="left-column">${users.nombre} ${users.apellido} </td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.profesion} </td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.universidad} </td>
-        </tr>
-    </table>
+            <tr>
+                <td class="left-column">${users.nombre} ${users.apellido} </td>
+            </tr>
+            <tr>
+                <td class="left-column">${users.profesion} </td>
+            </tr>
+            <tr>
+                <td class="left-column">${users.universidad} </td>
+            </tr>
+        </table>
+   </div>
 </body>
 
 </html>
