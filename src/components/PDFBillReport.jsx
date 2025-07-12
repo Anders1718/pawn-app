@@ -132,48 +132,66 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     };
 
     let tablaVacas = '';
-    let isVeryFirstPage = true; // Variable global para controlar la primera página del informe
     
-    uniqueSalas.forEach((sala, salaIndex) => {
+    // Crear un array con todas las vacas de todas las salas, incluyendo información de sala
+    const todasLasVacas = [];
+    uniqueSalas.forEach(sala => {
         const vacasEnSala = report.filter(vaca => vaca.sala === sala);
-        
-        // Paginación manual mejorada
-        const pages = [];
-        let currentPage = [];
-        let currentHeight = 60; // Altura del header de la tabla
-        
-        vacasEnSala.forEach(vaca => {
-            const rowHeight = estimateRowHeight(vaca);
-            
-            // Solo la primera página del informe tiene espacio reducido
-            const maxHeight = isVeryFirstPage ? 400 : 650;
-            
-            if (currentHeight + rowHeight > maxHeight && currentPage.length > 0) {
-                // Guardar página actual y empezar nueva
-                pages.push(currentPage);
-                currentPage = [vaca];
-                currentHeight = 60 + rowHeight;
-                isVeryFirstPage = false; // Ya no es la primera página del informe
-            } else {
-                currentPage.push(vaca);
-                currentHeight += rowHeight;
-            }
+        vacasEnSala.forEach((vaca, index) => {
+            todasLasVacas.push({
+                ...vaca,
+                salaOriginal: sala,
+                esPrimeraVacaDeSala: index === 0 // Marcar si es la primera vaca de esta sala
+            });
         });
+    });
+    
+    // Paginación global de todas las vacas
+    const pages = [];
+    let currentPage = [];
+    let currentHeight = 60; // Altura del header de la tabla
+    let isFirstPage = true;
+    
+    todasLasVacas.forEach(vaca => {
+        const rowHeight = estimateRowHeight(vaca);
         
-        // Agregar la última página si tiene contenido
-        if (currentPage.length > 0) {
+        // Solo la primera página del informe tiene espacio reducido
+        const maxHeight = isFirstPage ? 400 : 650;
+        
+        // Si agregar esta vaca excede el límite Y ya hay vacas en la página actual
+        if (currentHeight + rowHeight > maxHeight && currentPage.length > 0) {
+            // Guardar página actual y empezar nueva
             pages.push(currentPage);
+            currentPage = [vaca];
+            currentHeight = 60 + rowHeight;
+            isFirstPage = false; // Ya no es la primera página
+        } else {
+            currentPage.push(vaca);
+            currentHeight += rowHeight;
+        }
+    });
+    
+    // Agregar la última página si tiene contenido
+    if (currentPage.length > 0) {
+        pages.push(currentPage);
+    }
+    
+    // Generar HTML para cada página
+    pages.forEach((paginaVacas, paginaIndex) => {
+        // Si no es la primera página, agregar salto de página
+        if (paginaIndex > 0) {
+            tablaVacas += `<div style="page-break-before: always;"></div>`;
         }
         
-        // Generar HTML para cada página
-        pages.forEach((paginaVacas, paginaIndex) => {
-            // Si no es la primera página de la primera sala, agregar salto de página
-            if (salaIndex > 0 || paginaIndex > 0) {
-                tablaVacas += `<div style="page-break-before: always;"></div>`;
-            }
+        // Determinar qué salas aparecen en esta página y sus títulos
+        const salasEnPagina = [...new Set(paginaVacas.map(vaca => vaca.salaOriginal))];
+        
+        salasEnPagina.forEach(sala => {
+            const vacasDeSalaEnPagina = paginaVacas.filter(vaca => vaca.salaOriginal === sala);
+            const esPrimerVacaDeSala = vacasDeSalaEnPagina.some(vaca => vaca.esPrimeraVacaDeSala);
             
-            // Solo mostrar el título de la sala en la primera página de cada sala
-            if (paginaIndex === 0) {
+            // Solo mostrar título si es la primera aparición de esta sala
+            if (esPrimerVacaDeSala) {
                 tablaVacas += `
                 <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 15px; margin-bottom: 15px;">
                     ${sala}
@@ -196,12 +214,12 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             `;
             
             let index = 1;
-            // Resetear el array de IDs para cada página si es necesario
-            if (paginaIndex === 0) {
-                ids.length = 0; // Limpiar el array de IDs para esta sala
+            // Resetear IDs solo si es la primera aparición de la sala
+            if (esPrimerVacaDeSala) {
+                ids.length = 0;
             }
             
-            paginaVacas.forEach(vaca => {
+            vacasDeSalaEnPagina.forEach(vaca => {
                 const countIds = count(vaca.nombre_vaca);
                 tablaVacas += `
                 <tr>
