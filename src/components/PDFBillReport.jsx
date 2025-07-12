@@ -82,46 +82,110 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         return resultado;
     }
 
+    // Función para estimar la altura de una fila basada en el contenido
+    const estimateRowHeight = (vaca) => {
+        const baseHeight = 30; // Altura base de una fila en puntos
+        const charWidth = 6; // Ancho promedio de un carácter en puntos
+        const cellWidth = 100; // Ancho promedio de una celda en puntos
+        
+        // Calcular líneas necesarias para cada celda
+        const extremidadLines = Math.ceil((convertExtremidad(vaca.extremidad) || '').length * charWidth / cellWidth);
+        const descripcionLines = Math.ceil((vaca.enfermedades || '').length * charWidth / cellWidth);
+        const observacionLines = Math.ceil((vaca.nota || '').length * charWidth / cellWidth);
+        const tratamientoLines = Math.ceil((vaca.tratamiento || '').length * charWidth / cellWidth);
+        
+        const maxLines = Math.max(1, extremidadLines, descripcionLines, observacionLines, tratamientoLines);
+        
+        return baseHeight * maxLines;
+    };
+
+    // Función para dividir las vacas en páginas
+    const paginateVacas = (vacas, maxPageHeight = 600) => {
+        const pages = [];
+        let currentPage = [];
+        let currentHeight = 80; // Altura del header de la tabla
+        
+        vacas.forEach(vaca => {
+            const rowHeight = estimateRowHeight(vaca);
+            
+            if (currentHeight + rowHeight > maxPageHeight && currentPage.length > 0) {
+                // Iniciar nueva página
+                pages.push(currentPage);
+                currentPage = [vaca];
+                currentHeight = 80 + rowHeight; // Header + primera fila
+            } else {
+                currentPage.push(vaca);
+                currentHeight += rowHeight;
+            }
+        });
+        
+        if (currentPage.length > 0) {
+            pages.push(currentPage);
+        }
+        
+        return pages;
+    };
 
     let tablaVacas = '';
-    uniqueSalas.forEach(sala => {
-        tablaVacas += `
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-            ${sala}
-        </h1>
-        <table class="animal-table">
-            <thead>
-                <tr>
-                    <th></th>
-                    <th>ID-Animal</th>
-                    <th>Extremidad</th>
-                    <th>Descripción</th>
-                    <th>Observación</th>
-                    <th>Tratamiento</th>
-                </tr>
-            </thead>
-            <tbody>
-        `;
-        let index = 1; // Inicializar el contador para cada sala
-
-        report.filter(vaca => vaca.sala === sala).forEach(vaca => {
-
-            const countIds = count(vaca.nombre_vaca);
+    uniqueSalas.forEach((sala, salaIndex) => {
+        const vacasEnSala = report.filter(vaca => vaca.sala === sala);
+        const paginasVacas = paginateVacas(vacasEnSala);
+        
+        paginasVacas.forEach((paginaVacas, paginaIndex) => {
+            // Si no es la primera página de la primera sala, agregar salto de página
+            if (salaIndex > 0 || paginaIndex > 0) {
+                tablaVacas += `<div style="page-break-before: always;"></div>`;
+            }
+            
+            // Solo mostrar el título de la sala en la primera página de cada sala
+            if (paginaIndex === 0) {
+                tablaVacas += `
+                <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 20px; margin-bottom: 20px;">
+                    ${sala}
+                </h1>`;
+            }
+            
             tablaVacas += `
-            <tr>
-                <td>${verifyId(vaca.nombre_vaca, index)}</td>
-                <td>${vaca.nombre_vaca}</td>
-                <td>${convertExtremidad(vaca.extremidad)}</td>
-                <td>${vaca.enfermedades}</td>
-                <td>${vaca.nota}</td>
-                <td>${vaca.tratamiento}</td>
-            </tr>
+            <table class="animal-table" style="margin-top: 20px; margin-bottom: 40px;">
+                <thead>
+                    <tr>
+                        <th style="width: 8%;">#</th>
+                        <th style="width: 15%;">ID-Animal</th>
+                        <th style="width: 15%;">Extremidad</th>
+                        <th style="width: 25%;">Descripción</th>
+                        <th style="width: 17%;">Observación</th>
+                        <th style="width: 20%;">Tratamiento</th>
+                    </tr>
+                </thead>
+                <tbody>
             `;
-            if (countIds) index++;
+            
+            let index = 1;
+            // Resetear el array de IDs para cada página si es necesario
+            if (paginaIndex === 0) {
+                ids.length = 0; // Limpiar el array de IDs para esta sala
+            }
+            
+            paginaVacas.forEach(vaca => {
+                const countIds = count(vaca.nombre_vaca);
+                tablaVacas += `
+                <tr>
+                    <td style="padding: 8px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
+                    <td style="padding: 8px; vertical-align: top;">${vaca.nombre_vaca}</td>
+                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
+                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
+                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
+                    <td style="padding: 8px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
+                </tr>
+                `;
+                if (countIds) index++;
+            });
+            
+            tablaVacas += `
+                </tbody>
+            </table>
+            `;
         });
-        tablaVacas += `
-            </tbody>
-        </table>`;
     });
 
 
@@ -147,25 +211,44 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     <style>
         @page {
             margin: 0; /* Reset browser default margins */
+            size: A4;
         }
         .page-content {
             padding: 40pt; /* Our desired margin */
+            min-height: calc(100vh - 80pt); /* Ensure content doesn't overflow */
         }
         .animal-table {
-            margin-top: 50px;
-            margin-bottom: 50px;
-            th, td {
-                border: 1px solid black;
-            };
+            width: 100%;
+            border-collapse: collapse;
+            font-family: Helvetica Neue;
+            margin-top: 20px;
+            margin-bottom: 40px;
+            page-break-inside: avoid;
+        }
+        .animal-table th,
+        .animal-table td {
+            border: 1px solid black;
+            text-align: center;
+            padding: 8px;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+        .animal-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
         }
         .paws-table {
             margin-bottom: 50px;
             width: 60%; /* Hacer la tabla más angosta */
             margin-left: auto; /* Centrar la tabla */
             margin-right: auto; /* Centrar la tabla */
-            th, td {
-                border: 1px solid black;
-            };
+        }
+        .paws-table th, 
+        .paws-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
         }
         table {
             width: 100%;
@@ -323,6 +406,11 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             margin: 0;
             padding: 0;
             color: black;
+        }
+        
+        /* Asegurar que cada página tenga el margen correcto */
+        div[style*="page-break-before: always"] {
+            padding-top: 40pt;
         }
     </style>
 </head>
