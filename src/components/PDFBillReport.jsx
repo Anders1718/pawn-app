@@ -7,6 +7,7 @@ import { shareAsync } from 'expo-sharing';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import DocsReport from './DocsReport';
 
 export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
     const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
@@ -645,6 +646,21 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             >
                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Previsualizar factura y reporte</StyledText>
             </TouchableOpacity>
+
+            <DocsReport
+                finca={finca}
+                direccion={direccion}
+                cliente={cliente}
+                lugar={lugar}
+                totalCuenta={totalCuenta}
+                listaVacas={listaVacas}
+                fechaHoyFormateada={fechaHoyFormateada}
+                nit={nit}
+                tel={tel}
+                sumaTotal={sumaTotal}
+                report={report}
+                users={users}
+            />
             
             <Modal
                 animationType="slide"

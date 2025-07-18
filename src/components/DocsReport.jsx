@@ -3,7 +3,7 @@ import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } fr
 import NetInfo from '@react-native-community/netinfo';
 import StyledText from './StyledText';
 
-const DocsBill = ({ direccion, cliente, totalCuenta, fechaHoyFormateada, nit, tel, sumaTotal, users }) => {
+const DocsReport = ({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) => {
   const [isConnected, setIsConnected] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -32,21 +32,25 @@ const DocsBill = ({ direccion, cliente, totalCuenta, fechaHoyFormateada, nit, te
   const handleGenerateDocs = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-bill', {
+      const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-bill-report', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          finca,
           direccion,
           cliente,
+          lugar,
           totalCuenta,
+          listaVacas,
           fechaHoyFormateada,
           nit,
           tel,
           sumaTotal,
+          report,
           users,
-          nombreDocumento: `Factura - ${cliente} - ${fechaHoyFormateada}`
+          nombreDocumento: `Factura y Reporte - ${cliente} - ${fechaHoyFormateada}`
         }),
       });
 
@@ -115,4 +119,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DocsBill;
+export default DocsReport;
