@@ -58,7 +58,6 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     }
 
     const convertExtremidad = (value) => {
-
         // Si value es undefined o null, retornar el valor original
         if (!value) return value;
 
@@ -83,192 +82,59 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         return resultado;
     }
 
-    // Función para estimar la altura de una fila basada en el contenido
-    const estimateRowHeight = (vaca) => {
-        const baseHeight = 25; // Altura base de una fila en puntos (reducida)
-        const charWidth = 6; // Ancho promedio de un carácter en puntos
-        const cellWidth = 100; // Ancho promedio de una celda en puntos
+    // Generar HTML para las tablas de vacas con paginación adecuada
+    const generateVacasHTML = () => {
+        let tablaVacas = '';
+        let contadorGeneral = 1;
         
-        // Calcular líneas necesarias para cada celda
-        const extremidadLines = Math.ceil((convertExtremidad(vaca.extremidad) || '').length * charWidth / cellWidth);
-        const descripcionLines = Math.ceil((vaca.enfermedades || '').length * charWidth / cellWidth);
-        const observacionLines = Math.ceil((vaca.nota || '').length * charWidth / cellWidth);
-        const tratamientoLines = Math.ceil((vaca.tratamiento || '').length * charWidth / cellWidth);
+        // Reset IDs para cada generación
+        ids.length = 0;
         
-        const maxLines = Math.max(1, extremidadLines, descripcionLines, observacionLines, tratamientoLines);
-        
-        return baseHeight * maxLines;
-    };
-
-    // Función para dividir las vacas en páginas
-    const paginateVacas = (vacas, maxPageHeight = 650, isFirstPageOfReport = false) => {
-        const pages = [];
-        let currentPage = [];
-        let currentHeight = 60; // Altura del header de la tabla (reducida)
-        let isFirstPage = true;
-        
-        vacas.forEach(vaca => {
-            const rowHeight = estimateRowHeight(vaca);
+        uniqueSalas.forEach((sala, salaIndex) => {
+            const vacasEnSala = report.filter(vaca => vaca.sala === sala);
             
-            // Solo aplicar altura reducida en la primera página del informe
-            const currentMaxHeight = (isFirstPageOfReport && isFirstPage) ? 400 : maxPageHeight;
+            // Título de la sala
+            tablaVacas += `
+            <div class="sala-section">
+                <h1 class="sala-title">
+                    ${sala}
+                </h1>
+                
+                <table class="animal-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 8%;">#</th>
+                            <th style="width: 15%;">ID-Animal</th>
+                            <th style="width: 15%;">Extremidad</th>
+                            <th style="width: 25%;">Descripción</th>
+                            <th style="width: 17%;">Observación</th>
+                            <th style="width: 20%;">Tratamiento</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
             
-            if (currentHeight + rowHeight > currentMaxHeight && currentPage.length > 0) {
-                // Iniciar nueva página
-                pages.push(currentPage);
-                currentPage = [vaca];
-                currentHeight = 60 + rowHeight; // Header + primera fila
-                isFirstPage = false; // Ya no es la primera página
-            } else {
-                currentPage.push(vaca);
-                currentHeight += rowHeight;
-            }
-        });
-        
-        if (currentPage.length > 0) {
-            pages.push(currentPage);
-        }
-        
-        return pages;
-    };
-
-    let tablaVacas = '';
-    
-    // Crear un array con todas las vacas de todas las salas, incluyendo información de sala
-    const todasLasVacas = [];
-    uniqueSalas.forEach(sala => {
-        const vacasEnSala = report.filter(vaca => vaca.sala === sala);
-        vacasEnSala.forEach((vaca, index) => {
-            todasLasVacas.push({
-                ...vaca,
-                salaOriginal: sala,
-                esPrimeraVacaDeSala: index === 0 // Marcar si es la primera vaca de esta sala
+            // Filas de vacas
+            vacasEnSala.forEach((vaca, vacaIndex) => {
+                const showNumber = count(vaca.nombre_vaca);
+                tablaVacas += `
+                        <tr class="animal-row">
+                            <td>${verifyId(vaca.nombre_vaca, showNumber ? contadorGeneral++ : '')}</td>
+                            <td>${vaca.nombre_vaca}</td>
+                            <td>${convertExtremidad(vaca.extremidad)}</td>
+                            <td>${vaca.enfermedades}</td>
+                            <td>${vaca.nota}</td>
+                            <td>${vaca.tratamiento}</td>
+                        </tr>`;
             });
-        });
-    });
-    
-    // Paginación global de todas las vacas
-    const pages = [];
-    let currentPage = [];
-    let currentHeight = 60; // Altura del header de la tabla
-    let isFirstPage = true;
-    
-    todasLasVacas.forEach(vaca => {
-        const rowHeight = estimateRowHeight(vaca);
-        
-        // Solo la primera página del informe tiene espacio reducido
-        const maxHeight = isFirstPage ? 400 : 650;
-        
-        // Si agregar esta vaca excede el límite Y ya hay vacas en la página actual
-        if (currentHeight + rowHeight > maxHeight && currentPage.length > 0) {
-            // Guardar página actual y empezar nueva
-            pages.push(currentPage);
-            currentPage = [vaca];
-            currentHeight = 60 + rowHeight;
-            isFirstPage = false; // Ya no es la primera página
-        } else {
-            currentPage.push(vaca);
-            currentHeight += rowHeight;
-        }
-    });
-    
-    // Agregar la última página si tiene contenido
-    if (currentPage.length > 0) {
-        pages.push(currentPage);
-    }
-    
-    // Generar HTML para cada página
-    pages.forEach((paginaVacas, paginaIndex) => {
-        // Si no es la primera página, agregar salto de página
-        if (paginaIndex > 0) {
-            tablaVacas += `<div style="page-break-before: always;"></div>`;
-        }
-        
-        // Determinar si necesitamos mostrar títulos de sala en esta página
-        let lastSala = '';
-        let hasAddedTable = false;
-        
-        paginaVacas.forEach((vaca, vacaIndex) => {
-            // Si cambia la sala, mostrar el título
-            if (vaca.salaOriginal !== lastSala) {
-                // Si ya habíamos abierto una tabla, cerrarla
-                if (hasAddedTable) {
-                    tablaVacas += `
-                        </tbody>
-                    </table>`;
-                }
-                
-                // Mostrar título de la nueva sala
-                tablaVacas += `
-                <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center; margin-top: 15px; margin-bottom: 15px;">
-                    ${vaca.salaOriginal}
-                </h1>`;
-                
-                // Abrir nueva tabla
-                tablaVacas += `
-                <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">#</th>
-                            <th style="width: 15%;">ID-Animal</th>
-                            <th style="width: 15%;">Extremidad</th>
-                            <th style="width: 25%;">Descripción</th>
-                            <th style="width: 17%;">Observación</th>
-                            <th style="width: 20%;">Tratamiento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-                
-                hasAddedTable = true;
-                lastSala = vaca.salaOriginal;
-                
-                // Resetear IDs cuando cambia de sala
-                if (vaca.esPrimeraVacaDeSala) {
-                    ids.length = 0;
-                }
-            } else if (!hasAddedTable) {
-                // Si es la misma sala pero no hemos abierto tabla aún (continuación de página anterior)
-                tablaVacas += `
-                <table class="animal-table" style="margin-top: 10px; margin-bottom: 20px;">
-                    <thead>
-                        <tr>
-                            <th style="width: 8%;">#</th>
-                            <th style="width: 15%;">ID-Animal</th>
-                            <th style="width: 15%;">Extremidad</th>
-                            <th style="width: 25%;">Descripción</th>
-                            <th style="width: 17%;">Observación</th>
-                            <th style="width: 20%;">Tratamiento</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                `;
-                hasAddedTable = true;
-            }
             
-            // Agregar la fila de la vaca
-            let index = 1; // Este índice debería ser calculado correctamente
-            const countIds = count(vaca.nombre_vaca);
             tablaVacas += `
-            <tr>
-                <td style="padding: 4px; vertical-align: top;">${verifyId(vaca.nombre_vaca, index)}</td>
-                <td style="padding: 4px; vertical-align: top;">${vaca.nombre_vaca}</td>
-                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${convertExtremidad(vaca.extremidad)}</td>
-                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.enfermedades}</td>
-                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.nota}</td>
-                <td style="padding: 4px; vertical-align: top; word-wrap: break-word;">${vaca.tratamiento}</td>
-            </tr>
-            `;
+                    </tbody>
+                </table>
+            </div>`;
         });
         
-        // Cerrar la tabla al final de la página
-        if (hasAddedTable) {
-            tablaVacas += `
-                </tbody>
-            </table>`;
-        }
-    });
-
+        return tablaVacas;
+    };
 
     let tablaCuenta = '';
     totalCuenta.forEach((cuenta, index) => {
@@ -284,149 +150,200 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
     const generateHTML = () => {
         return `
+<!DOCTYPE html>
 <html>
-
 <head>
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
     <style>
+        /* Configuración de página con márgenes fijos */
         @page {
-            margin: 0; /* Reset browser default margins */
             size: A4;
+            margin: 2.5cm 2cm 2.5cm 2cm; /* Superior, Derecho, Inferior, Izquierdo */
         }
+        
+        /* Reset y configuración básica */
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            color: black;
+            font-size: 12pt;
+            line-height: 1.3;
+        }
+        
+        /* Configuración para respetar márgenes en toda página */
         .page-content {
-            padding: 40pt; /* Our desired margin */
-            min-height: calc(100vh - 80pt); /* Ensure content doesn't overflow */
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
+        
+        /* Headers que se repiten en cada página */
+        .page-header {
+            position: running(pageHeader);
+            width: 100%;
+            height: 50px;
+            margin-bottom: 20px;
+        }
+        
+        .page-footer {
+            position: running(pageFooter);
+            width: 100%;
+            height: 30px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 10pt;
+        }
+        
+        /* Configuración de tablas para paginación correcta */
         .animal-table {
             width: 100%;
             border-collapse: collapse;
-            font-family: Helvetica Neue;
-            margin-top: 20px;
             margin-bottom: 20px;
-            page-break-inside: avoid;
+            page-break-inside: auto;
         }
+        
+        .animal-table thead {
+            display: table-header-group;
+            page-break-inside: avoid;
+            page-break-after: avoid;
+        }
+        
+        .animal-table tbody {
+            display: table-row-group;
+        }
+        
         .animal-table th,
         .animal-table td {
             border: 1px solid black;
+            padding: 8px 4px;
             text-align: center;
-            padding: 4px;
             vertical-align: top;
             word-wrap: break-word;
             overflow-wrap: break-word;
+            font-size: 11pt;
         }
+        
         .animal-table th {
             background-color: #f2f2f2;
             font-weight: bold;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
+        
+        /* Filas de animales con control de salto de página */
+        .animal-row {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+        
+        /* Secciones de sala */
+        .sala-section {
+            page-break-inside: auto;
+            margin-bottom: 30px;
+        }
+        
+        .sala-title {
+            font-size: 17pt;
+            font-weight: bold;
+            text-align: center;
+            margin: 20px 0 15px 0;
+            page-break-inside: avoid;
+            page-break-after: avoid;
+        }
+        
+        /* Tablas de información */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        
+        .info-table td {
+            padding: 5px 10px;
+            vertical-align: top;
+        }
+        
+        .info-table .left-column {
+            text-align: left;
+            width: 50%;
+        }
+        
+        .info-table .right-column {
+            text-align: left;
+            width: 50%;
+        }
+        
+        .info-table .bold {
+            font-weight: bold;
+        }
+        
+        /* Tabla de cuenta */
+        .cuenta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            page-break-inside: avoid;
+        }
+        
+        .cuenta-table th,
+        .cuenta-table td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        .cuenta-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        /* Tabla de patas (abreviaciones) */
         .paws-table {
-            margin-bottom: 50px;
-            width: 60%; /* Hacer la tabla más angosta */
-            margin-left: auto; /* Centrar la tabla */
-            margin-right: auto; /* Centrar la tabla */
+            width: 60%;
+            margin: 30px auto;
+            border-collapse: collapse;
+            page-break-inside: avoid;
         }
+        
         .paws-table th, 
         .paws-table td {
             border: 1px solid black;
             padding: 8px;
             text-align: center;
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Helvetica Neue;
-        }
-        th,td {
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-
-        .info-table {
-            margin-bottom: 30px;
-        }
-
-        .info-table .left-column {
-            text-align: left;
-        }
-
-        .info-table .right-column {
-            text-align: right;
-        }
-
-        .info-table .bold {
+        
+        /* Headers y títulos */
+        h1 {
+            font-size: 17pt;
             font-weight: bold;
-        }
-        thead {
-            display: table-header-group;
-        }
-        tr {
-            page-break-inside: avoid !important;
-        }
-        .total-table {
-            width: auto;
-            margin-left: auto; /* Alinea la tabla a la derecha */
-        }
-
-        .total-table td {
-            padding: 0 5px; /* Reduce el padding entre celdas */
+            text-align: ${textAlignment};
+            margin: 20px 0 15px 0;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
         
-        /* Estilos para hacer que los campos de información del cliente estén más juntos */
-        .client-info td {
-            padding: 0 3px; /* Reduce aún más el padding entre celdas */
+        h2 {
+            font-size: 15pt;
+            font-weight: bold;
+            text-align: ${textAlignment};
+            margin: 15px 0 10px 0;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
         
-        .client-info .label {
-            width: 1%; /* Hace que la celda de la etiqueta sea lo más estrecha posible */
-            white-space: nowrap; /* Evita que el texto se rompa */
-            padding-right: 0; /* Elimina el padding derecho */
-        }
-        
-        .client-info .value {
-            padding-right: 15px; /* Reduce el espacio a la derecha para separar los pares de campos */
-        }
-        
-        /* Estilos específicos para NIT y teléfono */
-        .client-info .tight-pair {
-            width: 1%; /* Hace que la celda sea lo más estrecha posible */
-            white-space: nowrap; /* Evita que el texto se rompa */
-        }
-        
-        .client-info .tight-label {
-            padding-right: 0; /* Elimina el padding derecho */
-            margin-right: 0; /* Elimina el margen derecho */
-        }
-        
-        .client-info .tight-value {
-            padding-left: 0; /* Elimina el padding izquierdo */
-            margin-left: 0; /* Elimina el margen izquierdo */
-        }
-        
-        /* Estilos para los títulos principales */
-        .title {
-            margin-bottom: 15px; /* Espacio debajo del título */
-            margin-top: 25px; /* Espacio encima del título */
-        }
-        
-        /* Estilos para los subtítulos */
-        .subtitle {
-            margin-top: 5px; /* Espacio mínimo encima del subtítulo */
-            margin-bottom: 5px; /* Espacio mínimo debajo del subtítulo */
-        }
-        
-        /* Estilo para separar las etiquetas de sus valores */
-        .label-text {
-            margin-right: 10px; /* Espacio entre la etiqueta y su valor */
-            display: inline-block; /* Para asegurar que el margen se aplique correctamente */
-        }
-        
+        /* Logo container */
         .logo-container {
             position: absolute;
-            top: -20px;
+            top: -10px;
             right: ${logoPosition.right}cm;
             text-align: right;
+            z-index: 10;
         }
         
         .logo-image {
@@ -435,109 +352,150 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             border-radius: 10px;
             object-fit: cover;
         }
-
-        .logo-image-2 {
-            width: 200px;
-            height: 70px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
         
+        /* Header container */
         .header-container {
             position: relative;
-            height: 30px; /* Para dar espacio al logo */
+            height: 80px;
             margin-bottom: 20px;
+            page-break-inside: avoid;
         }
         
         .date-info {
             position: absolute;
             left: 0;
             bottom: 0;
-        }
-
-        /* Estilo para mejorar la alineación en la columna derecha */
-        .info-table .right-column {
-            text-align: left;
-            padding-left: 30%;
+            font-size: 17pt;
+            font-weight: bold;
         }
         
-        /* Asegura que las etiquetas y valores en la columna derecha estén alineados */
-        .info-table .right-column .label-text {
+        /* Información de cliente */
+        .client-info td {
+            padding: 5px 3px;
+        }
+        
+        .client-info .label-text {
+            font-weight: bold;
+            margin-right: 10px;
             display: inline-block;
-            min-width: 50px;
-            margin-right: 5px;
-            text-align: left;
         }
         
-        h1, h2 {
+        /* Total */
+        .total-section {
+            text-align: right;
+            font-weight: bold;
+            font-size: 18pt;
+            margin: 15px 0;
+            page-break-inside: avoid;
+        }
+        
+        /* Salto de página forzado */
+        .page-break {
+            page-break-before: always;
+            padding-top: 0;
+        }
+        
+        /* Títulos de sección principales */
+        .main-title {
+            font-size: 20pt;
+            font-weight: bold;
             text-align: ${textAlignment};
-            page-break-after: avoid !important;
-        }
-
-        .informe-heder{
-            margin-top: 40px; /* Aumentar el margen superior */
-        }
-        .informe-menu{
-            margin-top: 70px; /* Aumentar el margen superior */
+            margin: 30px 0 20px 0;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
         
-        /* Estilos para el documento */
-        body {
-            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: black;
+        .section-title {
+            font-size: 17pt;
+            font-weight: bold;
+            text-align: ${textAlignment};
+            margin: 25px 0 15px 0;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
         
-        /* Asegurar que cada página tenga el margen correcto */
-        div[style*="page-break-before: always"] {
-            padding-top: 40pt;
+        /* Información del profesional */
+        .professional-info {
+            font-size: 17pt;
+            text-align: ${textAlignment};
+            margin: 5px 0;
+            page-break-inside: avoid;
+        }
+        
+        .professional-name {
+            font-size: 25pt;
+            font-weight: normal;
+        }
+        
+        /* Evitar huérfanas y viudas */
+        p, div, td, th {
+            orphans: 2;
+            widows: 2;
+        }
+        
+        /* Asegurar que las tablas respeten los márgenes */
+        table {
+            margin-left: 0;
+            margin-right: 0;
         }
     </style>
 </head>
 
 <body>
-   <div class="page-content">
-       <div class="header-container">
-           <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-               Fecha: ${fechaHoyFormateada}
-           </h2>
-           
-           <div class="logo-container">
-               <img src="${logoBase64}" class="logo-image" alt="Logo">
-           </div>
-       </div>
-       
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
+    <!-- PRIMERA PÁGINA: CUENTA DE COBRO -->
+    <div class="page-content">
+        <div class="header-container">
+            <h2 class="date-info">
+                Fecha: ${fechaHoyFormateada}
+            </h2>
+            
+            <div class="logo-container">
+                <img src="${logoBase64}" class="logo-image" alt="Logo">
+            </div>
+        </div>
+        
+        <h1 class="section-title">
             CUENTA DE COBRO
         </h1>
+        
         <table class="info-table client-info">
             <tr>
-                <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-                <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
+                <td class="left-column">
+                    <span class="label-text">Cliente:</span>${cliente}
+                </td>
+                <td class="right-column">
+                    <span class="label-text">Nit:</span>${nit}
+                </td>
             </tr>
             <tr>
-                <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
-                <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
+                <td class="left-column">
+                    <span class="label-text">Dirección:</span>${direccion}
+                </td>
+                <td class="right-column">
+                    <span class="label-text">Tel:</span>${tel}
+                </td>
             </tr>
         </table>
 
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
+        <h1 class="section-title">
             DEBE A
         </h1>
-        <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+        
+        <div class="professional-info professional-name">
             ${users.nombre} ${users.apellido}
-        </h1>
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+        </div>
+        <div class="professional-info">
             CC: ${users.documento} Tel ${users.telefono}
-        </h1>
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
+        </div>
+        <div class="professional-info">
             ${users.direccion}
-        </h1>
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
+        </div>
+        
+        <h1 class="section-title">
             POR CONCEPTO DE
         </h1>
-        <table class="animal-table">
+        
+        <table class="cuenta-table">
             <tr>
                 <th>Cantidad</th>
                 <th>Descripción</th>
@@ -547,54 +505,61 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             ${tablaCuenta}
         </table>
         
-        <div style="text-align: right; font-weight: bold; font-size: 18px; margin-top: 15px; margin-bottom: 15px; white-space: nowrap;">
+        <div class="total-section">
             Total: $ ${sumaTotal}
         </div>
+        
         <table class="info-table">
             <tr>
-                <td class="left-column">${users.nombre} ${users.apellido} </td>
+                <td class="left-column">${users.nombre} ${users.apellido}</td>
                 <td class="right-column">Favor consignar a la cuenta</td>
             </tr>
             <tr>
-                <td class="left-column">${users.profesion} </td>
+                <td class="left-column">${users.profesion}</td>
                 <td class="right-column">${users.tipoCuenta} ${users.banco}</td>
             </tr>
             <tr>
-                <td class="left-column">${users.universidad} </td>
+                <td class="left-column">${users.universidad}</td>
                 <td class="right-column">${users.numeroCuenta}</td>
             </tr>
         </table>
+    </div>
 
-        <div style="page-break-before: always; padding-top: 30px;">
-            <div class="informe-heder">
-                <div class="header-container">
-                    
-                    <div class="logo-container">
-                        <img src="${logoBase64}" class="logo-image-2" alt="Logo">
-                    </div>
-                </div>
+    <!-- SEGUNDA PÁGINA Y SIGUIENTES: INFORME -->
+    <div class="page-break">
+        <div class="header-container">
+            <div class="logo-container">
+                <img src="${logoBase64}" class="logo-image" alt="Logo">
             </div>
-            <div class="informe-menu">
-            <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
-                INFORME
-            </h1>
-            <table class="info-table">
-            <tr>
-                <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-                <td class="right-column"><span class="bold label-text">Finca:</span>${finca}</td>
-            </tr>
-            <tr>
-                <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
-                <td class="right-column"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
-            </tr>
-             </table>
-             </div>
         </div>
-
-            <tbody>
-            ${tablaVacas}
-            </tbody>
-
+        
+        <h1 class="main-title">
+            INFORME
+        </h1>
+        
+        <table class="info-table">
+            <tr>
+                <td class="left-column">
+                    <span class="label-text">Cliente:</span>${cliente}
+                </td>
+                <td class="right-column">
+                    <span class="label-text">Finca:</span>${finca}
+                </td>
+            </tr>
+            <tr>
+                <td class="left-column">
+                    <span class="label-text">Ubicación:</span>${lugar}
+                </td>
+                <td class="right-column">
+                    <span class="label-text">Fecha:</span>${fechaHoyFormateada}
+                </td>
+            </tr>
+        </table>
+        
+        <!-- TABLAS DE VACAS CON PAGINACIÓN AUTOMÁTICA -->
+        ${generateVacasHTML()}
+        
+        <!-- TABLA DE ABREVIACIONES -->
         <table class="paws-table">
             <tr>
                 <td>AI = anterior izquierdo</td>
@@ -606,20 +571,20 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             </tr>
         </table>
 
+        <!-- INFORMACIÓN DEL PROFESIONAL AL FINAL -->
         <table class="info-table">
             <tr>
-                <td class="left-column">${users.nombre} ${users.apellido} </td>
+                <td class="left-column">${users.nombre} ${users.apellido}</td>
             </tr>
             <tr>
-                <td class="left-column">${users.profesion} </td>
+                <td class="left-column">${users.profesion}</td>
             </tr>
             <tr>
-                <td class="left-column">${users.universidad} </td>
+                <td class="left-column">${users.universidad}</td>
             </tr>
         </table>
-   </div>
+    </div>
 </body>
-
 </html>
 `;
     };
@@ -631,7 +596,18 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
 
     const printToFile = async () => {
         // On iOS/android prints the given html. On web prints the HTML from the current page.
-        const { uri } = await Print.printToFileAsync({ html: htmlContent || generateHTML() });
+        const { uri } = await Print.printToFileAsync({ 
+            html: htmlContent || generateHTML(),
+            printerOptions: {
+                // Asegurar que se respeten los márgenes en el PDF
+                margins: {
+                    top: 2.5,
+                    bottom: 2.5,
+                    left: 2,
+                    right: 2
+                }
+            }
+        });
         console.log('File has been saved to:', uri);
         await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
         setIsPreviewVisible(false);
@@ -857,10 +833,6 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#ccc',
         marginRight: 10,
-    },
-    activeButton: {
-        backgroundColor: '#1e293b',
-        borderColor: '#1e293b',
     },
     activeButton: {
         backgroundColor: '#1e293b',
