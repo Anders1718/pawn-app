@@ -2,7 +2,7 @@
   "expo": {
     "name": "cow-foot-app",
     "slug": "cow-foot-app",
-    "version": "1.5.0",
+    "version": "1.7.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,10 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anders17.cowfootapp"
+      "bundleIdentifier": "com.anders17.cowfootapp",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {

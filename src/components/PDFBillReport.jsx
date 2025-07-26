@@ -1,715 +1,343 @@
 import * as React from 'react';
-import { View, StyleSheet, TouchableOpacity, Modal, ScrollView, Text } from 'react-native';
-import Slider from '@react-native-community/slider';
+import { View, StyleSheet, TouchableOpacity, Modal, Text, Alert, Platform } from 'react-native';
 import StyledText from './StyledText';
-import * as Print from 'expo-print';
 import { shareAsync } from 'expo-sharing';
-import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import DocsReport from './DocsReport';
+import PDFLib, { PDFDocument, PDFPage, StandardFonts } from 'react-native-pdf-lib';
+
+// Helper para word-wrapping (esencial para tablas)
+const wrapText = (text, width, font, fontSize) => {
+    const words = text.split(' ');
+    const lines = [];
+    let currentLine = words[0];
+
+    for (let i = 1; i < words.length; i++) {
+        const word = words[i];
+        // Esta es una estimación. Una librería real de PDF mediría el texto.
+        // Asumimos un ancho de caracter promedio.
+        const estimatedWidth = (currentLine + " " + word).length * fontSize * 0.5; 
+        if (estimatedWidth < width) {
+            currentLine += " " + word;
+        } else {
+            lines.push(currentLine);
+            currentLine = word;
+        }
+    }
+    lines.push(currentLine);
+    return lines;
+};
 
 export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
-    const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
-    const [htmlContent, setHtmlContent] = React.useState('');
-    const [logoSize, setLogoSize] = React.useState(150);
-    const [logoPosition, setLogoPosition] = React.useState({ top: 0.7, right: -0.5 });
-    const [textAlignment, setTextAlignment] = React.useState('center');
-    const [logoBase64, setLogoBase64] = React.useState('');
-    
-    // Cargar la imagen como Base64 al iniciar el componente
+    const [isGenerating, setIsGenerating] = React.useState(false);
+    const [logoPath, setLogoPath] = React.useState(null);
+
     React.useEffect(() => {
         (async () => {
             try {
-                // Intentar cargar la imagen desde los assets
                 const asset = Asset.fromModule(require('../img/logo-podologo.png'));
                 await asset.downloadAsync();
-                const base64 = await FileSystem.readAsStringAsync(asset.localUri, { encoding: FileSystem.EncodingType.Base64 });
-                setLogoBase64(`data:image/png;base64,${base64}`);
+                setLogoPath(asset.localUri);
             } catch (error) {
-                console.error('Error al cargar la imagen:', error);
-                // Si falla, puedes proporcionar una imagen predeterminada o mostrar un mensaje
+                console.error('Error al cargar la imagen del logo:', error);
             }
         })();
     }, []);
-    
+
     const uniqueSalas = [...new Set(report.map(item => item.sala))];
-    const ids = [];
+    let ids = [];
 
     const verifyId = (id, n) => {
-        const itemsArray = ids.indexOf(id);
-
-        if (itemsArray === -1) {
-            // Si el elemento no existe en el array, añadirlo
+        if (ids.indexOf(id) === -1) {
             ids.push(id);
-            return n
+            return n.toString();
         }
-        // Si el elemento existe en el array, eliminarlo
         return '';
-    }
-
-    const count = (id) => {
-        const itemsArray = ids.indexOf(id);
-
-        if (itemsArray === -1) {
-            return true
-        }
-        return false;
-    }
+    };
+    
+    const count = (id) => ids.indexOf(id) === -1;
 
     const convertExtremidad = (value) => {
+        if (!value) return '';
+        return value.split(',').map(seccion => 
+            seccion.trim().split(' ').map(palabra => 
+                /\d/.test(palabra) ? palabra.replace(/[^\d]/g, '') : palabra
+            ).join(' ')
+        ).join(', ');
+    };
 
-        // Si value es undefined o null, retornar el valor original
-        if (!value) return value;
+    // La función definitiva para generar el PDF de forma nativa
+    const generatePdfNatively = async () => {
+        setIsGenerating(true);
+        try {
+            const docsDir = await PDFLib.getDocumentsDirectory();
+            const pdfPath = `${docsDir}/factura-reporte-${Date.now()}.pdf`;
 
-        // Dividir el string por comas y luego por espacios
-        const secciones = value.split(',');
+            // === DEFINICIONES Y CONSTANTES ===
+            const pageWidth = 595.28; // A4 Ancho
+            const pageHeight = 841.89; // A4 Alto
+            const margin = 57; // 2cm
+            const contentWidth = pageWidth - (margin * 2);
+            let currentPage = 1;
+            const pages = [];
+            
+            const font = StandardFonts.Helvetica;
+            const fontBold = StandardFonts.HelveticaBold;
+            const mainTextColor = '#000000';
+            
+            const createPage = () => PDFPage.create().setMediaBox(pageWidth, pageHeight);
 
-        const resultado = secciones.map(seccion => {
-            const palabras = seccion.trim().split(' ');
+            let page = createPage();
+            let currentY = pageHeight - margin;
 
-            // Procesar cada palabra
-            return palabras.map(palabra => {
-                // Si la palabra contiene números
-                if (/\d/.test(palabra)) {
-                    // Extraer solo los números de esa palabra
-                    return palabra.replace(/[^\d]/g, '');
+            const checkY = (spaceNeeded) => {
+                if (currentY - spaceNeeded < margin) {
+                    pages.push(page);
+                    page = createPage();
+                    currentY = pageHeight - margin;
+                    currentPage++;
+                    // Podríamos redibujar el header aquí si fuera necesario
                 }
-                // Si no contiene números, mantener la palabra original
-                return palabra;
-            }).join(' ');
-        }).join(', '); // Unir las secciones con coma y espacio
+            };
 
-        return resultado;
-    }
-
-
-    let tablaVacas = '';
-    uniqueSalas.forEach(sala => {
-        tablaVacas += `
-        <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: center;">
-            ${sala}
-        </h1>
-        <table class="animal-table">
-            <tr>
-                <th></th>
-                <th>ID-Animal</th>
-                <th>Extremidad</th>
-                <th>Descripción</th>
-                <th>Observación</th>
-                <th>Tratamiento</th>
-            </tr>
-        `;
-        let index = 1; // Inicializar el contador para cada sala
-        let elementCount = 0; // Contador para el control de página
-
-        report.filter(vaca => vaca.sala === sala).forEach(vaca => {
-            if (elementCount > 0) {
-                // Primera página: 22 elementos
-                if (elementCount === 22) {
-                    tablaVacas += `
-                    </table>
-                    <div style="page-break-after: always;"></div>
-                    <table class="animal-table">
-                        <tr>
-                            <th></th>
-                            <th>ID-Animal</th>
-                            <th>Extremidad</th>
-                            <th>Descripción</th>
-                            <th>Observación</th>
-                            <th>Tratamiento</th>
-                        </tr>
-                    `;
+            const drawHeader = () => {
+                page.drawText(`${users.nombre} ${users.apellido}`, {
+                    x: margin,
+                    y: pageHeight - 35,
+                    font: fontBold,
+                    fontSize: 12,
+                    color: mainTextColor,
+                });
+                if (logoPath) {
+                    page.drawImage(logoPath, 'png', {
+                        x: contentWidth - 80 + margin,
+                        y: pageHeight - 50,
+                        width: 100,
+                        height: 40,
+                    });
                 }
-                // Páginas intermedias: 25 elementos por página
-                else if (elementCount > 22 && (elementCount - 22) % 25 === 0) {
-                    tablaVacas += `
-                    </table>
-                    <div style="page-break-after: always;"></div>
-                    <table class="animal-table">
-                        <tr>
-                            <th></th>
-                            <th>ID-Animal</th>
-                            <th>Extremidad</th>
-                            <th>Descripción</th>
-                            <th>Observación</th>
-                            <th>Tratamiento</th>
-                        </tr>
-                    `;
-                }
+            };
+            
+            const drawFooter = () => {
+                 page.drawText(`Página ${currentPage}`, {
+                    x: contentWidth / 2 + margin - 20,
+                    y: 35,
+                    font,
+                    fontSize: 9,
+                    color: '#888888'
+                });
             }
 
-            const countIds = count(vaca.nombre_vaca);
-            tablaVacas += `
-            <tr>
-                <td>${verifyId(vaca.nombre_vaca, index)}</td>
-                <td>${vaca.nombre_vaca}</td>
-                <td>${convertExtremidad(vaca.extremidad)}</td>
-                <td>${vaca.enfermedades}</td>
-                <td>${vaca.nota}</td>
-                <td>${vaca.tratamiento}</td>
-            </tr>
-            `;
-            if (countIds) index++;
-            elementCount++;
-        });
-        tablaVacas += `</table>`;
-    });
+            // === PÁGINA 1: CUENTA DE COBRO ===
+            drawHeader();
+            
+            currentY -= 40;
+            page.drawText('CUENTA DE COBRO', { x: margin, y: currentY, font: fontBold, fontSize: 18, color: mainTextColor });
+            
+            currentY -= 30;
+            page.drawText(`Fecha: ${fechaHoyFormateada}`, { x: margin, y: currentY, font, fontSize: 11 });
+            
+            currentY -= 20;
+            page.drawText(`Cliente: ${cliente}`, { x: margin, y: currentY, font, fontSize: 11 });
+            page.drawText(`Nit: ${nit}`, { x: margin + contentWidth/2, y: currentY, font, fontSize: 11 });
+            
+            currentY -= 20;
+            page.drawText(`Dirección: ${direccion}`, { x: margin, y: currentY, font, fontSize: 11 });
+            page.drawText(`Tel: ${tel}`, { x: margin + contentWidth/2, y: currentY, font, fontSize: 11 });
+            
+            currentY -= 40;
+            page.drawText('DEBE A', { x: pageWidth/2 - 30, y: currentY, font: fontBold, fontSize: 16 });
 
+            currentY -= 25;
+            page.drawText(`${users.nombre} ${users.apellido}`, { x: pageWidth/2 - 60, y: currentY, font, fontSize: 14 });
+            
+            // ... (Agregar más detalles del profesional si es necesario)
+            
+            currentY -= 40;
+            page.drawText('POR CONCEPTO DE', { x: pageWidth/2 - 70, y: currentY, font: fontBold, fontSize: 16 });
 
-    let tablaCuenta = '';
-    totalCuenta.forEach((cuenta, index) => {
-        tablaCuenta += `
-        <tr>
-            <td>${cuenta.cantidad}</td>
-            <td>${cuenta.descripcion}</td>
-            <td>$ ${cuenta.valor}</td>
-            <td>$ ${cuenta.total}</td>
-        </tr>
-    `;
-    });
+            // Tabla de cobro
+            currentY -= 30;
+            const invoiceTableCols = [100, 250, 100, contentWidth - 450];
+            // Headers
+            let currentX = margin;
+            page.drawRectangle({x: margin, y: currentY - 20, width: contentWidth, height: 20, color: '#EAEAEA'});
+            page.drawText('Cantidad', {x: currentX + 5, y: currentY - 14, font: fontBold, fontSize: 10});
+            currentX += invoiceTableCols[0];
+            page.drawText('Descripción', {x: currentX + 5, y: currentY - 14, font: fontBold, fontSize: 10});
+            currentX += invoiceTableCols[1];
+            page.drawText('Valor/und', {x: currentX + 5, y: currentY - 14, font: fontBold, fontSize: 10});
+            currentX += invoiceTableCols[2];
+            page.drawText('Valor', {x: currentX + 5, y: currentY - 14, font: fontBold, fontSize: 10});
+            
+            currentY -= 20;
 
-    const generateHTML = () => {
-        return `
-<html>
+            totalCuenta.forEach(item => {
+                checkY(20);
+                currentX = margin;
+                page.drawText(item.cantidad.toString(), {x: currentX + 5, y: currentY - 14, font, fontSize: 10});
+                currentX += invoiceTableCols[0];
+                page.drawText(item.descripcion, {x: currentX + 5, y: currentY - 14, font, fontSize: 10});
+                currentX += invoiceTableCols[1];
+                page.drawText(`$ ${item.valor}`, {x: currentX + 5, y: currentY - 14, font, fontSize: 10});
+                currentX += invoiceTableCols[2];
+                page.drawText(`$ ${item.total}`, {x: currentX + 5, y: currentY - 14, font, fontSize: 10});
+                currentY -= 20;
+            });
+            
+            currentY -= 10;
+            page.drawText(`Total: $ ${sumaTotal}`, {x: pageWidth - margin - 150, y: currentY, font: fontBold, fontSize: 14});
+            
+            drawFooter();
+            pages.push(page); // Finaliza página 1
 
-<head>
-    <meta name="viewport"
-        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
-    <style>
-        @page {
-            margin: 40pt; /* Márgenes de la página */
-        }
-        .animal-table {
-            margin-top: 50px;
-            margin-bottom: 50px;
-            th, td {
-                border: 1px solid black;
+            // === PÁGINAS DE REPORTE ===
+            page = createPage();
+            currentPage++;
+            currentY = pageHeight - margin;
+            ids = [];
+            let counter = 1;
+
+            drawHeader();
+
+            currentY -= 40;
+            page.drawText('INFORME DE PODOLOGÍA', { x: margin, y: currentY, font: fontBold, fontSize: 18, color: mainTextColor });
+            
+            // Info del reporte
+            currentY -= 30;
+            page.drawText(`Finca: ${finca}`, { x: margin, y: currentY, font, fontSize: 11 });
+            page.drawText(`Ubicación: ${lugar}`, { x: margin + contentWidth/2, y: currentY, font, fontSize: 11 });
+
+            const animalTableCols = [40, 80, 80, 120, 90, contentWidth - 410];
+            const drawAnimalTableHeader = () => {
+                let x = margin;
+                page.drawRectangle({x: margin, y: currentY - 25, width: contentWidth, height: 25, color: '#EAEAEA'});
+                page.drawText('#', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                x += animalTableCols[0];
+                page.drawText('ID-Animal', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                x += animalTableCols[1];
+                page.drawText('Extremidad', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                x += animalTableCols[2];
+                page.drawText('Descripción', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                x += animalTableCols[3];
+                page.drawText('Observación', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                x += animalTableCols[4];
+                page.drawText('Tratamiento', {x: x + 5, y: currentY - 17, font: fontBold, fontSize: 9});
+                currentY -= 25;
             };
-        }
-        .paws-table {
-            margin-bottom: 50px;
-            width: 60%; /* Hacer la tabla más angosta */
-            margin-left: auto; /* Centrar la tabla */
-            margin-right: auto; /* Centrar la tabla */
-            th, td {
-                border: 1px solid black;
-            };
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-family: Helvetica Neue;
-        }
-        th,td {
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
+            
+            currentY -= 30;
 
-        .info-table {
-            margin-bottom: 30px;
-        }
-
-        .info-table .left-column {
-            text-align: left;
-        }
-
-        .info-table .right-column {
-            text-align: right;
-        }
-
-        .info-table .bold {
-            font-weight: bold;
-        }
-        thead {
-            display: table-header-group;
-        }
-        tr {
-            page-break-inside: avoid;
-        }
-        .total-table {
-            width: auto;
-            margin-left: auto; /* Alinea la tabla a la derecha */
-        }
-
-        .total-table td {
-            padding: 0 5px; /* Reduce el padding entre celdas */
-        }
-        
-        /* Estilos para hacer que los campos de información del cliente estén más juntos */
-        .client-info td {
-            padding: 0 3px; /* Reduce aún más el padding entre celdas */
-        }
-        
-        .client-info .label {
-            width: 1%; /* Hace que la celda de la etiqueta sea lo más estrecha posible */
-            white-space: nowrap; /* Evita que el texto se rompa */
-            padding-right: 0; /* Elimina el padding derecho */
-        }
-        
-        .client-info .value {
-            padding-right: 15px; /* Reduce el espacio a la derecha para separar los pares de campos */
-        }
-        
-        /* Estilos específicos para NIT y teléfono */
-        .client-info .tight-pair {
-            width: 1%; /* Hace que la celda sea lo más estrecha posible */
-            white-space: nowrap; /* Evita que el texto se rompa */
-        }
-        
-        .client-info .tight-label {
-            padding-right: 0; /* Elimina el padding derecho */
-            margin-right: 0; /* Elimina el margen derecho */
-        }
-        
-        .client-info .tight-value {
-            padding-left: 0; /* Elimina el padding izquierdo */
-            margin-left: 0; /* Elimina el margen izquierdo */
-        }
-        
-        /* Estilos para los títulos principales */
-        .title {
-            margin-bottom: 15px; /* Espacio debajo del título */
-            margin-top: 25px; /* Espacio encima del título */
-        }
-        
-        /* Estilos para los subtítulos */
-        .subtitle {
-            margin-top: 5px; /* Espacio mínimo encima del subtítulo */
-            margin-bottom: 5px; /* Espacio mínimo debajo del subtítulo */
-        }
-        
-        /* Estilo para separar las etiquetas de sus valores */
-        .label-text {
-            margin-right: 10px; /* Espacio entre la etiqueta y su valor */
-            display: inline-block; /* Para asegurar que el margen se aplique correctamente */
-        }
-        
-        .logo-container {
-            position: absolute;
-            top: -20px;
-            right: ${logoPosition.right}cm;
-            text-align: right;
-        }
-        
-        .logo-image {
-            width: 200px;
-            height: 70px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-
-        .logo-image-2 {
-            width: 200px;
-            height: 70px;
-            border-radius: 10px;
-            object-fit: cover;
-        }
-        
-        .header-container {
-            position: relative;
-            height: 30px; /* Para dar espacio al logo */
-            margin-bottom: 20px;
-        }
-        
-        .date-info {
-            position: absolute;
-            left: 0;
-            bottom: 0;
-        }
-
-        /* Estilo para mejorar la alineación en la columna derecha */
-        .info-table .right-column {
-            text-align: left;
-            padding-left: 30%;
-        }
-        
-        /* Asegura que las etiquetas y valores en la columna derecha estén alineados */
-        .info-table .right-column .label-text {
-            display: inline-block;
-            min-width: 50px;
-            margin-right: 5px;
-            text-align: left;
-        }
-        
-        h1, h2 {
-            text-align: ${textAlignment};
-        }
-
-        .informe-heder{
-            margin-top: 40px; /* Aumentar el margen superior */
-        }
-        .informe-menu{
-            margin-top: 70px; /* Aumentar el margen superior */
-        }
-        
-        /* Estilos para el documento */
-        body {
-            font-family: Helvetica Neue, Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            color: black;
-        }
-    </style>
-</head>
-
-<body style=" margin: 40px;">
-   <div class="header-container">
-       <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-           Fecha: ${fechaHoyFormateada}
-       </h2>
-       
-       <div class="logo-container">
-           <img src="${logoBase64}" class="logo-image" alt="Logo">
-       </div>
-   </div>
-   
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; margin-bottom: 15px; margin-top: 20px;">
-        CUENTA DE COBRO
-    </h1>
-    <table class="info-table client-info">
-        <tr>
-            <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column" ><span class="bold label-text">Nit:</span>${nit}</td>
-        </tr>
-        <tr>
-            <td class="left-column"><span class="bold label-text">Dirección:</span>${direccion}</td>
-            <td class="right-column" ><span class="bold label-text">Tel:</span>${tel}</td>
-        </tr>
-    </table>
-
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
-        DEBE A
-    </h1>
-    <h1 style="font-size: 25px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        ${users.nombre} ${users.apellido}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        CC: ${users.documento} Tel ${users.telefono}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: normal; text-align: ${textAlignment}; margin-top: 5px; margin-bottom: 5px;">
-        ${users.direccion}
-    </h1>
-    <h1 style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment}; margin-bottom: 15px; margin-top: 25px;">
-        POR CONCEPTO DE
-    </h1>
-    <table class="animal-table">
-        <tr>
-            <th>Cantidad</th>
-            <th>Descripción</th>
-            <th>Valor/und</th>
-            <th>Valor</th>
-        </tr>
-        ${tablaCuenta}
-    </table>
-    <table class="info-table total-table">
-        <tr>
-            <td class="right-column bold">Total:</td>
-            <td class="right-column">$ ${sumaTotal}</td>
-        </tr>
-    </table>
-    <table class="info-table">
-        <tr>
-            <td class="left-column">${users.nombre} ${users.apellido} </td>
-            <td class="right-column">Favor consignar a la cuenta</td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.profesion} </td>
-            <td class="right-column">${users.tipoCuenta} ${users.banco}</td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.universidad} </td>
-            <td class="right-column">${users.numeroCuenta}</td>
-        </tr>
-    </table>
-
-    <div style="page-break-before: always; padding-top: 30px;">
-        <div class="informe-heder">
-            <div class="header-container">
-                <h2 class="date-info" style="font-size: 17px; font-family: Helvetica Neue; font-weight: bold;">
-                    Fecha: ${fechaHoyFormateada}
-                </h2>
+            for (const sala of uniqueSalas) {
+                checkY(50); // Espacio para título de sala y header de tabla
+                page.drawText(sala, {x: margin, y: currentY, font: fontBold, fontSize: 14});
+                currentY -= 25;
                 
-                <div class="logo-container">
-                    <img src="${logoBase64}" class="logo-image-2" alt="Logo">
-                </div>
-            </div>
-        </div>
-        <div class="informe-menu">
-        <h1 style="font-size: 20px; font-family: Helvetica Neue; font-weight: bold; text-align: ${textAlignment};">
-            INFORME
-        </h1>
-        <table class="info-table">
-        <tr>
-            <td class="left-column"><span class="bold label-text">Cliente:</span>${cliente}</td>
-            <td class="right-column"><span class="bold label-text">Finca:</span>${finca}</td>
-        </tr>
-        <tr>
-            <td class="left-column"><span class="bold label-text">Ubicación:</span>${lugar}</td>
-            <td class="right-column"><span class="bold label-text">Fecha:</span>${fechaHoyFormateada}</td>
-        </tr>
-         </table>
-         </div>
-    </div>
+                drawAnimalTableHeader();
 
-        <tbody>
-        ${tablaVacas}
-        </tbody>
+                const vacasEnSala = report.filter(vaca => vaca.sala === sala);
+                for(const vaca of vacasEnSala) {
+                    const numero = verifyId(vaca.nombre_vaca, counter);
+                    if (numero !== '') counter++;
 
-    <table class="paws-table">
-        <tr>
-            <td>AI = anterior izquierdo</td>
-            <td>AD = anterior derecho</td>
-        </tr>
-        <tr>
-            <td>PI = posterior izquierdo</td>
-            <td>PD = posterior derecho</td>
-        </tr>
-    </table>
+                    const lines = {
+                        descripcion: wrapText(vaca.enfermedades || '', animalTableCols[3] - 10, font, 8),
+                        observacion: wrapText(vaca.nota || '', animalTableCols[4] - 10, font, 8),
+                        tratamiento: wrapText(vaca.tratamiento || '', animalTableCols[5] - 10, font, 8),
+                    };
 
-    <table class="info-table">
-        <tr>
-            <td class="left-column">${users.nombre} ${users.apellido} </td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.profesion} </td>
-        </tr>
-        <tr>
-            <td class="left-column">${users.universidad} </td>
-        </tr>
-    </table>
-</body>
+                    const rowHeight = Math.max(lines.descripcion.length, lines.observacion.length, lines.tratamiento.length) * 12 + 8;
+                    
+                    checkY(rowHeight);
 
-</html>
-`;
+                    let x = margin;
+                    const yBaseline = currentY - 6;
+
+                    page.drawText(numero, {x: x + 5, y: yBaseline - 5, font, fontSize: 8});
+                    x += animalTableCols[0];
+                    page.drawText(vaca.nombre_vaca, {x: x + 5, y: yBaseline - 5, font, fontSize: 8});
+                    x += animalTableCols[1];
+                    page.drawText(convertExtremidad(vaca.extremidad), {x: x + 5, y: yBaseline - 5, font, fontSize: 8});
+                    x += animalTableCols[2];
+                    
+                    let lineY = yBaseline;
+                    lines.descripcion.forEach(line => {
+                         page.drawText(line, {x: x + 5, y: lineY, font, fontSize: 8});
+                         lineY -= 12;
+                    });
+                    x += animalTableCols[3];
+                    
+                    lineY = yBaseline;
+                    lines.observacion.forEach(line => {
+                         page.drawText(line, {x: x + 5, y: lineY, font, fontSize: 8});
+                         lineY -= 12;
+                    });
+                    x += animalTableCols[4];
+                    
+                    lineY = yBaseline;
+                    lines.tratamiento.forEach(line => {
+                         page.drawText(line, {x: x + 5, y: lineY, font, fontSize: 8});
+                         lineY -= 12;
+                    });
+                    
+                    currentY -= rowHeight;
+                    page.drawLine({
+                        start: { x: margin, y: currentY },
+                        end: { x: margin + contentWidth, y: currentY },
+                        thickness: 0.5,
+                        color: '#EAEAEA'
+                    });
+                }
+            }
+            
+            drawFooter();
+            pages.push(page); // Finaliza última página
+
+            // Crear el documento PDF
+            const pdfDoc = await PDFDocument.create(pdfPath);
+            pages.forEach(p => pdfDoc.addPage(p));
+            await pdfDoc.write();
+                
+            await shareAsync(pdfPath, { UTI: '.pdf', mimeType: 'application/pdf' });
+
+        } catch (error) {
+            console.error('Error generando PDF nativo:', error);
+            Alert.alert('Error', `No se pudo generar el PDF: ${error.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
-    const showPreview = () => {
-        setHtmlContent(generateHTML());
-        setIsPreviewVisible(true);
-    };
-
-    const printToFile = async () => {
-        // On iOS/android prints the given html. On web prints the HTML from the current page.
-        const { uri } = await Print.printToFileAsync({ html: htmlContent || generateHTML() });
-        console.log('File has been saved to:', uri);
-        await shareAsync(uri, { UTI: '.pdf', mimeType: 'application/pdf' });
-        setIsPreviewVisible(false);
-    };
 
     return (
         <View style={styles.container}>
-            <View style={styles.spacer} />
-            <TouchableOpacity
-                style={styles.button}
-                onPress={showPreview}
-            >
-                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Previsualizar factura y reporte</StyledText>
+            <TouchableOpacity 
+                style={[styles.button, isGenerating && styles.disabledButton]}
+                onPress={generatePdfNatively}
+                disabled={isGenerating}>
+                <StyledText fontSize='subheading' style={{ color: '#fff' }}>
+                    {isGenerating ? 'Generando PDF profesional...' : '🚀 Generar Factura y Reporte'}
+                </StyledText>
             </TouchableOpacity>
             
-            <Modal
-                animationType="slide"
-                transparent={false}
-                visible={isPreviewVisible}
-                onRequestClose={() => setIsPreviewVisible(false)}
-            >
-                <View style={styles.modalContainer}>
-                    <View style={styles.controlPanel}>
-                        <TouchableOpacity 
-                            style={styles.closeButton}
-                            onPress={() => setIsPreviewVisible(false)}
-                        >
-                            <Text style={styles.buttonText}>Cerrar</Text>
-                        </TouchableOpacity>
-                        
-                        <View style={styles.controlRow}>
-                            <Text style={styles.controlLabel}>Tamaño del logo:</Text>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={50}
-                                maximumValue={250}
-                                step={5}
-                                value={logoSize}
-                                onValueChange={value => {
-                                    setLogoSize(value);
-                                    setHtmlContent(generateHTML());
-                                }}
-                            />
-                            <Text>{Math.round(logoSize)}px</Text>
-                        </View>
-                        
-                        <View style={styles.controlRow}>
-                            <Text style={styles.controlLabel}>Posición vertical:</Text>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={0}
-                                maximumValue={2}
-                                step={0.1}
-                                value={logoPosition.top}
-                                onValueChange={value => {
-                                    setLogoPosition({...logoPosition, top: value});
-                                    setHtmlContent(generateHTML());
-                                }}
-                            />
-                            <Text>{logoPosition.top.toFixed(1)}cm</Text>
-                        </View>
-                        
-                        <View style={styles.controlRow}>
-                            <Text style={styles.controlLabel}>Posición horizontal:</Text>
-                            <Slider
-                                style={styles.slider}
-                                minimumValue={0}
-                                maximumValue={2}
-                                step={0.1}
-                                value={logoPosition.right}
-                                onValueChange={value => {
-                                    setLogoPosition({...logoPosition, right: value});
-                                    setHtmlContent(generateHTML());
-                                }}
-                            />
-                            <Text>{logoPosition.right.toFixed(1)}cm</Text>
-                        </View>
-                        
-                        <View style={styles.controlRow}>
-                            <Text style={styles.controlLabel}>Alineación de texto:</Text>
-                            <View style={styles.alignmentButtons}>
-                                <TouchableOpacity 
-                                    style={[styles.alignButton, textAlignment === 'left' && styles.activeButton]}
-                                    onPress={() => {
-                                        setTextAlignment('left');
-                                        setHtmlContent(generateHTML());
-                                    }}
-                                >
-                                    <Text>Izquierda</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={[styles.alignButton, textAlignment === 'center' && styles.activeButton]}
-                                    onPress={() => {
-                                        setTextAlignment('center');
-                                        setHtmlContent(generateHTML());
-                                    }}
-                                >
-                                    <Text>Centro</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity 
-                                    style={[styles.alignButton, textAlignment === 'right' && styles.activeButton]}
-                                    onPress={() => {
-                                        setTextAlignment('right');
-                                        setHtmlContent(generateHTML());
-                                    }}
-                                >
-                                    <Text>Derecha</Text>
-                                </TouchableOpacity>
-                            </View>
-                        </View>
-
-                        <TouchableOpacity 
-                            style={styles.generateButton}
-                            onPress={printToFile}
-                        >
-                            <Text style={styles.buttonText}>Generar PDF</Text>
-                        </TouchableOpacity>
-                    </View>
-                    
-                    <View style={styles.previewContainer}>
-                        <WebView
-                            originWhitelist={['*']}
-                            source={{ html: htmlContent }}
-                            style={styles.webView}
-                        />
-                    </View>
-                </View>
-            </Modal>
+            <DocsReport {...{ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }}/>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
-        // flex: 1,
-        justifyContent: 'center',
-        flexDirection: 'column',
         padding: 8,
-    },
-    spacer: {
-        height: 8,
-    },
-    printer: {
-        textAlign: 'center',
     },
     button: {
-        borderColor: "#334155",
-        borderRadius: 15,
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
+        backgroundColor: '#0d47a1',
         padding: 15,
-        borderWidth: 10
-    },
-    modalContainer: {
-        flex: 1,
-        flexDirection: 'column',
-    },
-    controlPanel: {
-        padding: 15,
-        backgroundColor: '#f0f0f0',
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    controlRow: {
-        flexDirection: 'row',
+        borderRadius: 10,
         alignItems: 'center',
-        marginVertical: 8,
+        marginVertical: 10,
     },
-    controlLabel: {
-        width: 120,
-        marginRight: 10,
-    },
-    slider: {
-        flex: 1,
-        height: 40,
-    },
-    previewContainer: {
-        flex: 1,
-    },
-    webView: {
-        flex: 1,
-    },
-    closeButton: {
-        backgroundColor: '#ccc',
-        padding: 10,
-        borderRadius: 5,
-        alignSelf: 'flex-end',
-        marginBottom: 10,
-    },
-    generateButton: {
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 5,
-        alignItems: 'center',
-        marginTop: 15,
-    },
-    buttonText: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    alignmentButtons: {
-        flexDirection: 'row',
-    },
-    alignButton: {
-        padding: 8,
-        borderWidth: 1,
-        borderColor: '#ccc',
-        marginRight: 10,
-    },
-    activeButton: {
-        backgroundColor: '#1e293b',
-        borderColor: '#1e293b',
-    },
-    activeButton: {
-        backgroundColor: '#1e293b',
-        borderColor: '#1e293b',
-    },
+    disabledButton: {
+        backgroundColor: '#9e9e9e',
+    }
 });
