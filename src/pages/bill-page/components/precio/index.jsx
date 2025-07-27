@@ -10,6 +10,12 @@ import { initialValuePrice } from '../../../../utils/initialValuePrice'
 
 const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount, revisionCount }) => {
 
+    // Función para formatear números con comas
+    const formatNumber = (number) => {
+        if (number === 0 || number === '0' || !number) return '0';
+        return Number(number).toLocaleString('es-CO');
+    };
+
     const elementosMayoresACero = prices.filter(elemento => elemento > 0);
     const contadorFinal = elementosMayoresACero.length;
 
@@ -113,17 +119,34 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         valor: Yup.number().required('Requerido')
     });
 
-    const FormikInputValue = ({ name, value, ...props }) => {
+    const FormikInputValue = ({ name, value, isNumeric = false, ...props }) => {
 
         const [field, meta, helpers] = useField(name);
+
+        const handleChangeText = (value) => {
+            if (isNumeric) {
+                // Remover todas las comas y puntos para obtener solo números
+                const numericValue = value.replace(/[^\d]/g, '');
+                helpers.setValue(numericValue);
+            } else {
+                helpers.setValue(value);
+            }
+        };
+
+        const getDisplayValue = () => {
+            if (isNumeric && field.value) {
+                return formatNumber(field.value);
+            }
+            return String(field.value);
+        };
 
         return (
             <View>
                 <StyledTextInput
                     style={styles.input}
                     error={meta.error}
-                    value={String(field.value)}
-                    onChangeText={value => helpers.setValue(value)}
+                    value={getDisplayValue()}
+                    onChangeText={handleChangeText}
                     {...props}
                 />
                 {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
@@ -162,6 +185,8 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadTerapeuticos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
+                                    keyboardType="numeric"
+                                    isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[0]}</StyledText>
                                 <FormikInputValue
@@ -169,8 +194,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
                                     keyboardType="numeric"
+                                    isNumeric={true}
                                 />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[0] ? total[0] : 0} </StyledTextInput>
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[0])} </StyledTextInput>
                             </View>
                         )}
                         {preventivosCount > 0 && (
@@ -180,6 +206,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
                                     keyboardType="numeric"
+                                    isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[1]}</StyledText>
                                 <FormikInputValue
@@ -187,8 +214,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
                                     keyboardType="numeric"
+                                    isNumeric={true}
                                 />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0} </StyledTextInput>
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0)} </StyledTextInput>
                             </View>
 
                         )}
@@ -199,6 +227,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
                                     keyboardType="numeric"
+                                    isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[2]}</StyledText>
                                 <FormikInputValue
@@ -206,8 +235,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
                                     keyboardType="numeric"
+                                    isNumeric={true}
                                 />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total.length > 0 ? total[contadorDesplazamiento - 1] : 0 } </StyledTextInput>
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total.length > 0 ? total[contadorDesplazamiento - 1] : 0)} </StyledTextInput>
                             </View>
 
                         )}
@@ -217,6 +247,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                 placeholder='Cantidad'
                                 placeholderTextColor="#c2c0c0"
                                 keyboardType="numeric"
+                                isNumeric={true}
                             />
                             <StyledText style={styles.text}>Desplazamiento</StyledText>
                             <FormikInputValue
@@ -224,8 +255,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                 placeholder='Valor'
                                 placeholderTextColor="#c2c0c0"
                                 keyboardType="numeric"
+                                isNumeric={true}
                             />
-                            <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {total[contadorDesplazamiento] ? total[contadorDesplazamiento] : 0 } </StyledTextInput>
+                            <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento])} </StyledTextInput>
                         </View>
                         {!first && (
                             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
@@ -258,6 +290,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             placeholder='Cantidad'
                                             placeholderTextColor="#c2c0c0"
                                             keyboardType="numeric"
+                                            isNumeric={true}
                                         />
                                         <FormikInputValue
                                             name='descripcion'
@@ -269,8 +302,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             placeholder='Valor'
                                             placeholderTextColor="#c2c0c0"
                                             keyboardType="numeric"
+                                            isNumeric={true}
                                         />
-                                        <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {total[index + contador] ? total[index + contador] : 0} </StyledTextInput>
+                                        <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {formatNumber(total[index + contador])} </StyledTextInput>
                                     </View>
                                     {buttonContinue && index === campo.length - 1 && (
                                         <TouchableOpacity style={styles.button} onPress={handleSubmit}>
@@ -283,7 +317,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                     ))}
 
                     <View style={styles.total}>
-                        <StyledText fontSize='title'>Total: ${sumaTotal}</StyledText>
+                        <StyledText fontSize='title'>Total: ${formatNumber(sumaTotal)}</StyledText>
                     </View>
                     {!buttonContinue && (
                         <TouchableOpacity style={styles.button} onPress={() => addCuenta()}>

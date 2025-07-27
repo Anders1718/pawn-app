@@ -7,6 +7,7 @@ import { shareAsync } from 'expo-sharing';
 import { WebView } from 'react-native-webview';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
+import DocsReport from './DocsReport';
 
 export default function App({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) {
     const [isPreviewVisible, setIsPreviewVisible] = React.useState(false);
@@ -82,6 +83,21 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         return resultado;
     }
 
+    // Función para formatear números con comas para miles
+    const formatNumber = (number) => {
+        if (number === null || number === undefined || number === '') return number;
+        
+        // Convertir a string y remover caracteres no numéricos excepto punto decimal
+        const cleanNumber = number.toString().replace(/[^\d.-]/g, '');
+        
+        // Convertir a número y verificar si es válido
+        const num = parseFloat(cleanNumber);
+        if (isNaN(num)) return number;
+        
+        // Formatear con comas para miles
+        return num.toLocaleString('es-CO');
+    }
+
 
     let tablaVacas = '';
     uniqueSalas.forEach(sala => {
@@ -103,8 +119,22 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         let elementCount = 0; // Contador para el control de página
 
         report.filter(vaca => vaca.sala === sala).forEach(vaca => {
+            // Contar cuántas filas ocupa esta vaca según los caracteres en sus campos
+            const fields = [
+                vaca.nombre_vaca || "",
+                convertExtremidad(vaca.extremidad) || "",
+                vaca.enfermedades || "",
+                vaca.nota || "",
+                vaca.tratamiento || ""
+            ];
+            // Si alguno de los campos supera 26 caracteres, cuenta como 2 filas
+            const filaExtra = fields.some(f => f.length > 26) ? 2 : 1;
+        
+            // Separa el control de paginación por "elementCount"
+            // Aplica las mismas reglas de corte pero suma "filaExtra" en vez de solo 1
+        
+            // Control para la primera tabla
             if (elementCount > 0) {
-                // Primera página: 22 elementos
                 if (elementCount === 22) {
                     tablaVacas += `
                     </table>
@@ -120,8 +150,8 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                         </tr>
                     `;
                 }
-                // Páginas intermedias: 25 elementos por página
-                else if (elementCount > 22 && (elementCount - 22) % 25 === 0) {
+                // Control para tablas siguientes
+                else if (elementCount > 22 && (elementCount - 22) % 30 === 0) {
                     tablaVacas += `
                     </table>
                     <div style="page-break-after: always;"></div>
@@ -137,7 +167,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                     `;
                 }
             }
-
+        
             const countIds = count(vaca.nombre_vaca);
             tablaVacas += `
             <tr>
@@ -150,7 +180,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             </tr>
             `;
             if (countIds) index++;
-            elementCount++;
+            elementCount += filaExtra;
         });
         tablaVacas += `</table>`;
     });
@@ -162,8 +192,8 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
         <tr>
             <td>${cuenta.cantidad}</td>
             <td>${cuenta.descripcion}</td>
-            <td>$ ${cuenta.valor}</td>
-            <td>$ ${cuenta.total}</td>
+            <td>$ ${formatNumber(cuenta.valor)}</td>
+            <td>$ ${formatNumber(cuenta.total)}</td>
         </tr>
     `;
     });
@@ -402,11 +432,9 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
             <th>Valor</th>
         </tr>
         ${tablaCuenta}
-    </table>
-    <table class="info-table total-table">
-        <tr>
-            <td class="right-column bold">Total:</td>
-            <td class="right-column">$ ${sumaTotal}</td>
+        <tr style="border-top: 2px solid black;">
+            <td colspan="3" style="text-align: right; font-weight: bold; padding: 10px;">Total:</td>
+            <td style="font-weight: bold; padding: 10px;">$ ${formatNumber(sumaTotal)}</td>
         </tr>
     </table>
     <table class="info-table">
@@ -621,6 +649,7 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
                     </View>
                 </View>
             </Modal>
+            <DocsReport {...{ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }}/>
         </View>
     );
 }
