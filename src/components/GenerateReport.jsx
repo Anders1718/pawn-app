@@ -130,12 +130,17 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
         }
 
         try {
-            const totalCuenta = report.map(item => ({
+            const totalCuenta = report.length > 0 ? report.map(item => ({
                 cantidad: 1,
                 descripcion: `${item.nombre_vaca} - ${item.observaciones || 'Sin observaciones'}`,
                 valor: 0,
                 total: 0
-            }));
+            })) : [{
+                cantidad: 1,
+                descripcion: 'Consulta veterinaria - Informe general',
+                valor: 0,
+                total: 0
+            }];
 
             const requestBody = {
                 direccion: lugar,
@@ -203,9 +208,9 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.button, { opacity: isConnected && report.length > 0 ? 1 : 0.5, marginTop: 10 }]}
+                            style={[styles.button, { opacity: isConnected ? 1 : 0.5, marginTop: 10 }]}
                             onPress={generateGoogleReport}
-                            disabled={!isConnected || report.length === 0}
+                            disabled={!isConnected}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
                         </TouchableOpacity>
