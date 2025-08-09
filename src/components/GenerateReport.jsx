@@ -136,7 +136,8 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
             let reportData = report;
             if (!reportData || reportData.length === 0) {
                 const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
-                reportData = resultado.vacas || [];
+                console.log('Resultado:', resultado);
+                reportData = Array.isArray(resultado) ? resultado : [];
                 setReport(reportData); // Actualizar el estado para futuros usos
             }
 
