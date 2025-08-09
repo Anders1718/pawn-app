@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert } from 'react-native'
+import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
 import NetInfo from '@react-native-community/netinfo'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
@@ -74,6 +74,7 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
 
     const [habilitado, setHabilitado] = useState(true);
     const [isConnected, setIsConnected] = useState(true);
+    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
     // ... existing code ...
     const [startDate, setStartDate] = useState(() => {
         const date = new Date();
@@ -129,30 +130,19 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
             return;
         }
 
+        setIsLoadingGoogle(true);
         try {
-            const totalCuenta = report.length > 0 ? report.map(item => ({
-                cantidad: 1,
-                descripcion: `${item.nombre_vaca} - ${item.observaciones || 'Sin observaciones'}`,
-                valor: 0,
-                total: 0
-            })) : [{
-                cantidad: 1,
-                descripcion: 'Consulta veterinaria - Informe general',
-                valor: 0,
-                total: 0
-            }];
-
             const requestBody = {
-                direccion: lugar,
-                cliente: cliente,
-                totalCuenta: totalCuenta,
-                fechaHoyFormateada: fechaHoyFormateada,
-                nit: '',
-                tel: '',
-                sumaTotal: 0,
-                users: users,
+                finca: finca || '',
+                lugar: lugar || '',
+                cliente: cliente || '',
+                report: Array.isArray(report) ? report : [],
+                fechaHoyFormateada: fechaHoyFormateada || '',
+                users: users || {},
                 nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
             };
+
+            console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
             const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-report', {
                 method: 'POST',
@@ -171,6 +161,8 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
             }
         } catch (error) {
             Alert.alert('Error', 'Error de conexión al servidor');
+        } finally {
+            setIsLoadingGoogle(false);
         }
     };
 
@@ -208,11 +200,15 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.button, { opacity: isConnected ? 1 : 0.5, marginTop: 10 }]}
+                            style={[styles.button, { opacity: isConnected && !isLoadingGoogle ? 1 : 0.5, marginTop: 10 }]}
                             onPress={generateGoogleReport}
-                            disabled={!isConnected}
+                            disabled={!isConnected || isLoadingGoogle}
                         >
-                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
+                            {isLoadingGoogle ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
+                            )}
                         </TouchableOpacity>
                         <GenerateReport
                             id={id}
