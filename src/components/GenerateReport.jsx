@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View, TouchableOpacity } from 'react-native'
+import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert } from 'react-native'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
 import { reportValidation } from '../validationSchemas/login'
@@ -100,6 +100,56 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
         setUsers(users[0]);
     }
 
+    const isConnectedToInternet = () => {
+        return window.navigator.onLine;
+    };
+
+    const generateGoogleReport = async () => {
+        if (!isConnectedToInternet()) {
+            Alert.alert('Error', 'No hay conexión a internet');
+            return;
+        }
+
+        try {
+            const totalCuenta = report.map(item => ({
+                cantidad: 1,
+                descripcion: `${item.nombre_vaca} - ${item.observaciones || 'Sin observaciones'}`,
+                valor: 0,
+                total: 0
+            }));
+
+            const requestBody = {
+                direccion: lugar,
+                cliente: cliente,
+                totalCuenta: totalCuenta,
+                fechaHoyFormateada: fechaHoyFormateada,
+                nit: '',
+                tel: '',
+                sumaTotal: 0,
+                users: users,
+                nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
+            };
+
+            const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Alert.alert('Éxito', 'Documento generado exitosamente en Google Docs');
+            } else {
+                Alert.alert('Error', result.error || 'Error al generar el documento');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Error de conexión al servidor');
+        }
+    };
+
     useEffect(() => {
         fetchUsersData();
     }, []);
@@ -132,6 +182,13 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             onPress={handleSubmit}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, { opacity: isConnectedToInternet() && report.length > 0 ? 1 : 0.5, marginTop: 10 }]}
+                            onPress={generateGoogleReport}
+                            disabled={!isConnectedToInternet() || report.length === 0}
+                        >
+                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
                         </TouchableOpacity>
                         <GenerateReport
                             id={id}
