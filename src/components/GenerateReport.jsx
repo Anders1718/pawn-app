@@ -132,11 +132,19 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
 
         setIsLoadingGoogle(true);
         try {
+            // Si no hay reporte, generar uno nuevo
+            let reportData = report;
+            if (!reportData || reportData.length === 0) {
+                const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
+                reportData = resultado.vacas || [];
+                setReport(reportData); // Actualizar el estado para futuros usos
+            }
+
             const requestBody = {
                 finca: finca || '',
                 lugar: lugar || '',
                 cliente: cliente || '',
-                report: Array.isArray(report) ? report : [],
+                report: Array.isArray(reportData) ? reportData : [],
                 fechaHoyFormateada: fechaHoyFormateada || '',
                 users: users || {},
                 nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
