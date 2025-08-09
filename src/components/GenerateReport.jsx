@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Formik, useField } from 'formik'
 import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert } from 'react-native'
+import NetInfo from '@react-native-community/netinfo'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
 import { reportValidation } from '../validationSchemas/login'
@@ -72,6 +73,7 @@ const FormikInputValue = ({ name, startDate, endDate, setEndDate, setStartDate, 
 export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen }) {
 
     const [habilitado, setHabilitado] = useState(true);
+    const [isConnected, setIsConnected] = useState(true);
     // ... existing code ...
     const [startDate, setStartDate] = useState(() => {
         const date = new Date();
@@ -100,12 +102,29 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
         setUsers(users[0]);
     }
 
-    const isConnectedToInternet = () => {
-        return window.navigator.onLine;
-    };
+    useEffect(() => {
+        const checkConnectivity = async () => {
+            try {
+                const netInfoState = await NetInfo.fetch();
+                setIsConnected(netInfoState.isConnected);
+            } catch (error) {
+                setIsConnected(true);
+            }
+        };
+
+        const unsubscribe = NetInfo.addEventListener(state => {
+            setIsConnected(state.isConnected);
+        });
+
+        checkConnectivity();
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
 
     const generateGoogleReport = async () => {
-        if (!isConnectedToInternet()) {
+        if (!isConnected) {
             Alert.alert('Error', 'No hay conexión a internet');
             return;
         }
@@ -184,9 +203,9 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            style={[styles.button, { opacity: isConnectedToInternet() && report.length > 0 ? 1 : 0.5, marginTop: 10 }]}
+                            style={[styles.button, { opacity: isConnected && report.length > 0 ? 1 : 0.5, marginTop: 10 }]}
                             onPress={generateGoogleReport}
-                            disabled={!isConnectedToInternet() || report.length === 0}
+                            disabled={!isConnected || report.length === 0}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
                         </TouchableOpacity>
