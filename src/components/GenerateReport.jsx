@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View, TouchableOpacity } from 'react-native'
+import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import NetInfo from '@react-native-community/netinfo'
 import StyledTextInput from './StyledTextInput'
 import StyledText from './StyledText'
 import { reportValidation } from '../validationSchemas/login'
@@ -72,6 +73,8 @@ const FormikInputValue = ({ name, startDate, endDate, setEndDate, setStartDate, 
 export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen }) {
 
     const [habilitado, setHabilitado] = useState(true);
+    const [isConnected, setIsConnected] = useState(true);
+    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
     // ... existing code ...
     const [startDate, setStartDate] = useState(() => {
         const date = new Date();
@@ -99,6 +102,74 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
         const users = await fetchUsers();
         setUsers(users[0]);
     }
+
+    useEffect(() => {
+        const checkConnectivity = async () => {
+            try {
+                const netInfoState = await NetInfo.fetch();
+                setIsConnected(netInfoState.isConnected);
+            } catch (error) {
+                setIsConnected(true);
+            }
+        };
+
+        const unsubscribe = NetInfo.addEventListener(state => {
+            setIsConnected(state.isConnected);
+        });
+
+        checkConnectivity();
+
+        return () => {
+            unsubscribe();
+        };
+    }, []);
+
+    const generateGoogleReport = async () => {
+        if (!isConnected) {
+            Alert.alert('Error', 'No hay conexión a internet');
+            return;
+        }
+
+        setIsLoadingGoogle(true);
+        try {
+            // Si no hay reporte, generar uno nuevo
+            let reportData = report;
+            if (!reportData || reportData.length === 0) {
+                const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
+                reportData = Array.isArray(resultado) ? resultado : [];
+            }
+
+            const requestBody = {
+                finca: finca || '',
+                lugar: lugar || '',
+                cliente: cliente || '',
+                report: Array.isArray(reportData) ? reportData : [],
+                fechaHoyFormateada: fechaHoyFormateada || '',
+                users: users || {},
+                nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
+            };
+
+            const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-report', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(requestBody)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                Alert.alert('Éxito', 'Documento generado exitosamente en Google Docs');
+            } else {
+                Alert.alert('Error', result.error || 'Error al generar el documento');
+            }
+        } catch (error) {
+            Alert.alert('Error', 'Error de conexión al servidor');
+        } finally {
+            setIsLoadingGoogle(false);
+        }
+    };
 
     useEffect(() => {
         fetchUsersData();
@@ -132,6 +203,17 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                             onPress={handleSubmit}
                         >
                             <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[styles.button, { opacity: isConnected && !isLoadingGoogle ? 1 : 0.5, marginTop: 10 }]}
+                            onPress={generateGoogleReport}
+                            disabled={!isConnected || isLoadingGoogle}
+                        >
+                            {isLoadingGoogle ? (
+                                <ActivityIndicator size="small" color="#fff" />
+                            ) : (
+                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
+                            )}
                         </TouchableOpacity>
                         <GenerateReport
                             id={id}
