@@ -136,9 +136,7 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
             let reportData = report;
             if (!reportData || reportData.length === 0) {
                 const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
-                console.log('Resultado:', resultado);
                 reportData = Array.isArray(resultado) ? resultado : [];
-                setReport(reportData); // Actualizar el estado para futuros usos
             }
 
             const requestBody = {
@@ -150,8 +148,6 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                 users: users || {},
                 nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
             };
-
-            console.log('Request body:', JSON.stringify(requestBody, null, 2));
 
             const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-report', {
                 method: 'POST',
