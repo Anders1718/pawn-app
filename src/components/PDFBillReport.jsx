@@ -529,12 +529,6 @@ export default function App({ finca, direccion, cliente, lugar, totalCuenta, lis
     return (
         <View style={styles.container}>
             <View style={styles.spacer} />
-            <TouchableOpacity
-                style={styles.button}
-                onPress={showPreview}
-            >
-                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Previsualizar factura y reporte</StyledText>
-            </TouchableOpacity>
             
             <Modal
                 animationType="slide"

@@ -286,12 +286,6 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
     return (
         <View style={styles.container}>
             <View style={styles.spacer} />
-            <TouchableOpacity
-                style={styles.button}
-                onPress={showPreview}
-            >
-                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Previsualizar factura</StyledText>
-            </TouchableOpacity>
             
             <Modal
                 animationType="slide"
