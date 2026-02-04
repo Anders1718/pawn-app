@@ -53,7 +53,17 @@ const styles = StyleSheet.create({
 })
 
 const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport, setUsers) => {
-    const response = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
+    // Ajustar las fechas para cubrir todo el día en zona horaria local
+    // Esto corrige el problema de zona horaria al comparar con fechas guardadas
+    const adjustedStartDate = new Date(startDate);
+    adjustedStartDate.setHours(0, 0, 0, 0);
+    const startDateOffset = new Date(adjustedStartDate.getTime() - adjustedStartDate.getTimezoneOffset() * 60000);
+    
+    const adjustedEndDate = new Date(endDate);
+    adjustedEndDate.setHours(23, 59, 59, 999);
+    const endDateOffset = new Date(adjustedEndDate.getTime() - adjustedEndDate.getTimezoneOffset() * 60000);
+    
+    const response = await fetchHistorialVacas(id, startDateOffset.toISOString(), endDateOffset.toISOString());
     setReport(response);
     const uniqueVacas = response.reduce((acc, current) => {
         const x = acc.find(item => item.nombre_vaca === current.nombre_vaca);
