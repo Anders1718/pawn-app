@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     }
 })
 
-const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport, setUsers) => {
+const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setTalonAdicionalCount, setPrices, setPricesExist, setReport, setUsers) => {
     // Ajustar las fechas para cubrir todo el día en zona horaria local
     // Esto corrige el problema de zona horaria al comparar con fechas guardadas
     const adjustedStartDate = new Date(startDate);
@@ -74,9 +74,14 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
         }
     }, []);
 
-    const terapeuticosCount = uniqueVacas.filter(item => item.tratamiento === "Terapéutico").length;
-    const preventivosCount = uniqueVacas.filter(item => item.tratamiento === "Preventivo").length;
-    const revisionCount = uniqueVacas.filter(item => item.tratamiento === "Revisión").length;
+    const terapeuticosCount = uniqueVacas.filter(item => item.tratamiento && item.tratamiento.includes("Terapéutico")).length;
+    const preventivosCount = uniqueVacas.filter(item => item.tratamiento && item.tratamiento.includes("Preventivo")).length;
+    const revisionCount = uniqueVacas.filter(item => item.tratamiento && item.tratamiento.includes("Revisión")).length;
+    
+    // Contar talones adicionales buscando en el campo tratamiento
+    const talonAdicionalCount = uniqueVacas.filter(item => 
+        item.tratamiento && item.tratamiento.includes('Talón adicional')
+    ).length;
 
     const users = await fetchUsers();
     setUsers(users[0]);
@@ -85,6 +90,7 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     setTerapeuticosCount(terapeuticosCount);
     setPreventivosCount(preventivosCount);
     setRevisionCount(revisionCount);
+    setTalonAdicionalCount(talonAdicionalCount);
     setPrices([terapeuticosCount, revisionCount, preventivosCount]);
     setPricesExist(true);
     setHabilitado(false);
@@ -124,6 +130,7 @@ export default function BillPage() {
     const [terapeuticosCount, setTerapeuticosCount] = useState(0);
     const [preventivosCount, setPreventivosCount] = useState(0);
     const [revisionCount, setRevisionCount] = useState(0);
+    const [talonAdicionalCount, setTalonAdicionalCount] = useState(0);
 
     const [users, setUsers] = useState([]);
 
@@ -186,7 +193,7 @@ export default function BillPage() {
 
                             <TouchableOpacity
                                 style={styles.button}
-                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setPrices, setPricesExist, setReport, setUsers)}
+                                onPress={() => fetchData(id, startDate, endDate, setResponse, setTerapeuticosCount, setPreventivosCount, setRevisionCount, setTalonAdicionalCount, setPrices, setPricesExist, setReport, setUsers)}
                             >
                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Continuar</StyledText>
                             </TouchableOpacity>
@@ -202,6 +209,7 @@ export default function BillPage() {
                                 terapeuticosCount={terapeuticosCount}
                                 preventivosCount={preventivosCount}
                                 revisionCount={revisionCount}
+                                talonAdicionalCount={talonAdicionalCount}
                                 prices={prices}
                             />
                         )}

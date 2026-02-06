@@ -166,6 +166,7 @@ export default function PawPage() {
     const [terapeutic, isTerapeuctic] = useState(false)
     const [preventive, isPreventive] = useState(false)
     const [isRevision, setRevision] = useState(false)
+    const [hasTalonAdicional, setHasTalonAdicional] = useState(false)
     const [pawn, setPawn] = useState('');
     const [note, setNote] = useState('');
     const [sala, setSala] = useState('');
@@ -233,6 +234,13 @@ export default function PawPage() {
         fetchEnfermedadesList();
     }, [setIdPaw]);
 
+    // Actualizar hasTalonAdicional cuando secondPartSick cambie
+    useEffect(() => {
+        if (secondPartSick.includes('talón adicional')) {
+            setHasTalonAdicional(true);
+        }
+    }, [secondPartSick]);
+
     const clearAllData = async () => {
         setModalCowAddOpen(false);
         setCowList([]);
@@ -241,6 +249,7 @@ export default function PawPage() {
         isTerapeuctic(false);
         setRevision(false)
         isPreventive(false);
+        setHasTalonAdicional(false);
         setPawn('');
         setNote('');
         setSala('');
@@ -292,6 +301,7 @@ export default function PawPage() {
         isTerapeuctic(false);
         setRevision(false);
         isPreventive(false);
+        setHasTalonAdicional(false);
         setPawn('');
         setNote('');
         setPawList([false, false, false, false, false, false, false, false]);
@@ -347,6 +357,9 @@ export default function PawPage() {
         if (secondPartSick.includes('venda + oxi')) {
             segundaParte = 'venda + oxi'
         }
+        if (secondPartSick.includes('talón adicional')) {
+            segundaParte = segundaParte ? segundaParte + ', talón adicional' : 'talón adicional'
+        }
 
         const identificadorPata = `${firstPartSick} ${segundaParte}-${severity} ${value}`;
         // Clonar el array original
@@ -380,7 +393,14 @@ export default function PawPage() {
             const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento, extremidad);
+            
+            // Construir el tratamiento final incluyendo Talón adicional si TA está seleccionado
+            let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
+            if (hasTalonAdicional) {
+                tratamientoFinal = tratamientoFinal + ', Talón adicional';
+            }
+            
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
@@ -402,7 +422,14 @@ export default function PawPage() {
             const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamiento === 'Libre' ? 'Preventivo' : tratamiento, extremidad);
+            
+            // Construir el tratamiento final incluyendo Talón adicional si TA está seleccionado
+            let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
+            if (hasTalonAdicional) {
+                tratamientoFinal = tratamientoFinal + ', Talón adicional';
+            }
+            
+            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
             clearPartialCowData();
             return Alert.alert('Guardado con éxito');
         }

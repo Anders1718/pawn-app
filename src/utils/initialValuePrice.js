@@ -1,4 +1,4 @@
-export const initialValuePrice = (preventivosCount, terapeuticosCount, revisionCount, name) => {
+export const initialValuePrice = (preventivosCount, terapeuticosCount, revisionCount, talonAdicionalCount, name) => {
 
     const preventivo = {
         cantidadPreventivos: preventivosCount,
@@ -24,8 +24,15 @@ export const initialValuePrice = (preventivosCount, terapeuticosCount, revisionC
         valorDesplazamiento: '',
     }
 
+    const talonAdicional = {
+        cantidadTalonAdicional: talonAdicionalCount > 0 ? talonAdicionalCount : '',
+        descripcionTalonAdicional: 'Talón adicional',
+        valorTalonAdicional: '',
+    }
+
     let retorno = {
         ...desplazamiento,
+        ...talonAdicional,
     }
 
     if (preventivosCount > 0) {

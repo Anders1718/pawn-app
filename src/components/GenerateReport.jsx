@@ -7,7 +7,6 @@ import StyledText from './StyledText'
 import { reportValidation } from '../validationSchemas/login'
 import { fetchHistorialVacas, fetchUsers } from '../hooks/useRepositories'
 import DateRangePicker from './DatePicker'
-import GenerateReport from './PDFGeneerateReport'
 
 const initialValues = {
     fechaInicio: 'hola',
@@ -197,38 +196,17 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                         />
                     </View>
                     {habilitado && (
-                        <>
                         <TouchableOpacity
-                            style={styles.button}
-                            onPress={handleSubmit}
-                        >
-                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe</StyledText>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            style={[styles.button, { opacity: isConnected && !isLoadingGoogle ? 1 : 0.5, marginTop: 10 }]}
+                            style={[styles.button, { opacity: isConnected && !isLoadingGoogle ? 1 : 0.5 }]}
                             onPress={generateGoogleReport}
                             disabled={!isConnected || isLoadingGoogle}
                         >
                             {isLoadingGoogle ? (
                                 <ActivityIndicator size="small" color="#fff" />
                             ) : (
-                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe google</StyledText>
+                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe Google</StyledText>
                             )}
                         </TouchableOpacity>
-                        <GenerateReport
-                            id={id}
-                            startDate={startDate}
-                            endDate={endDate}
-                            setReport={setReport}
-                            report={report}
-                            finca={finca}
-                            cliente={cliente}
-                            lugar={lugar}
-                            fechaHoyFormateada={fechaHoyFormateada}
-                            setIsOpen={setIsOpen}
-                            users={users}
-                        />
-                        </>
                     )}
                 </View>
             )

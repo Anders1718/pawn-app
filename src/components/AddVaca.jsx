@@ -66,7 +66,7 @@ export default function CowValidation({ actualizarVacas, id, setModalCowAddOpen,
                         name='id'
                         placeholder='Id del animal'
                         placeholderTextColor="#c2c0c0"
-                        keyboardType="numeric"
+                        keyboardType="default"
                         autoFocus={true}
                         onSubmitEditing={() => {
                             if (isValid) handleSubmit()

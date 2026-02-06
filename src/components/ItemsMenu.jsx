@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Image, TouchableWithoutFeedback, Pressable, ScrollView, Alert } from "react-native"
+import { View, StyleSheet, Image, TouchableWithoutFeedback, Pressable, ScrollView, Alert, ActivityIndicator } from "react-native"
 import { Link } from 'react-router-native'
 import StyledText from './StyledText'
 import theme from '../theme'
 import Dropdown from './Dropdown'
-import { fetchFincasNombres } from '../hooks/useRepositories'
+import { fetchFincasNombres, exportDatabase } from '../hooks/useRepositories'
 
 const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
 
@@ -58,10 +58,22 @@ const ItemMenu = () => {
     const [fincas, setFincas] = useState([]);
     const [nombreFinca, setNombreFinca] = useState(null);
     const [idFinca, setIdFinca] = useState(null);
+    const [isExporting, setIsExporting] = useState(false);
 
     const handleChange = (value, label) => {
         setNombreFinca(label);
         setIdFinca(value);
+    }
+
+    const handleExportDB = async () => {
+        try {
+            setIsExporting(true);
+            await exportDatabase();
+        } catch (error) {
+            Alert.alert('Error', 'No se pudo exportar la base de datos');
+        } finally {
+            setIsExporting(false);
+        }
     }
 
     useEffect(() => {
@@ -85,6 +97,22 @@ const ItemMenu = () => {
 
             />
             <RepositoryItemHeader nombreFinca={nombreFinca} idFinca={idFinca} />
+            <Pressable
+                style={({ pressed }) => [
+                    styles.exportButton,
+                    pressed && styles.exportButtonPressed
+                ]}
+                onPress={handleExportDB}
+                disabled={isExporting}
+            >
+                {isExporting ? (
+                    <ActivityIndicator color={theme.colors.white} size='small' />
+                ) : (
+                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.exportButtonText}>
+                        Exportar Base de Datos
+                    </StyledText>
+                )}
+            </Pressable>
         </ScrollView>
     )
 }
@@ -120,6 +148,24 @@ const styles = StyleSheet.create({
         paddingBottom: 100,
         alignSelf: 'center',
         color: 'snow'
+    },
+    exportButton: {
+        backgroundColor: '#16a34a',
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginTop: 30,
+        alignSelf: 'center',
+        minWidth: 250,
+        minHeight: 50,
+    },
+    exportButtonPressed: {
+        opacity: 0.7,
+    },
+    exportButtonText: {
+        color: theme.colors.white,
     }
 })
 

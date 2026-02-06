@@ -1,4 +1,6 @@
 import * as SQLite from 'expo-sqlite'
+import * as FileSystem from 'expo-file-system'
+import * as Sharing from 'expo-sharing'
 
 const databaseName = 'cowdatabasetest5.db';
 
@@ -280,4 +282,42 @@ export async function editUser(values) {
     await addLogoColumnIfNotExists(db);
 
     await db.runAsync('UPDATE user SET nombre = ?, apellido = ?, profesion = ?, universidad = ?, banco = ?, tipoCuenta = ?, numeroCuenta = ?, telefono = ?, documento = ?, direccion = ?, logo = ? WHERE id = ?', values.nombre, values.apellido, values.profesion, values.universidad, values.banco, values.tipoCuenta, values.numeroCuenta, values.telefono, values.documento, values.direccion, values.logo || null, values.id);
+}
+
+export async function exportDatabase() {
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    const tables = ['fincas', 'vacas', 'historial_vacas', 'user', 'lista_enfermedades'];
+    const exportData = {};
+
+    for (const table of tables) {
+        try {
+            const rows = await db.getAllAsync(`SELECT * FROM ${table}`);
+            exportData[table] = rows;
+        } catch {
+            exportData[table] = [];
+        }
+    }
+
+    exportData.exportDate = new Date().toISOString();
+    exportData.appVersion = 'pawn-app';
+
+    const jsonString = JSON.stringify(exportData, null, 2);
+    const fileName = `backup_pawn_${new Date().toISOString().split('T')[0]}.json`;
+    const filePath = `${FileSystem.documentDirectory}${fileName}`;
+
+    await FileSystem.writeAsStringAsync(filePath, jsonString, {
+        encoding: FileSystem.EncodingType.UTF8,
+    });
+
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (isAvailable) {
+        await Sharing.shareAsync(filePath, {
+            mimeType: 'application/json',
+            dialogTitle: 'Exportar base de datos',
+            UTI: 'public.json',
+        });
+    }
+
+    return filePath;
 }

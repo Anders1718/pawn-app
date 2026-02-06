@@ -30,7 +30,8 @@ export const optionsPawn = [
 export const optionsTratement = [
     { "label": 'VO', 'value': 'venda + oxi', 'number': 1 },
     { "label": 'RP', 'value': 'recorte preventivo', 'number': 2 },
-    { "label": 'RT', 'value': 'recorte terapéutico', 'number': 3 }
+    { "label": 'RT', 'value': 'recorte terapéutico', 'number': 3 },
+    { "label": 'TA', 'value': 'talón adicional', 'number': 4 }
 ];
 
 export const optionsSeverity = [

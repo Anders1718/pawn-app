@@ -8,12 +8,19 @@ import * as Yup from 'yup'
 import { precioValidation } from '../../../../validationSchemas/login'
 import { initialValuePrice } from '../../../../utils/initialValuePrice'
 
-const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount, revisionCount }) => {
+const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount, revisionCount, talonAdicionalCount }) => {
 
     // Función para formatear números con comas
     const formatNumber = (number) => {
         if (number === 0 || number === '0' || !number) return '0';
         return Number(number).toLocaleString('es-CO');
+    };
+
+    // Función para convertir valores a números de forma segura
+    const toNumber = (value) => {
+        if (!value) return 0;
+        const num = Number(value);
+        return isNaN(num) ? 0 : num;
     };
 
     const elementosMayoresACero = prices.filter(elemento => elemento > 0);
@@ -43,7 +50,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const saveCuenta = (values) => {
-        const total = values.cantidad * values.valor;
+        const cantidad = toNumber(values.cantidad);
+        const valor = toNumber(values.valor);
+        const total = cantidad * valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
@@ -57,7 +66,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const saveDesplazamiento = (values) => {
-        const total = values.cantidadDesplazamiento * values.valorDesplazamiento;
+        const cantidad = toNumber(values.cantidadDesplazamiento);
+        const valor = toNumber(values.valorDesplazamiento);
+        const total = cantidad * valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
@@ -67,11 +78,27 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
             total: total
         }
         setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-        setButtonContinue(false);
+    }
+
+    const saveTalonAdicional = (values) => {
+        const cantidad = toNumber(values.cantidadTalonAdicional);
+        const valor = toNumber(values.valorTalonAdicional);
+        const total = cantidad * valor;
+        setTotal((prevTotal) => [...prevTotal, total]);
+        setSumaTotal((prevTotal) => prevTotal + total);
+        const cuentaFinal = {
+            cantidad: values.cantidadTalonAdicional,
+            descripcion: 'Talón adicional',
+            valor: values.valorTalonAdicional,
+            total: total
+        }
+        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
     }
 
     const saveRevision = (values) => {
-        const total = values.cantidadRevision * values.valorRevision;
+        const cantidad = toNumber(values.cantidadRevision);
+        const valor = toNumber(values.valorRevision);
+        const total = cantidad * valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
@@ -85,7 +112,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const saveTerapeuticos = (values) => {
-        const total = values.cantidadTerapeuticos * values.valorTerapeuticos;
+        const cantidad = toNumber(values.cantidadTerapeuticos);
+        const valor = toNumber(values.valorTerapeuticos);
+        const total = cantidad * valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
@@ -99,8 +128,9 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
     }
 
     const savePreventivos = (values) => {
-
-        const total = values.cantidadPreventivos * values.valorPreventivos;
+        const cantidad = toNumber(values.cantidadPreventivos);
+        const valor = toNumber(values.valorPreventivos);
+        const total = cantidad * valor;
         setTotal((prevTotal) => [...prevTotal, total]);
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
@@ -123,13 +153,13 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
         const [field, meta, helpers] = useField(name);
 
-        const handleChangeText = (value) => {
+        const handleChangeText = (text) => {
             if (isNumeric) {
-                // Remover todas las comas y puntos para obtener solo números
-                const numericValue = value.replace(/[^\d]/g, '');
+                // Remover todo excepto dígitos para guardar solo el número limpio
+                const numericValue = text.replace(/[^\d]/g, '');
                 helpers.setValue(numericValue);
             } else {
-                helpers.setValue(value);
+                helpers.setValue(text);
             }
         };
 
@@ -137,7 +167,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
             if (isNumeric && field.value) {
                 return formatNumber(field.value);
             }
-            return String(field.value);
+            return String(field.value || '');
         };
 
         return (
@@ -161,7 +191,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
 
             <Formik
-                initialValues={initialValuePrice(preventivosCount, terapeuticosCount, revisionCount, name)}
+                initialValues={initialValuePrice(preventivosCount, terapeuticosCount, revisionCount, talonAdicionalCount, name)}
                 validationSchema={precioValidation}
                 onSubmit={(values) => {
                     if (terapeuticosCount > 0) {
@@ -174,7 +204,11 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                         saveRevision(values);
                     }
                     saveDesplazamiento(values);
+                    if (talonAdicionalCount > 0) {
+                        saveTalonAdicional(values);
+                    }
                     setFirst(true);
+                    setButtonContinue(false);
                 }}
             >
                 {({ handleSubmit }) => (
@@ -185,7 +219,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadTerapeuticos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[0]}</StyledText>
@@ -193,7 +227,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorTerapeuticos'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[0])} </StyledTextInput>
@@ -205,7 +239,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadPreventivos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[1]}</StyledText>
@@ -213,7 +247,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorPreventivos'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0)} </StyledTextInput>
@@ -226,7 +260,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadRevision'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[2]}</StyledText>
@@ -234,7 +268,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorRevision'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="numeric"
+                                    keyboardType="number-pad"
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total.length > 0 ? total[contadorDesplazamiento - 1] : 0)} </StyledTextInput>
@@ -246,7 +280,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                 name='cantidadDesplazamiento'
                                 placeholder='Cantidad'
                                 placeholderTextColor="#c2c0c0"
-                                keyboardType="numeric"
+                                keyboardType="number-pad"
                                 isNumeric={true}
                             />
                             <StyledText style={styles.text}>Desplazamiento</StyledText>
@@ -254,11 +288,31 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                 name='valorDesplazamiento'
                                 placeholder='Valor'
                                 placeholderTextColor="#c2c0c0"
-                                keyboardType="numeric"
+                                keyboardType="number-pad"
                                 isNumeric={true}
                             />
                             <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento])} </StyledTextInput>
                         </View>
+                        {talonAdicionalCount > 0 && (
+                            <View style={styles.item}>
+                                <FormikInputValue
+                                    name='cantidadTalonAdicional'
+                                    placeholder='Cantidad'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="number-pad"
+                                    isNumeric={true}
+                                />
+                                <StyledText style={styles.text}>Talón adicional</StyledText>
+                                <FormikInputValue
+                                    name='valorTalonAdicional'
+                                    placeholder='Valor'
+                                    placeholderTextColor="#c2c0c0"
+                                    keyboardType="number-pad"
+                                    isNumeric={true}
+                                />
+                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento + 1])} </StyledTextInput>
+                            </View>
+                        )}
                         {!first && (
                             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
                                 <StyledText fontSize='subheading'>Guardar y continuar</StyledText>
@@ -289,7 +343,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             name='cantidad'
                                             placeholder='Cantidad'
                                             placeholderTextColor="#c2c0c0"
-                                            keyboardType="numeric"
+                                            keyboardType="number-pad"
                                             isNumeric={true}
                                         />
                                         <FormikInputValue
@@ -301,7 +355,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             name='valor'
                                             placeholder='Valor'
                                             placeholderTextColor="#c2c0c0"
-                                            keyboardType="numeric"
+                                            keyboardType="number-pad"
                                             isNumeric={true}
                                         />
                                         <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {formatNumber(total[index + contador])} </StyledTextInput>

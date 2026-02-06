@@ -56,41 +56,47 @@ export const reportValidation = yup.object().shape({
 
 export const precioValidation = yup.object().shape({
     cantidadPreventivos: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     descripcionPreventivos: yup
         .string()
         .required('Campo requerido'),
     cantidadTerapeuticos: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     descripcionTerapeuticos: yup
         .string()
         .required('Campo requerido'),
     valorPreventivos: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     valorTerapeuticos: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     valorDesplazamiento: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     descripcionDesplazamiento: yup
         .string()
         .required('Campo requerido'),
     cantidadDesplazamiento: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     valorRevision: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     cantidadRevision: yup
-        .number()
+        .string()
         .required('Campo requerido'),
     descripcionRevision: yup
         .string()
         .required('Campo requerido'),
+    valorTalonAdicional: yup
+        .string(),
+    cantidadTalonAdicional: yup
+        .string(),
+    descripcionTalonAdicional: yup
+        .string(),
 })
 
 export const historialVacasValidation = yup.object().shape({
