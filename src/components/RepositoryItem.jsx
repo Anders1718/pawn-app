@@ -42,9 +42,24 @@ const RepositoryItemHeader = (props) => {
         const touchDuration = new Date().getTime() - touchStartTime;
         if (touchDuration < 500 && !props.isLong) {
             if (props?.isBill) {
-                navigate(`/bill?finca=${props.nombre_finca}&cliente=${props.nombre_propietario}&lugar=${props.ubicacion}&direccion=${props.direccion}&nit=${props.nit}&tel=${props.telefono}&id=${props.id}`);
+                const params = new URLSearchParams({
+                    finca: props.nombre_finca || '',
+                    cliente: props.nombre_propietario || '',
+                    lugar: props.ubicacion || '',
+                    direccion: props.direccion || '',
+                    nit: props.nit || '',
+                    tel: props.telefono || '',
+                    id: String(props.id),
+                });
+                navigate(`/bill?${params.toString()}`);
             } else {
-                navigate(`/historial?finca=${props.nombre_finca}&id=${props.id}&cliente=${props.nombre_propietario}&lugar=${props.ubicacion}`);
+                const params = new URLSearchParams({
+                    finca: props.nombre_finca || '',
+                    id: String(props.id),
+                    cliente: props.nombre_propietario || '',
+                    lugar: props.ubicacion || '',
+                });
+                navigate(`/historial?${params.toString()}`);
             }
         }
     };
