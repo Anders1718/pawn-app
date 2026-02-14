@@ -111,6 +111,16 @@ const styles = StyleSheet.create({
         borderWidth: 10,
         marginBottom: 20
     },
+    buttonSelected: {
+        borderColor: "#22c55e",
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: '#1e293b',
+        padding: 15,
+        borderRadius: 15,
+        borderWidth: 10,
+        marginBottom: 20
+    },
     buttonFree: {
         borderColor: "#334155",
         borderRadius: "25%",
@@ -234,12 +244,7 @@ export default function PawPage() {
         fetchEnfermedadesList();
     }, [setIdPaw]);
 
-    // Actualizar hasTalonAdicional cuando secondPartSick cambie
-    useEffect(() => {
-        if (secondPartSick.includes('talón adicional')) {
-            setHasTalonAdicional(true);
-        }
-    }, [secondPartSick]);
+    // Nota: hasTalonAdicional ahora se controla directamente desde el botón TA
 
     const clearAllData = async () => {
         setModalCowAddOpen(false);
@@ -357,8 +362,8 @@ export default function PawPage() {
         if (secondPartSick.includes('venda + oxi')) {
             segundaParte = 'venda + oxi'
         }
-        if (secondPartSick.includes('talón adicional')) {
-            segundaParte = segundaParte ? segundaParte + ', talón adicional' : 'talón adicional'
+        if (secondPartSick.includes('tacon adicional')) {
+            segundaParte = segundaParte ? segundaParte + ', tacon adicional' : 'tacon adicional'
         }
 
         const identificadorPata = `${firstPartSick} ${segundaParte}-${severity} ${value}`;
@@ -394,10 +399,10 @@ export default function PawPage() {
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
             
-            // Construir el tratamiento final incluyendo Talón adicional si TA está seleccionado
+            // Construir el tratamiento final incluyendo Tacon adicional si TA está seleccionado
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
-                tratamientoFinal = tratamientoFinal + ', Talón adicional';
+                tratamientoFinal = tratamientoFinal + ', Tacon adicional';
             }
             
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
@@ -423,10 +428,10 @@ export default function PawPage() {
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
             
-            // Construir el tratamiento final incluyendo Talón adicional si TA está seleccionado
+            // Construir el tratamiento final incluyendo Tacon adicional si TA está seleccionado
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
-                tratamientoFinal = tratamientoFinal + ', Talón adicional';
+                tratamientoFinal = tratamientoFinal + ', Tacon adicional';
             }
             
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
@@ -584,6 +589,14 @@ export default function PawPage() {
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
                                             </TouchableOpacity>
                                         }
+                                        <TouchableOpacity
+                                            style={hasTalonAdicional ? styles.buttonSelected : styles.button}
+                                            onPress={() => {
+                                                setHasTalonAdicional(!hasTalonAdicional);
+                                            }}
+                                        >
+                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>TA</StyledText>
+                                        </TouchableOpacity>
                                         {!terapeutic && !preventive &&
 
                                             <TouchableOpacity

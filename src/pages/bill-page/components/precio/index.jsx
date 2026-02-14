@@ -88,7 +88,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
             cantidad: values.cantidadTalonAdicional,
-            descripcion: 'Talón adicional',
+            descripcion: 'Tacon adicional',
             valor: values.valorTalonAdicional,
             total: total
         }
@@ -219,7 +219,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadTerapeuticos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[0]}</StyledText>
@@ -227,7 +227,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorTerapeuticos'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[0])} </StyledTextInput>
@@ -239,7 +239,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadPreventivos'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[1]}</StyledText>
@@ -247,7 +247,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorPreventivos'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0)} </StyledTextInput>
@@ -260,7 +260,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadRevision'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledText style={styles.text}>{name[2]}</StyledText>
@@ -268,7 +268,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='valorRevision'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total.length > 0 ? total[contadorDesplazamiento - 1] : 0)} </StyledTextInput>
@@ -299,15 +299,15 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                     name='cantidadTalonAdicional'
                                     placeholder='Cantidad'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
-                                <StyledText style={styles.text}>Talón adicional</StyledText>
+                                <StyledText style={styles.text}>Tacon adicional</StyledText>
                                 <FormikInputValue
                                     name='valorTalonAdicional'
                                     placeholder='Valor'
                                     placeholderTextColor="#c2c0c0"
-                                    keyboardType="number-pad"
+
                                     isNumeric={true}
                                 />
                                 <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento + 1])} </StyledTextInput>
@@ -343,7 +343,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             name='cantidad'
                                             placeholder='Cantidad'
                                             placeholderTextColor="#c2c0c0"
-                                            keyboardType="number-pad"
+        
                                             isNumeric={true}
                                         />
                                         <FormikInputValue
@@ -355,7 +355,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
                                             name='valor'
                                             placeholder='Valor'
                                             placeholderTextColor="#c2c0c0"
-                                            keyboardType="number-pad"
+        
                                             isNumeric={true}
                                         />
                                         <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {formatNumber(total[index + contador])} </StyledTextInput>

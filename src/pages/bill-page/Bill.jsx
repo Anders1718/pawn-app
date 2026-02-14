@@ -80,7 +80,7 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     
     // Contar talones adicionales buscando en el campo tratamiento
     const talonAdicionalCount = uniqueVacas.filter(item => 
-        item.tratamiento && item.tratamiento.includes('Talón adicional')
+        item.tratamiento && item.tratamiento.includes('Tacon adicional')
     ).length;
 
     const users = await fetchUsers();
