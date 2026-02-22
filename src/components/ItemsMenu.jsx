@@ -4,7 +4,7 @@ import { Link } from 'react-router-native'
 import StyledText from './StyledText'
 import theme from '../theme'
 import Dropdown from './Dropdown'
-import { fetchFincasNombres, exportDatabase } from '../hooks/useRepositories'
+import { fetchFincasNombres, exportDatabase, importDatabase } from '../hooks/useRepositories'
 
 const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
 
@@ -59,6 +59,7 @@ const ItemMenu = () => {
     const [nombreFinca, setNombreFinca] = useState(null);
     const [idFinca, setIdFinca] = useState(null);
     const [isExporting, setIsExporting] = useState(false);
+    const [isImporting, setIsImporting] = useState(false);
 
     const handleChange = (value, label) => {
         setNombreFinca(label);
@@ -74,6 +75,37 @@ const ItemMenu = () => {
         } finally {
             setIsExporting(false);
         }
+    }
+
+    const handleImportDB = () => {
+        Alert.alert(
+            'Importar Base de Datos',
+            'Esta acción reemplazará todos los datos actuales. ¿Desea continuar?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Importar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setIsImporting(true);
+                            const result = await importDatabase();
+                            if (result.success) {
+                                Alert.alert('Éxito', result.message);
+                                const resultado = await fetchFincasNombres();
+                                setFincas(resultado);
+                                setNombreFinca(null);
+                                setIdFinca(null);
+                            }
+                        } catch (error) {
+                            Alert.alert('Error', error.message || 'No se pudo importar la base de datos');
+                        } finally {
+                            setIsImporting(false);
+                        }
+                    },
+                },
+            ]
+        );
     }
 
     useEffect(() => {
@@ -97,22 +129,40 @@ const ItemMenu = () => {
 
             />
             <RepositoryItemHeader nombreFinca={nombreFinca} idFinca={idFinca} />
-            <Pressable
-                style={({ pressed }) => [
-                    styles.exportButton,
-                    pressed && styles.exportButtonPressed
-                ]}
-                onPress={handleExportDB}
-                disabled={isExporting}
-            >
-                {isExporting ? (
-                    <ActivityIndicator color={theme.colors.white} size='small' />
-                ) : (
-                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.exportButtonText}>
-                        Exportar Base de Datos
-                    </StyledText>
-                )}
-            </Pressable>
+            <View style={styles.dbButtonsContainer}>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.exportButton,
+                        pressed && styles.exportButtonPressed
+                    ]}
+                    onPress={handleExportDB}
+                    disabled={isExporting}
+                >
+                    {isExporting ? (
+                        <ActivityIndicator color={theme.colors.white} size='small' />
+                    ) : (
+                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.exportButtonText}>
+                            Exportar Base de Datos
+                        </StyledText>
+                    )}
+                </Pressable>
+                <Pressable
+                    style={({ pressed }) => [
+                        styles.importButton,
+                        pressed && styles.importButtonPressed
+                    ]}
+                    onPress={handleImportDB}
+                    disabled={isImporting}
+                >
+                    {isImporting ? (
+                        <ActivityIndicator color={theme.colors.white} size='small' />
+                    ) : (
+                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.importButtonText}>
+                            Importar Base de Datos
+                        </StyledText>
+                    )}
+                </Pressable>
+            </View>
         </ScrollView>
     )
 }
@@ -149,6 +199,11 @@ const styles = StyleSheet.create({
         alignSelf: 'center',
         color: 'snow'
     },
+    dbButtonsContainer: {
+        marginTop: 30,
+        alignItems: 'center',
+        gap: 14,
+    },
     exportButton: {
         backgroundColor: '#16a34a',
         paddingVertical: 14,
@@ -156,8 +211,6 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         alignItems: 'center',
         justifyContent: 'center',
-        marginTop: 30,
-        alignSelf: 'center',
         minWidth: 250,
         minHeight: 50,
     },
@@ -165,6 +218,22 @@ const styles = StyleSheet.create({
         opacity: 0.7,
     },
     exportButtonText: {
+        color: theme.colors.white,
+    },
+    importButton: {
+        backgroundColor: '#2563eb',
+        paddingVertical: 14,
+        paddingHorizontal: 24,
+        borderRadius: 10,
+        alignItems: 'center',
+        justifyContent: 'center',
+        minWidth: 250,
+        minHeight: 50,
+    },
+    importButtonPressed: {
+        opacity: 0.7,
+    },
+    importButtonText: {
         color: theme.colors.white,
     }
 })

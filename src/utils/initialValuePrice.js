@@ -26,7 +26,7 @@ export const initialValuePrice = (preventivosCount, terapeuticosCount, revisionC
 
     const talonAdicional = {
         cantidadTalonAdicional: talonAdicionalCount > 0 ? talonAdicionalCount : '',
-        descripcionTalonAdicional: 'Tacon adicional',
+        descripcionTalonAdicional: 'Tacón adicional',
         valorTalonAdicional: '',
     }
 

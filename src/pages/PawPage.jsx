@@ -280,6 +280,11 @@ export default function PawPage() {
 
     const clearPartialCowData = async () => {
         setModalCowAddOpen(false);
+        isTerapeuctic(false);
+        setRevision(false);
+        isPreventive(false);
+        setHasTalonAdicional(false);
+        setTratamiento('');
         setPawn('');
         setNote('');
         setPawList([false, false, false, false, false, false, false, false]);
@@ -362,8 +367,8 @@ export default function PawPage() {
         if (secondPartSick.includes('venda + oxi')) {
             segundaParte = 'venda + oxi'
         }
-        if (secondPartSick.includes('tacon adicional')) {
-            segundaParte = segundaParte ? segundaParte + ', tacon adicional' : 'tacon adicional'
+        if (secondPartSick.includes('tacón adicional')) {
+            segundaParte = segundaParte ? segundaParte + ', tacón adicional' : 'tacón adicional'
         }
 
         const identificadorPata = `${firstPartSick} ${segundaParte}-${severity} ${value}`;
@@ -402,7 +407,7 @@ export default function PawPage() {
             // Construir el tratamiento final incluyendo Tacon adicional si TA está seleccionado
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
-                tratamientoFinal = tratamientoFinal + ', Tacon adicional';
+                tratamientoFinal = tratamientoFinal + ', Tacón adicional';
             }
             
             const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
@@ -428,15 +433,43 @@ export default function PawPage() {
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
             
-            // Construir el tratamiento final incluyendo Tacon adicional si TA está seleccionado
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
-                tratamientoFinal = tratamientoFinal + ', Tacon adicional';
+                tratamientoFinal = tratamientoFinal + ', Tacón adicional';
             }
             
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
-            clearPartialCowData();
-            return Alert.alert('Guardado con éxito');
+            try {
+                await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
+            } catch (error) {
+                return Alert.alert('Error', 'No se pudo guardar el registro');
+            }
+
+            isTerapeuctic(false);
+            setRevision(false);
+            isPreventive(false);
+            setHasTalonAdicional(false);
+            setTratamiento('');
+            setPawn('');
+            setNote('');
+            setPawList([false, false, false, false, false, false, false, false]);
+            setIdPaw('');
+            setNumberPawnPart([], [], [], []);
+            setNumberSidePawnPart([], [], [], []);
+            setNumberUpPawnPart([], [], [], []);
+            setSickList(['', '', '', '']);
+            setFirstPartSick('');
+            setPawnSide([]);
+            setSecondPartSick([]);
+            setNumberPawnSave([[], [], [], []]);
+            setNumberSickSave([[], [], [], []]);
+            setNumberTratSave([[], [], [], []]);
+            setNumberSeverSave([[], [], [], []]);
+            setUltimoTratamiento('');
+            setSeverity('');
+            setCardSelected(null);
+            setNumberSeveritySave([[], [], [], []]);
+
+            Alert.alert('Guardado con éxito');
         }
     }
 

@@ -78,9 +78,11 @@ const fetchData = async (id, startDate, endDate, setResponse, setTerapeuticosCou
     const preventivosCount = uniqueVacas.filter(item => item.tratamiento && item.tratamiento.includes("Preventivo")).length;
     const revisionCount = uniqueVacas.filter(item => item.tratamiento && item.tratamiento.includes("Revisión")).length;
     
-    // Contar talones adicionales buscando en el campo tratamiento
-    const talonAdicionalCount = uniqueVacas.filter(item => 
-        item.tratamiento && item.tratamiento.includes('Tacon adicional')
+    const normalizarTexto = (texto) =>
+        texto.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+    const talonAdicionalCount = response.filter(item => 
+        item.tratamiento && normalizarTexto(item.tratamiento).includes('tacon adicional')
     ).length;
 
     const users = await fetchUsers();

@@ -88,7 +88,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
         setSumaTotal((prevTotal) => prevTotal + total);
         const cuentaFinal = {
             cantidad: values.cantidadTalonAdicional,
-            descripcion: 'Tacon adicional',
+            descripcion: 'Tacón adicional',
             valor: values.valorTalonAdicional,
             total: total
         }
@@ -302,7 +302,7 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 
                                     isNumeric={true}
                                 />
-                                <StyledText style={styles.text}>Tacon adicional</StyledText>
+                                <StyledText style={styles.text}>Tacón adicional</StyledText>
                                 <FormikInputValue
                                     name='valorTalonAdicional'
                                     placeholder='Valor'

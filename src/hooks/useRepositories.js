@@ -1,6 +1,7 @@
 import * as SQLite from 'expo-sqlite'
 import * as FileSystem from 'expo-file-system'
 import * as Sharing from 'expo-sharing'
+import * as DocumentPicker from 'expo-document-picker'
 
 const databaseName = 'cowdatabasetest5.db';
 
@@ -320,4 +321,105 @@ export async function exportDatabase() {
     }
 
     return filePath;
+}
+
+export async function importDatabase() {
+    const result = await DocumentPicker.getDocumentAsync({
+        type: 'application/json',
+        copyToCacheDirectory: true,
+    });
+
+    if (result.canceled) {
+        return { success: false, message: 'Importación cancelada' };
+    }
+
+    const fileUri = result.assets[0].uri;
+    const fileContent = await FileSystem.readAsStringAsync(fileUri, {
+        encoding: FileSystem.EncodingType.UTF8,
+    });
+
+    const importData = JSON.parse(fileContent);
+
+    const requiredTables = ['fincas', 'vacas', 'historial_vacas', 'user', 'lista_enfermedades'];
+    const hasValidStructure = requiredTables.some(table => Array.isArray(importData[table]));
+    if (!hasValidStructure) {
+        throw new Error('El archivo no tiene un formato válido de backup');
+    }
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS fincas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_finca VARCHAR(255) NOT NULL, nombre_propietario VARCHAR(255) NOT NULL, ubicacion VARCHAR(255), direccion VARCHAR(255), telefono VARCHAR(255), nit VARCHAR(150))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), sala VARCHAR(255), finca INT, FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await addExtremidadColumnIfNotExists(db);
+    await db.execAsync('CREATE TABLE IF NOT EXISTS user (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre VARCHAR(255) NOT NULL, telefono VARCHAR(255) NOT NULL, documento VARCHAR(255) NOT NULL, direccion VARCHAR(255) NOT NULL, apellido VARCHAR(255) NOT NULL, profesion VARCHAR(255) NOT NULL, universidad VARCHAR(255) NOT NULL, banco VARCHAR(255) NOT NULL, tipoCuenta VARCHAR(255) NOT NULL, numeroCuenta VARCHAR(255) NOT NULL)');
+    await addLogoColumnIfNotExists(db);
+    await db.execAsync('CREATE TABLE IF NOT EXISTS lista_enfermedades (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_enfermedad VARCHAR(255) NOT NULL, id_enfermedad VARCHAR(255) NOT NULL)');
+
+    await db.execAsync('DELETE FROM historial_vacas');
+    await db.execAsync('DELETE FROM vacas');
+    await db.execAsync('DELETE FROM lista_enfermedades');
+    await db.execAsync('DELETE FROM user');
+    await db.execAsync('DELETE FROM fincas');
+
+    const idMap = {};
+
+    if (importData.fincas?.length) {
+        for (const finca of importData.fincas) {
+            const res = await db.runAsync(
+                'INSERT INTO fincas (nombre_finca, nombre_propietario, ubicacion, direccion, telefono, nit) VALUES (?, ?, ?, ?, ?, ?)',
+                finca.nombre_finca, finca.nombre_propietario, finca.ubicacion || '', finca.direccion || '', finca.telefono || '', finca.nit || ''
+            );
+            idMap[finca.id] = res.lastInsertRowId;
+        }
+    }
+
+    if (importData.vacas?.length) {
+        for (const vaca of importData.vacas) {
+            const newFincaId = idMap[vaca.finca] ?? vaca.finca;
+            await db.runAsync(
+                'INSERT INTO vacas (nombre_vaca, enfermedades, sala, finca) VALUES (?, ?, ?, ?)',
+                vaca.nombre_vaca, vaca.enfermedades || '', vaca.sala || '', newFincaId
+            );
+        }
+    }
+
+    if (importData.historial_vacas?.length) {
+        for (const historial of importData.historial_vacas) {
+            const newFincaId = idMap[historial.finca] ?? historial.finca;
+            await db.runAsync(
+                'INSERT INTO historial_vacas (nombre_vaca, enfermedades, fecha, finca, sala, nota, tratamiento, extremidad) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                historial.nombre_vaca, historial.enfermedades || '', historial.fecha || '', newFincaId, historial.sala || '', historial.nota || '', historial.tratamiento || '', historial.extremidad || ''
+            );
+        }
+    }
+
+    if (importData.user?.length) {
+        for (const user of importData.user) {
+            await db.runAsync(
+                'INSERT INTO user (nombre, apellido, profesion, universidad, banco, tipoCuenta, numeroCuenta, telefono, documento, direccion, logo) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                user.nombre, user.apellido || '', user.profesion || '', user.universidad || '', user.banco || '', user.tipoCuenta || '', user.numeroCuenta || '', user.telefono || '', user.documento || '', user.direccion || '', user.logo || null
+            );
+        }
+    }
+
+    if (importData.lista_enfermedades?.length) {
+        for (const enf of importData.lista_enfermedades) {
+            await db.runAsync(
+                'INSERT INTO lista_enfermedades (nombre_enfermedad, id_enfermedad) VALUES (?, ?)',
+                enf.nombre_enfermedad, enf.id_enfermedad
+            );
+        }
+    }
+
+    const totalRecords = (importData.fincas?.length || 0) +
+        (importData.vacas?.length || 0) +
+        (importData.historial_vacas?.length || 0) +
+        (importData.user?.length || 0) +
+        (importData.lista_enfermedades?.length || 0);
+
+    return {
+        success: true,
+        message: `Base de datos importada correctamente (${totalRecords} registros)`,
+    };
 }
