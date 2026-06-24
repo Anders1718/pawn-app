@@ -33,7 +33,15 @@
     },
     "plugins": [
       "expo-font",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "extraPodfileContent": "post_install do |installer|\n  installer.pods_project.targets.each do |target|\n    target.build_configurations.each do |config|\n      config.build_settings['CLANG_CXX_LANGUAGE_STANDARD'] = 'c++20'\n    end\n  end\nend"
+          }
+        }
+      ]
     ],
     "extra": {
       "eas": {
