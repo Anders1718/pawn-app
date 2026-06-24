@@ -8,11 +8,18 @@ const path = require('path');
 // Setting FMT_USE_CONSTEVAL=0 makes fmt use constexpr as fallback.
 // Injected inside the existing post_install block to avoid the
 // "Specifying multiple post_install hooks is unsupported" CocoaPods error.
+// GCC_PREPROCESSOR_DEFINITIONS is more reliable than OTHER_CPLUSPLUSFLAGS because
+// CocoaPods xcconfig files can shadow target-level OTHER_CPLUSPLUSFLAGS overrides.
+// We also set OTHER_CPLUSPLUSFLAGS as a fallback.
+// Only applied to the 'fmt' target to minimize blast radius.
 const FMT_FIX_CODE = `
     installer.pods_project.targets.each do |target|
+      next unless target.name == 'fmt'
       target.build_configurations.each do |build_config|
-        build_config.build_settings['OTHER_CPLUSPLUSFLAGS'] = '$(inherited) -DFMT_USE_CONSTEVAL=0'
-        build_config.build_settings['OTHER_CFLAGS'] = '$(inherited) -DFMT_USE_CONSTEVAL=0'
+        existing_defs = build_config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] || '$(inherited)'
+        build_config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] = "#{existing_defs} FMT_USE_CONSTEVAL=0"
+        existing_flags = build_config.build_settings['OTHER_CPLUSPLUSFLAGS'] || '$(inherited)'
+        build_config.build_settings['OTHER_CPLUSPLUSFLAGS'] = "#{existing_flags} -DFMT_USE_CONSTEVAL=0"
       end
     end
 `;
