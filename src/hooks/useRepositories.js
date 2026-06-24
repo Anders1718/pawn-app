@@ -177,6 +177,22 @@ export async function ultimaHistoriaVaca(id, nombre_vaca) {
     return vacas;
 }
 
+export async function addMultipleHistorialVacas(id, nombre, enfermedades, fecha, sala, nota, tratamiento, extremidades) {
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await addExtremidadColumnIfNotExists(db);
+
+    await db.withTransactionAsync(async () => {
+        for (const extremidad of extremidades) {
+            await db.runAsync(
+                'INSERT INTO historial_vacas (nombre_vaca, enfermedades, fecha, finca, sala, nota, tratamiento, extremidad) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                nombre, enfermedades, fecha, id, sala, nota, tratamiento, extremidad
+            );
+        }
+    });
+}
+
 export async function addHistorialVacas(id, nombre, enfermedades, fecha, sala, nota, tratamiento, extremidad) {
     const db = await SQLite.openDatabaseAsync(databaseName);
 
