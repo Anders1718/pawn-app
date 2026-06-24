@@ -7,23 +7,23 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "image": "latest"
+        "image": "macos-sonoma-14.5-xcode-15.4"
       }
     },
     "preview": {
       "distribution": "internal",
       "ios": {
-        "image": "latest"
+        "image": "macos-sonoma-14.5-xcode-15.4"
       }
     },
     "production": {
       "ios": {
-        "image": "latest"
+        "image": "macos-sonoma-14.5-xcode-15.4"
       }
     },
     "production-prebuild": {
       "ios": {
-        "image": "latest"
+        "image": "macos-sonoma-14.5-xcode-15.4"
       },
       "prebuildCommand": "npx expo prebuild --clean"
     },
