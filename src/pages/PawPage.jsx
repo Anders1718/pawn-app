@@ -546,9 +546,16 @@ export default function PawPage() {
             tratamientoFinal = 'Preventivo, Tacón adicional';
         }
 
+        // Enfermedad/tratamiento/severidad son compartidos entre todas las patas seleccionadas
+        const stringUnido = sickList.join(' ').trim();
+        const enfermedadesFinal = stringUnido ? stringUnido : 'Libre de enfermedad';
+        const detalleExtremidad = `${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`.trim();
+
         try {
-            const extremidadFinal = selectedPatas.join(', ');
-            await addHistorialVacas(id, cowName, 'Libre de enfermedad', fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidadFinal);
+            const extremidadFinal = selectedPatas
+                .map(pata => detalleExtremidad ? `${pata}-${detalleExtremidad}` : pata)
+                .join(', ');
+            await addHistorialVacas(id, cowName, enfermedadesFinal, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidadFinal);
             clearAllData();
             Alert.alert('Guardado con éxito');
         } catch (error) {
@@ -656,13 +663,26 @@ export default function PawPage() {
                                 {ultimoTratamiento && ultimoTratamiento.length > 0 && (
                                     <View style={{ paddingVertical: 20, backgroundColor: '#94ACD4', borderRadius: 15, paddingHorizontal: 10, marginBottom: 25 }}>
                                         <StyledText fontSize='subheading' style={{ fontSize: 22, textAlign: 'center', marginBottom: 10 }}>Última historia</StyledText>
-                                        <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                                            <StyledText style={{ fontSize: 18 }}>Enfermedad: {ultimoTratamiento[0].enfermedades}</StyledText>
-                                            <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(ultimoTratamiento[0].extremidad)}</StyledText>
-                                            <StyledText style={{ fontSize: 18 }}>Tratamiento: {ultimoTratamiento[0].tratamiento}</StyledText>
-                                            <StyledText style={{ fontSize: 18 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
-                                            <StyledText style={{ fontSize: 18 }}>Nota: {ultimoTratamiento[0].nota}</StyledText>
-                                        </View>
+                                        <StyledText style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
+                                        {ultimoTratamiento.map((registro, index) => (
+                                            <View
+                                                key={registro.id ?? index}
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    justifyContent: 'space-between',
+                                                    borderTopWidth: index > 0 ? 1 : 0,
+                                                    borderTopColor: '#5c7099',
+                                                    paddingTop: index > 0 ? 10 : 0,
+                                                    marginTop: index > 0 ? 10 : 0,
+                                                }}
+                                            >
+                                                <StyledText style={{ fontSize: 18 }}>Enfermedad: {registro.enfermedades}</StyledText>
+                                                <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(registro.extremidad)}</StyledText>
+                                                <StyledText style={{ fontSize: 18 }}>Tratamiento: {registro.tratamiento}</StyledText>
+                                                <StyledText style={{ fontSize: 18 }}>Nota: {registro.nota}</StyledText>
+                                            </View>
+                                        ))}
                                     </View>
                                 )}
                                 <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
@@ -707,6 +727,7 @@ export default function PawPage() {
                                                 onPress={() => {
                                                     setTratamiento('Preventivo');
                                                     isPreventive(true);
+                                                    setIdPaw(1);
                                                 }}
                                             >
                                                 <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
@@ -739,6 +760,15 @@ export default function PawPage() {
                                         </View>
                                         {selectedPatas.length > 0 &&
                                             <>
+                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />
+                                                <View style={{ flexDirection: 'row', marginBottom: 35 }}>
+                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
+                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
+                                                </View>
+                                                <ComponentButton title="Enfermedades" handleLongPress={handleLongPress} options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
+                                                <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
+                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
+                                                <ComponentButtonSeverity title="Severidad" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
                                                 <StyledTextInput
                                                     placeholder='Nota (opcional)'
                                                     placeholderTextColor="#c2c0c0"

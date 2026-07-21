@@ -29,6 +29,7 @@ const DocsBillReport = ({ direccion, cliente, lugar, totalCuenta, fechaHoyFormat
   }, []);
 
   const handleGenerateBill = async () => {
+    console.log('[DocsBillReport] Generar factura Google Docs presionado', { direccion, cliente, totalCuenta, fechaHoyFormateada, nit, tel, sumaTotal, users });
     setIsLoading(true);
     try {
       const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-bill', {

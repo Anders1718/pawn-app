@@ -171,8 +171,19 @@ export async function ultimaHistoriaVaca(id, nombre_vaca) {
     // Agregar la nueva columna si no existe
     await addExtremidadColumnIfNotExists(db);
 
-    const vacas = await db.getAllAsync(`SELECT * FROM historial_vacas WHERE finca = ${id} AND nombre_vaca = ${nombre_vaca} ORDER BY id DESC LIMIT 1`);
-
+    // Trae todos los registros (patas) del último caso, es decir, todos los
+    // registros del mismo día que el registro más reciente de este animal.
+    const vacas = await db.getAllAsync(
+        `SELECT * FROM historial_vacas
+         WHERE finca = ? AND nombre_vaca = ?
+         AND date(fecha) = (
+             SELECT date(fecha) FROM historial_vacas
+             WHERE finca = ? AND nombre_vaca = ?
+             ORDER BY id DESC LIMIT 1
+         )
+         ORDER BY id DESC`,
+        [id, nombre_vaca, id, nombre_vaca]
+    );
 
     return vacas;
 }
