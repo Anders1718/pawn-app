@@ -230,7 +230,7 @@ export default function PawPage() {
     //Sicks
     // Crear un nuevo string con las partes que si tengan texto
     const [sickList, setSickList] = useState(['', '', '', ''])
-    const [firstPartSick, setFirstPartSick] = useState('')
+    const [firstPartSick, setFirstPartSick] = useState([])
     const [pawnSide, setPawnSide] = useState([])
     const [secondPartSick, setSecondPartSick] = useState([])
     const [tratamiento, setTratamiento] = useState('');
@@ -287,7 +287,7 @@ export default function PawPage() {
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '']);
-        setFirstPartSick('');
+        setFirstPartSick([]);
         setPawnSide([]);
         setSecondPartSick([]);
         setNumberPawnSave([[], [], [], []])
@@ -317,7 +317,7 @@ export default function PawPage() {
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '']);
-        setFirstPartSick('');
+        setFirstPartSick([]);
         setPawnSide([]);
         setSecondPartSick([]);
         setNumberPawnSave([[], [], [], []])
@@ -345,7 +345,7 @@ export default function PawPage() {
         setNumberSidePawnPart([], [], [], []);
         setNumberUpPawnPart([], [], [], []);
         setSickList(['', '', '', '']);
-        setFirstPartSick('');
+        setFirstPartSick([]);
         setPawnSide([]);
         setSecondPartSick([]);
         setNumberPawnSave([[], [], [], []]);
@@ -397,7 +397,7 @@ export default function PawPage() {
             segundaParte = segundaParte ? segundaParte + ', tacón adicional' : 'tacón adicional'
         }
 
-        const identificadorPata = `${firstPartSick} ${segundaParte}-${severity} ${value}`;
+        const identificadorPata = `${firstPartSick.join(', ')} ${segundaParte}-${severity} ${value}`;
         // Clonar el array original
         const nuevoPaws = [...sickList];
         // Modificar la posición deseada

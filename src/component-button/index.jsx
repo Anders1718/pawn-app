@@ -108,7 +108,12 @@ const ComponentButton =
                                         toggleString(repo.value);
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberTratSave, numberTratSave)
                                     } if (setFirstPartSick) {
-                                        setFirstPartSick(repo.value);
+                                        setFirstPartSick((prevState) => {
+                                            const arr = Array.isArray(prevState) ? prevState : [];
+                                            return arr.includes(repo.value)
+                                                ? arr.filter((item) => item !== repo.value)
+                                                : [...arr, repo.value];
+                                        });
                                         updateArrayAtPosition(idPaw - 1, repo.number, setNumberSickSave, numberSickSave)
                                     }
                                     if (modificarPosicion) {
