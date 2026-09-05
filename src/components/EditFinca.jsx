@@ -1,130 +1,63 @@
-import React, { useState } from 'react'
-import { Formik, useField } from 'formik'
-import { Alert, Button, StyleSheet, TextInput, View } from 'react-native'
-import StyledTextInput from './StyledTextInput'
-import StyledText from './StyledText'
+import React from 'react'
+import { Formik } from 'formik'
+import { Alert, View } from 'react-native'
 import { farmValidation } from '../validationSchemas/login'
 import { editFinca, deleteFinca } from '../hooks/useRepositories'
+import { FormField, FormRow, Button } from '../ui'
 
-const initialValues = (props) => {
-    return {
-        finca: props.nombre_finca,
-        nombre: props.nombre_propietario,
-        nit: props.nit,
-        tel: props.telefono,
-        ubicacion: props.ubicacion,
-        direccion: props.direccion,
-        id: props.id,
-    };
-}
-
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12,
-        color: 'snow'
-    }
+const initialValues = (props) => ({
+    finca: props.nombre_finca,
+    nombre: props.nombre_propietario,
+    nit: props.nit,
+    tel: props.telefono,
+    ubicacion: props.ubicacion,
+    direccion: props.direccion,
+    id: props.id,
 })
 
-const addFincas = async (values, actualizarFincas, setIsOpen, isDelete) => {
-    if (isDelete) {
-        await deleteFinca(values);
-    } else {
-        await editFinca(values);
+export default function EditFincaForm(props) {
+    const submit = async (values) => {
+        await editFinca(values)
+        props.actualizarFincas()
+        props.setIsOpen(false)
     }
-    actualizarFincas();
-    setIsOpen(false);
-};
 
-const FormikInputValue = ({ name, ...props }) => {
-    const [field, meta, helpers] = useField(name)
+    const confirmDelete = () => {
+        Alert.alert(
+            'Eliminar finca',
+            `Se eliminará "${props.nombre_finca}". ¿Deseas continuar?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteFinca({ id: props.id })
+                        props.actualizarFincas()
+                        props.setIsOpen(false)
+                    },
+                },
+            ],
+            { cancelable: true }
+        )
+    }
 
     return (
-        <>
-            <StyledTextInput
-                error={meta.error}
-                value={field.value}
-                onChangeText={value => helpers.setValue(value)}
-                {...props}
-            />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
-        </>
-
-    )
-}
-
-export default function LogInPage(props) {
-
-    const [isDelete, setIsDelete] = useState(false);
-
-    return <Formik validationSchema={farmValidation} initialValues={initialValues(props)} onSubmit={values => {
-        addFincas(values, props.actualizarFincas, props.setIsOpen, isDelete)
-    }}>
-        {({ handleChange, handleSubmit, values }) => {
-
-            
-
-            const pressDelete = () => {
-                Alert.alert(
-                    "Eliminar predio",
-                    "¿Estás seguro de que deseas continuar?",
-                    [
-                      {
-                        text: "Cancelar",
-                        onPress: () => props.setIsOpen(false),
-                        style: "cancel"
-                      },
-                      { text: "OK", onPress: () => {
-                        setIsDelete(true);
-                        handleSubmit();
-                      } }
-                    ],
-                    { cancelable: false }
-                  );
-            }
-
-            return (
-                <View style={styles.form}>
-                    <FormikInputValue
-                        name='finca'
-                        placeholder='Finca'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='nombre'
-                        placeholder='Cliente'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='nit'
-                        placeholder='NIT/C.C'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='tel'
-                        placeholder='Tel'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='ubicacion'
-                        placeholder='Ubicación'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='direccion'
-                        placeholder='Dirección'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <Button onPress={handleSubmit} title='Editar' />
-                    <Button onPress={pressDelete} title='Eliminar' />
+        <Formik validationSchema={farmValidation} initialValues={initialValues(props)} onSubmit={submit}>
+            {({ handleSubmit, isSubmitting }) => (
+                <View>
+                    <FormField name="finca" label="Finca" placeholder="Nombre del predio" icon="mci:barn" />
+                    <FormField name="nombre" label="Cliente" placeholder="Nombre del propietario" icon="person-outline" />
+                    <FormRow>
+                        <FormField name="nit" label="NIT / C.C." placeholder="Documento" icon="id-card-outline" />
+                        <FormField name="tel" label="Teléfono" placeholder="Número de contacto" icon="call-outline" keyboardType="phone-pad" />
+                    </FormRow>
+                    <FormField name="ubicacion" label="Ubicación" placeholder="Vereda o municipio" icon="location-outline" />
+                    <FormField name="direccion" label="Dirección" placeholder="Dirección de facturación" icon="home-outline" />
+                    <Button title="Guardar cambios" icon="save-outline" size="lg" fullWidth onPress={handleSubmit} loading={isSubmitting} style={{ marginTop: 6 }} />
+                    <Button title="Eliminar finca" icon="trash-outline" variant="danger" fullWidth onPress={confirmDelete} style={{ marginTop: 10 }} />
                 </View>
-            )
-        }}
-    </Formik>
+            )}
+        </Formik>
+    )
 }

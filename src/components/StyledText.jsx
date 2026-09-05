@@ -1,49 +1,14 @@
 import React from 'react'
-import { Text, StyleSheet } from 'react-native'
-import theme from '../theme'
+import Text from '../ui/Text'
 
-export default function StyledText ({children, align, color, fontSize, fontWeight, style, ...restOfProps}) {
-    
-    const textStyle = [
-        styles.text,
-        align === 'center' && styles.textAlignCenter,
-        color === 'primary' && styles.colorPrimary,
-        color === 'secondary' && styles.colorSecondary,
-        fontSize === 'subheading' && styles.subheading,
-        fontSize === 'title' && styles.title,
-        fontWeight === 'bold' && styles.bold,
-        style
-    ]
+// Compatibility wrapper around the new Text primitive. Prefer importing
+// Text from '../ui' in new code.
+export default function StyledText({ children, align, color, fontSize, fontWeight, style, ...rest }) {
+    const variant = fontSize === 'title' ? 'title' : fontSize === 'subheading' ? 'subheading' : 'body'
+    const tone = color === 'primary' ? 'primary' : color === 'secondary' ? 'textMuted' : undefined
     return (
-        <Text style={textStyle} {...restOfProps}>
+        <Text variant={variant} color={tone} weight={fontWeight === 'bold' ? 'bold' : undefined} align={align} style={style} {...rest}>
             {children}
-        </Text> 
+        </Text>
     )
 }
-
-const styles = StyleSheet.create({
-    text: {
-        fontSize: theme.fontSizes.body,
-        color: theme.colors.textPrimary,
-        // fontFamily: 'Wonder',
-        fontWeight: theme.fontWeights.normal
-    },
-    colorPrimary: {
-        color: theme.colors.primary
-    },
-    colorSecondary: {
-        color: theme.colors.textSecondary
-    },
-    bold: {
-        fontWeight: theme.fontWeights.bold
-    },
-    subheading: { 
-        fontSize: theme.fontSizes.subheading
-    },
-    title: {
-        fontSize: theme.fontSizes.title
-    },
-    textAlignCenter : {
-        textAlign: 'center'
-    }
-})

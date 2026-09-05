@@ -1,141 +1,61 @@
 import React, { useState, useEffect } from 'react'
-import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import { View, Alert, StyleSheet } from 'react-native'
 import NetInfo from '@react-native-community/netinfo'
-import StyledTextInput from './StyledTextInput'
-import StyledText from './StyledText'
-import { reportValidation } from '../validationSchemas/login'
 import { fetchHistorialVacas, fetchUsers } from '../hooks/useRepositories'
 import DateRangePicker from './DatePicker'
-
-const initialValues = {
-    fechaInicio: 'hola',
-    fechaFin: 'hola',
-}
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12,
-        color: 'snow'
-    },
-    title: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    datePicker: {
-        marginBottom: 20,
-    },
-    button: {
-        borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 10
-    },
-})
-
-const obtenerHistorialVacas = async (values, id, startDate, endDate, setReport, setIsOpen, setUsers) => {
-    const report = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
-    setReport(report);
-};
-
-const FormikInputValue = ({ name, startDate, endDate, setEndDate, setStartDate, setReport, setHabilitado, ...props }) => {
-    const [field, meta, helpers] = useField(name)
-
-    return (
-        <>
-            <DateRangePicker
-                startDate={startDate}
-                endDate={endDate}
-                setEndDate={setEndDate}
-                setStartDate={setStartDate}
-                setHabilitado={setHabilitado}
-            />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
-        </>
-
-    )
-}
+import { Button, Text, Icon } from '../ui'
+import theme from '../theme'
 
 export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen }) {
+    const [habilitado, setHabilitado] = useState(true)
+    const [isConnected, setIsConnected] = useState(true)
+    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false)
+    const [startDate, setStartDate] = useState(() => { const d = new Date(); d.setHours(0, 0, 0, 0); return d })
+    const [endDate, setEndDate] = useState(() => { const d = new Date(); d.setHours(18, 59, 0, 0); return d })
+    const [report, setReport] = useState([])
+    const [users, setUsers] = useState([])
 
-    const [habilitado, setHabilitado] = useState(true);
-    const [isConnected, setIsConnected] = useState(true);
-    const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
-    // ... existing code ...
-    const [startDate, setStartDate] = useState(() => {
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
-        return date;
-    });
-    // ... existing code ...
-    const [endDate, setEndDate] = useState(() => {
-        const date = new Date();
-        date.setHours(18, 59, 0, 0);
-        return date;
-    });
-    const [report, setReport] = useState([]);
-    const [users, setUsers] = useState([]);
     const formatDate = (date) => {
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = date.getFullYear();
-        return `${day}/${month}/${year}`;
-    };
-
-    const fechaHoyFormateada = formatDate(new Date());
-
-    const fetchUsersData = async () => {
-        const users = await fetchUsers();
-        setUsers(users[0]);
+        const day = String(date.getDate()).padStart(2, '0')
+        const month = String(date.getMonth() + 1).padStart(2, '0')
+        return `${day}/${month}/${date.getFullYear()}`
     }
+    const fechaHoyFormateada = formatDate(new Date())
 
     useEffect(() => {
         const checkConnectivity = async () => {
             try {
-                const netInfoState = await NetInfo.fetch();
-                setIsConnected(netInfoState.isConnected);
+                const netInfoState = await NetInfo.fetch()
+                setIsConnected(netInfoState.isConnected)
             } catch (error) {
-                setIsConnected(true);
+                setIsConnected(true)
             }
-        };
+        }
+        const unsubscribe = NetInfo.addEventListener(state => setIsConnected(state.isConnected))
+        checkConnectivity()
+        return () => unsubscribe()
+    }, [])
 
-        const unsubscribe = NetInfo.addEventListener(state => {
-            setIsConnected(state.isConnected);
-        });
-
-        checkConnectivity();
-
-        return () => {
-            unsubscribe();
-        };
-    }, []);
+    useEffect(() => {
+        const fetchUsersData = async () => {
+            const result = await fetchUsers()
+            setUsers(result[0])
+        }
+        fetchUsersData()
+    }, [])
 
     const generateGoogleReport = async () => {
         if (!isConnected) {
-            Alert.alert('Error', 'No hay conexión a internet');
-            return;
+            Alert.alert('Sin conexión', 'No hay conexión a internet')
+            return
         }
-
-        setIsLoadingGoogle(true);
+        setIsLoadingGoogle(true)
         try {
-            // Si no hay reporte, generar uno nuevo
-            let reportData = report;
+            let reportData = report
             if (!reportData || reportData.length === 0) {
-                const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString());
-                reportData = Array.isArray(resultado) ? resultado : [];
+                const resultado = await fetchHistorialVacas(id, startDate.toISOString(), endDate.toISOString())
+                reportData = Array.isArray(resultado) ? resultado : []
+                setReport(reportData)
             }
 
             const requestBody = {
@@ -145,71 +65,60 @@ export default function GenerarInforme({ id, finca, cliente, lugar, setIsOpen })
                 report: Array.isArray(reportData) ? reportData : [],
                 fechaHoyFormateada: fechaHoyFormateada || '',
                 users: users || {},
-                nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`
-            };
+                nombreDocumento: `Informe ${finca} - ${fechaHoyFormateada}`,
+            }
 
             const response = await fetch('https://contractual.papeleo.co/api/generate-pawn-report', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const result = await response.json();
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestBody),
+            })
+            const result = await response.json()
 
             if (result.success) {
-                Alert.alert('Éxito', 'Documento generado exitosamente en Google Docs');
+                Alert.alert('Éxito', 'Documento generado exitosamente en Google Docs')
+                if (setIsOpen) setIsOpen(false)
             } else {
-                Alert.alert('Error', result.error || 'Error al generar el documento');
+                Alert.alert('Error', result.error || 'Error al generar el documento')
             }
         } catch (error) {
-            Alert.alert('Error', 'Error de conexión al servidor');
+            Alert.alert('Error', 'Error de conexión al servidor')
         } finally {
-            setIsLoadingGoogle(false);
+            setIsLoadingGoogle(false)
         }
-    };
+    }
 
-    useEffect(() => {
-        fetchUsersData();
-    }, []);
-
-    return <Formik validationSchema={reportValidation} initialValues={initialValues} onSubmit={values => {
-        obtenerHistorialVacas(values, id, startDate, endDate, setReport, setIsOpen, setUsers)
-    }}>
-        {({ handleChange, handleSubmit, values }) => {
-
-            return (
-                <View style={styles.form}>
-                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.title}>Generar Informe</StyledText>
-                    <View style={styles.datePicker}>
-                        <FormikInputValue
-                            name='fechaInicio'
-                            placeholder='Fecha de inicio'
-                            placeholderTextColor="#c2c0c0"
-                            startDate={startDate}
-                            endDate={endDate}
-                            setEndDate={setEndDate}
-                            setStartDate={setStartDate}
-                            setReport={setReport}
-                            setHabilitado={setHabilitado}
-                        />
-                    </View>
-                    {habilitado && (
-                        <TouchableOpacity
-                            style={[styles.button, { opacity: isConnected && !isLoadingGoogle ? 1 : 0.5 }]}
-                            onPress={generateGoogleReport}
-                            disabled={!isConnected || isLoadingGoogle}
-                        >
-                            {isLoadingGoogle ? (
-                                <ActivityIndicator size="small" color="#fff" />
-                            ) : (
-                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Generar informe Google</StyledText>
-                            )}
-                        </TouchableOpacity>
-                    )}
+    return (
+        <View>
+            <Text variant="label" style={{ marginBottom: 8 }}>Periodo del informe</Text>
+            <DateRangePicker
+                startDate={startDate}
+                endDate={endDate}
+                setEndDate={(d) => { setEndDate(d); setReport([]) }}
+                setStartDate={(d) => { setStartDate(d); setReport([]) }}
+                setHabilitado={setHabilitado}
+            />
+            {!isConnected && (
+                <View style={styles.offline}>
+                    <Icon name="cloud-offline-outline" size={18} color={theme.colors.accent} />
+                    <Text variant="caption" style={{ marginLeft: 8, flex: 1, color: theme.colors.accent }}>Sin conexión a internet. El informe se genera en Google Docs y requiere conexión.</Text>
                 </View>
-            )
-        }}
-    </Formik>
+            )}
+            <Button
+                title="Generar informe en Google Docs"
+                icon="logo-google"
+                size="lg"
+                fullWidth
+                loading={isLoadingGoogle}
+                disabled={!habilitado || !isConnected}
+                onPress={generateGoogleReport}
+                style={{ marginTop: 18 }}
+            />
+            <Text variant="caption" align="center" style={{ marginTop: 10 }}>Incluye todos los registros de {finca} entre las fechas seleccionadas.</Text>
+        </View>
+    )
 }
+
+const styles = StyleSheet.create({
+    offline: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.accentSoft, borderRadius: theme.radius.md, padding: 12, marginTop: 14 },
+})

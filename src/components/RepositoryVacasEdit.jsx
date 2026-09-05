@@ -1,87 +1,46 @@
 import React from 'react'
-import { Alert, View, StyleSheet, TouchableOpacity } from "react-native"
-import StyledText from './StyledText'
-import theme from '../theme'
-import { Link } from 'react-router-native'
+import { Alert, View, StyleSheet } from 'react-native'
 import { deleteVacasId } from '../hooks/useRepositories'
+import { Card, Text, Icon, IconButton } from '../ui'
+import theme from '../theme'
 
-const RepositoryItemHeader = (props) => {
+export default function RepositoryVacasEdit(props) {
+    const deleteAnimal = async () => {
+        await deleteVacasId(props.id)
+        props.fetchFincas()
+        props.actualizarVacas()
+    }
 
+    const confirmDelete = () => {
+        Alert.alert(
+            'Eliminar animal',
+            `Se eliminará el animal ${props.nombre_vaca}. ¿Deseas continuar?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                { text: 'Eliminar', style: 'destructive', onPress: deleteAnimal },
+            ],
+            { cancelable: true }
+        )
+    }
 
     return (
-        <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-            <View style={styles.card} >
-                <StyledText fontWeight='bold' style={{ fontSize: 22 }}>Animal: {props.nombre_vaca}</StyledText>
+        <Card padded={false} style={styles.card} tone="alt">
+            <View style={styles.row}>
+                <View style={styles.avatar}>
+                    <Icon name="mci:cow" size={18} color={theme.colors.primary} />
+                </View>
+                <View style={{ flex: 1 }}>
+                    <Text variant="bodyLg" weight="semibold" numberOfLines={1}>{props.nombre_vaca}</Text>
+                    {props.sala ? <Text variant="caption" numberOfLines={1}>Sala {props.sala}</Text> : null}
+                </View>
+                <IconButton icon="trash-outline" variant="danger" size={38} iconSize={18} onPress={confirmDelete} accessibilityLabel={`Eliminar animal ${props.nombre_vaca}`} />
             </View>
-        </View>
+        </Card>
     )
 }
 
-const RepositoryVacasEdit = (props) => {
-
-    const deleteAnimal = async () => {
-        await deleteVacasId(props.id);
-        props.fetchFincas();
-        props.actualizarVacas();
-    }
-
-    const pressAnimalDelete = () => {
-        Alert.alert(
-            "Eliminar Animal",
-            "¿Estás seguro de que deseas continuar?",
-            [
-              {
-                text: "Cancelar",
-                onPress: () => props.setIsEdit(false),
-                style: "cancel"
-              },
-              { text: "OK", onPress: () => {
-                deleteAnimal();
-              } }
-            ],
-            { cancelable: false }
-          );
-        
-
-    }
-
-    return( 
-    <TouchableOpacity
-        onPress={pressAnimalDelete}
-    >
-        <View key={props.id} style={styles.container}>
-            <RepositoryItemHeader {...props} />
-        </View>
-    </TouchableOpacity>
-)}
-
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        paddingVertical: 5,
-    },
-    language: {
-        padding: 4,
-        color: theme.colors.white,
-        backgroundColor: theme.colors.primary,
-        alignSelf: 'flex-start',
-        marginVertical: 4,
-        borderRadius: 4,
-        overflow: 'hidden',
-        fontSize: 18,
-    },
-    image: {
-        width: 48,
-        height: 48,
-        borderRadius: 4,
-        borderColor: 'red'
-    },
-    card: {
-        flex: 1,
-        backgroundColor: '#94ACD4',
-        padding: 10,
-        borderRadius: 4,
-    }
+    card: { paddingHorizontal: 12, paddingVertical: 10, shadowOpacity: 0, elevation: 0 },
+    row: { flexDirection: 'row', alignItems: 'center' },
+    avatar: { width: 36, height: 36, borderRadius: 10, backgroundColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
 })
-
-export default RepositoryVacasEdit

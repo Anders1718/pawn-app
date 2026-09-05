@@ -1,30 +1,7 @@
 import React from 'react'
-import { TextInput, StyleSheet } from 'react-native'
+import Input from '../ui/Input'
 
-const styles = StyleSheet.create({
-  textInput: {
-    borderWidth: 1,
-    borderColor: '#999',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    marginBottom: 10,
-    color:'snow',
-    placeholderTextColor:"#c2c0c0",
-    fontSize:22
-  },
-  error: {
-    borderColor: 'red'
-  }  
-})
-
-const StyledTextInput = ({ style = {}, error, ...props}) => {
-    const inputStyle = [
-        styles.textInput,
-        style,
-        error && styles.error,
-    ]
-
-    return <TextInput style={inputStyle} {...props} />
+// Compatibility wrapper; new code should use Input from '../ui'.
+export default function StyledTextInput(props) {
+    return <Input {...props} />
 }
-
-export default StyledTextInput

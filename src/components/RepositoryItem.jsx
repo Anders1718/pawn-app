@@ -1,135 +1,87 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Alert, TouchableOpacity, Pressable } from "react-native"
-import StyledText from './StyledText'
+import { View, StyleSheet } from 'react-native'
+import { useNavigate } from 'react-router-native'
+import EditFincaForm from './EditFinca'
+import { Card, Text, Icon, IconButton, Sheet } from '../ui'
 import theme from '../theme'
-import { useNavigate } from 'react-router-native';
-import { ModalPaw } from './ModalPaw';
-import LogInPage from './EditFinca';
 
-const CardFarm = (props) => (
-    <View style={styles.card} >
-        <StyledText fontWeight='bold' style={{ fontSize: 20 }}>Finca: {props.nombre_finca}</StyledText>
-        <StyledText style={{ fontSize: 17 }}>Cliente: {props.nombre_propietario}</StyledText>
-        <StyledText style={styles.language} >Ubicación: {props.ubicacion}</StyledText>
-        <StyledText style={{ fontSize: 17 }} >Nit: {props.nit}</StyledText>
-        <StyledText style={{ fontSize: 17 }} >Tel: {props.telefono}</StyledText>
-        <StyledText style={{ fontSize: 17 }} >Dirección: {props.direccion}</StyledText>
-    </View>
-)
-
-const CardFarmEdit = (props) => {
-
+const Meta = ({ icon, value }) => {
+    if (!value) return null
     return (
-        <ModalPaw
-            isOpen={props.isLong}
-        >
-            <View style={styles.modalView}>
-                <Pressable onPress={() => props.setIsLong(false)}>
-                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
-                </Pressable>
-                <LogInPage isEdit actualizarFincas={props.actualizarFincas} setIsOpen={props.setIsLong} {...props} />
-            </View>
-        </ModalPaw>
-    )
-}
-
-
-const RepositoryItemHeader = (props) => {
-    const navigate = useNavigate();
-    let touchStartTime = 0;
-
-    const handlePress = () => {
-        const touchDuration = new Date().getTime() - touchStartTime;
-        if (touchDuration < 500 && !props.isLong) {
-            if (props?.isBill) {
-                const params = new URLSearchParams({
-                    finca: props.nombre_finca || '',
-                    cliente: props.nombre_propietario || '',
-                    lugar: props.ubicacion || '',
-                    direccion: props.direccion || '',
-                    nit: props.nit || '',
-                    tel: props.telefono || '',
-                    id: String(props.id),
-                });
-                navigate(`/bill?${params.toString()}`);
-            } else {
-                const params = new URLSearchParams({
-                    finca: props.nombre_finca || '',
-                    id: String(props.id),
-                    cliente: props.nombre_propietario || '',
-                    lugar: props.ubicacion || '',
-                });
-                navigate(`/historial?${params.toString()}`);
-            }
-        }
-    };
-
-    const handlePressIn = () => {
-        touchStartTime = new Date().getTime();
-    };
-
-    const handleLongPress = () => {
-        props.setIsLong(true);
-    };
-
-    return (
-        <TouchableOpacity
-            onPress={handlePress}
-            onPressIn={handlePressIn}
-            onLongPress={handleLongPress}
-            delayLongPress={500}
-        >
-            <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-                <CardFarm {...props} />
-            </View>
-        </TouchableOpacity>
-    )
-}
-
-const RepositoryItem = (props) => {
-    const [isLong, setIsLong] = useState(false);
-    return (
-        <View key={props.id} style={styles.container}>
-            <RepositoryItemHeader setIsLong={setIsLong} isLong={isLong} {...props} />
-            <CardFarmEdit isLong={isLong} setIsLong={setIsLong} {...props} />
+        <View style={styles.meta}>
+            <Icon name={icon} size={14} color={theme.colors.textFaint} />
+            <Text variant="caption" style={styles.metaText} numberOfLines={1}>{value}</Text>
         </View>
     )
 }
 
-const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        paddingVertical: 5,
-    },
-    language: {
-        color: theme.colors.white,
-        alignSelf: 'flex-start',
-        marginVertical: 4,
-        borderRadius: 4,
-        overflow: 'hidden'
-    },
-    card: {
-        flex: 1,
-        backgroundColor: '#94ACD4',
-        padding: 10,
-        borderRadius: 4,
-        width: 370
-    },
-    modalView: {
-        // margin: 20,
-        width: 400,
-        backgroundColor: '#0f172a',
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-})
+export default function RepositoryItem(props) {
+    const navigate = useNavigate()
+    const [isEditOpen, setIsEditOpen] = useState(false)
 
-export default RepositoryItem
+    const open = () => {
+        if (props.isBill) {
+            const params = new URLSearchParams({
+                finca: props.nombre_finca || '',
+                cliente: props.nombre_propietario || '',
+                lugar: props.ubicacion || '',
+                direccion: props.direccion || '',
+                nit: props.nit || '',
+                tel: props.telefono || '',
+                id: String(props.id),
+            })
+            navigate(`/bill?${params.toString()}`)
+        } else {
+            const params = new URLSearchParams({
+                finca: props.nombre_finca || '',
+                id: String(props.id),
+                cliente: props.nombre_propietario || '',
+                lugar: props.ubicacion || '',
+            })
+            navigate(`/historial?${params.toString()}`)
+        }
+    }
+
+    return (
+        <>
+            <Card onPress={open} onLongPress={!props.isBill ? () => setIsEditOpen(true) : undefined} accessibilityLabel={`Finca ${props.nombre_finca}`}>
+                <View style={styles.row}>
+                    <View style={styles.avatar}>
+                        <Icon name="mci:barn" size={22} color={theme.colors.primary} />
+                    </View>
+                    <View style={styles.body}>
+                        <Text variant="subheading" numberOfLines={1}>{props.nombre_finca}</Text>
+                        <View style={styles.ownerRow}>
+                            <Icon name="person-outline" size={14} color={theme.colors.textMuted} />
+                            <Text variant="body" color="textMuted" numberOfLines={1} style={{ marginLeft: 5, flex: 1 }}>{props.nombre_propietario}</Text>
+                        </View>
+                        <View style={styles.metaRow}>
+                            <Meta icon="location-outline" value={props.ubicacion} />
+                            <Meta icon="call-outline" value={props.telefono} />
+                            <Meta icon="id-card-outline" value={props.nit} />
+                        </View>
+                    </View>
+                    {props.isBill ? (
+                        <Icon name="chevron-forward" size={20} color={theme.colors.textFaint} />
+                    ) : (
+                        <IconButton icon="create-outline" size={38} iconSize={19} onPress={() => setIsEditOpen(true)} accessibilityLabel="Editar finca" />
+                    )}
+                </View>
+            </Card>
+
+            <Sheet visible={isEditOpen} onClose={() => setIsEditOpen(false)} title="Editar finca" subtitle={props.nombre_finca}>
+                <EditFincaForm actualizarFincas={props.actualizarFincas} setIsOpen={setIsEditOpen} {...props} />
+            </Sheet>
+        </>
+    )
+}
+
+const styles = StyleSheet.create({
+    row: { flexDirection: 'row', alignItems: 'center' },
+    avatar: { width: 46, height: 46, borderRadius: 14, backgroundColor: theme.colors.primarySoft, alignItems: 'center', justifyContent: 'center', marginRight: 14 },
+    body: { flex: 1 },
+    ownerRow: { flexDirection: 'row', alignItems: 'center', marginTop: 2 },
+    metaRow: { flexDirection: 'row', flexWrap: 'wrap', marginTop: 8, gap: 10 },
+    meta: { flexDirection: 'row', alignItems: 'center', maxWidth: '100%' },
+    metaText: { marginLeft: 4 },
+})

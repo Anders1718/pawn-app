@@ -1,382 +1,192 @@
-import React from 'react'
-import { StyleSheet, View, TouchableOpacity } from 'react-native'
-import StyledText from '../../../../components/StyledText'
-import { useState } from 'react'
-import StyledTextInput from '../../../../components/StyledTextInput'
+import React, { useState } from 'react'
+import { StyleSheet, View } from 'react-native'
 import { Formik, useField } from 'formik'
 import * as Yup from 'yup'
 import { precioValidation } from '../../../../validationSchemas/login'
 import { initialValuePrice } from '../../../../utils/initialValuePrice'
+import { Card, Input, Button, Text, Icon, SectionTitle, useResponsive } from '../../../../ui'
+import theme from '../../../../theme'
+
+const formatNumber = (number) => {
+    if (number === 0 || number === '0' || !number) return '0'
+    return Number(number).toLocaleString('es-CO')
+}
+
+const toNumber = (value) => {
+    if (!value) return 0
+    const num = Number(value)
+    return isNaN(num) ? 0 : num
+}
+
+const PriceField = ({ name, isNumeric = false, ...props }) => {
+    const [field, meta, helpers] = useField(name)
+
+    const handleChangeText = (text) => {
+        if (isNumeric) {
+            helpers.setValue(text.replace(/[^\d]/g, ''))
+        } else {
+            helpers.setValue(text)
+        }
+    }
+
+    const displayValue = isNumeric && field.value ? formatNumber(field.value) : String(field.value || '')
+
+    return (
+        <Input
+            value={displayValue}
+            onChangeText={handleChangeText}
+            error={meta.error}
+            keyboardType={isNumeric ? 'number-pad' : 'default'}
+            style={{ marginBottom: 0, flex: 1 }}
+            {...props}
+        />
+    )
+}
+
+const TotalBox = ({ total, style }) => (
+    <View style={style}>
+        <Text variant="label" style={{ marginBottom: 6 }}>Total</Text>
+        <View style={styles.totalValue}>
+            <Text variant="bodyLg" weight="semibold">$ {formatNumber(total)}</Text>
+        </View>
+    </View>
+)
+
+// One invoice line: description, quantity, unit price and computed total.
+const LineItem = ({ title, icon, quantityName, valueName, descriptionName, total, editableTitle }) => {
+    const { isTablet } = useResponsive()
+    return (
+        <Card style={styles.line}>
+            <View style={styles.lineHead}>
+                <Icon name={icon || 'pricetag-outline'} size={18} color={theme.colors.primary} />
+                {editableTitle ? (
+                    <PriceField name={descriptionName} placeholder="Descripción" style={{ marginBottom: 0, flex: 1, marginLeft: 10 }} />
+                ) : (
+                    <Text variant="subheading" style={{ marginLeft: 8, flex: 1 }} numberOfLines={1}>{title}</Text>
+                )}
+            </View>
+            <View style={styles.lineFields}>
+                <PriceField name={quantityName} label="Cantidad" placeholder="0" isNumeric />
+                <PriceField name={valueName} label="Valor unitario" placeholder="0" isNumeric />
+                {isTablet && <TotalBox total={total} style={{ flex: 1 }} />}
+            </View>
+            {!isTablet && <TotalBox total={total} style={{ marginTop: 10 }} />}
+        </Card>
+    )
+}
 
 const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, buttonContinue, prices, preventivosCount, terapeuticosCount, revisionCount, talonAdicionalCount }) => {
 
-    // Función para formatear números con comas
-    const formatNumber = (number) => {
-        if (number === 0 || number === '0' || !number) return '0';
-        return Number(number).toLocaleString('es-CO');
-    };
+    const elementosMayoresACero = prices.filter(elemento => elemento > 0)
+    const contadorFinal = elementosMayoresACero.length
 
-    // Función para convertir valores a números de forma segura
-    const toNumber = (value) => {
-        if (!value) return 0;
-        const num = Number(value);
-        return isNaN(num) ? 0 : num;
-    };
+    const [campo, setCampo] = useState([])
+    const [cuenta, setCuenta] = useState([])
+    const [indexCuentaGuardar, setIndexCuentaGuardar] = useState(0)
+    const [first, setFirst] = useState(false)
+    const [name] = useState(['Recorte Terapéutico', 'Recorte Preventivo', 'Revisión'])
+    const [total, setTotal] = useState([])
 
-    const elementosMayoresACero = prices.filter(elemento => elemento > 0);
-    const contadorFinal = elementosMayoresACero.length;
-
-    const [campo, setCampo] = useState([]);
-    const [cuenta, setCuenta] = useState([]);
-    const [indexCuentaGuardar, setIndexCuentaGuardar] = useState(0);
-
-    const [first, setFirst] = useState(false);
-    const [second, setSecond] = useState(false);
-
-    const [name, setName] = useState(['Recorte Terapéutico', 'Recorte Preventivo', 'Revisión']);
-
-    const [total, setTotal] = useState([]);
-
-    const [modalVisible, setModalVisible] = useState(false);
-
-    const contador = contadorFinal + 1;
-    const contadorDesplazamiento = contadorFinal;
+    const contador = contadorFinal + 1
+    const contadorDesplazamiento = contadorFinal
 
     const addCuenta = () => {
-        const longitudCuenta = cuenta.length + 1;
-        setCampo((prevCuenta) => [...prevCuenta, longitudCuenta]);
-        setIndexCuentaGuardar(longitudCuenta);
-        setButtonContinue(true);
+        const longitudCuenta = cuenta.length + 1
+        setCampo((prevCuenta) => [...prevCuenta, longitudCuenta])
+        setIndexCuentaGuardar(longitudCuenta)
+        setButtonContinue(true)
     }
 
-    const saveCuenta = (values) => {
-        const cantidad = toNumber(values.cantidad);
-        const valor = toNumber(values.valor);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidad,
-            descripcion: values.descripcion,
-            valor: values.valor,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-
+    const pushLine = (cantidadRaw, descripcion, valorRaw) => {
+        const cantidad = toNumber(cantidadRaw)
+        const valor = toNumber(valorRaw)
+        const lineTotal = cantidad * valor
+        setTotal((prevTotal) => [...prevTotal, lineTotal])
+        setSumaTotal((prevTotal) => prevTotal + lineTotal)
+        setTotalCuenta((prevCuenta) => [...prevCuenta, { cantidad: cantidadRaw, descripcion, valor: valorRaw, total: lineTotal }])
     }
 
-    const saveDesplazamiento = (values) => {
-        const cantidad = toNumber(values.cantidadDesplazamiento);
-        const valor = toNumber(values.valorDesplazamiento);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidadDesplazamiento,
-            descripcion: 'Desplazamiento',
-            valor: values.valorDesplazamiento,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-    }
-
-    const saveTalonAdicional = (values) => {
-        const cantidad = toNumber(values.cantidadTalonAdicional);
-        const valor = toNumber(values.valorTalonAdicional);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidadTalonAdicional,
-            descripcion: 'Tacón adicional',
-            valor: values.valorTalonAdicional,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-    }
-
-    const saveRevision = (values) => {
-        const cantidad = toNumber(values.cantidadRevision);
-        const valor = toNumber(values.valorRevision);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidadRevision,
-            descripcion: values.descripcionRevision,
-            valor: values.valorRevision,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-        setButtonContinue(false);
-    }
-
-    const saveTerapeuticos = (values) => {
-        const cantidad = toNumber(values.cantidadTerapeuticos);
-        const valor = toNumber(values.valorTerapeuticos);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidadTerapeuticos,
-            descripcion: values.descripcionTerapeuticos,
-            valor: values.valorTerapeuticos,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-        setButtonContinue(false);
-    }
-
-    const savePreventivos = (values) => {
-        const cantidad = toNumber(values.cantidadPreventivos);
-        const valor = toNumber(values.valorPreventivos);
-        const total = cantidad * valor;
-        setTotal((prevTotal) => [...prevTotal, total]);
-        setSumaTotal((prevTotal) => prevTotal + total);
-        const cuentaFinal = {
-            cantidad: values.cantidadPreventivos,
-            descripcion: values.descripcionPreventivos,
-            valor: values.valorPreventivos,
-            total: total
-        }
-        setTotalCuenta((prevCuenta) => [...prevCuenta, cuentaFinal]);
-        setButtonContinue(false);
-    }
+    const saveCuenta = (values) => pushLine(values.cantidad, values.descripcion, values.valor)
+    const saveDesplazamiento = (values) => pushLine(values.cantidadDesplazamiento, 'Desplazamiento', values.valorDesplazamiento)
+    const saveTalonAdicional = (values) => pushLine(values.cantidadTalonAdicional, 'Tacón adicional', values.valorTalonAdicional)
+    const saveRevision = (values) => { pushLine(values.cantidadRevision, values.descripcionRevision, values.valorRevision); setButtonContinue(false) }
+    const saveTerapeuticos = (values) => { pushLine(values.cantidadTerapeuticos, values.descripcionTerapeuticos, values.valorTerapeuticos); setButtonContinue(false) }
+    const savePreventivos = (values) => { pushLine(values.cantidadPreventivos, values.descripcionPreventivos, values.valorPreventivos); setButtonContinue(false) }
 
     const validationSchema = Yup.object().shape({
         cantidad: Yup.number().required('Requerido'),
         descripcion: Yup.string().required('Requerido'),
-        valor: Yup.number().required('Requerido')
-    });
-
-    const FormikInputValue = ({ name, value, isNumeric = false, ...props }) => {
-
-        const [field, meta, helpers] = useField(name);
-
-        const handleChangeText = (text) => {
-            if (isNumeric) {
-                // Remover todo excepto dígitos para guardar solo el número limpio
-                const numericValue = text.replace(/[^\d]/g, '');
-                helpers.setValue(numericValue);
-            } else {
-                helpers.setValue(text);
-            }
-        };
-
-        const getDisplayValue = () => {
-            if (isNumeric && field.value) {
-                return formatNumber(field.value);
-            }
-            return String(field.value || '');
-        };
-
-        return (
-            <View>
-                <StyledTextInput
-                    style={styles.input}
-                    error={meta.error}
-                    value={getDisplayValue()}
-                    onChangeText={handleChangeText}
-                    {...props}
-                />
-                {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
-            </View>
-
-        )
-    }
+        valor: Yup.number().required('Requerido'),
+    })
 
     return (
-        <View style={styles.conatiner}>
-            <StyledText fontSize='title' style={{ marginBottom: 50 }}>Cuenta de Cobro</StyledText>
-
+        <View>
+            <SectionTitle title="Cuenta de cobro" icon="receipt-outline" subtitle={first ? 'Conceptos guardados. Puedes agregar campos adicionales.' : 'Revisa cantidades y define el valor de cada concepto'} />
 
             <Formik
                 initialValues={initialValuePrice(preventivosCount, terapeuticosCount, revisionCount, talonAdicionalCount, name)}
                 validationSchema={precioValidation}
                 onSubmit={(values) => {
-                    if (terapeuticosCount > 0) {
-                        saveTerapeuticos(values);
-                    }
-                    if (preventivosCount > 0) {
-                        savePreventivos(values);
-                    }
-                    if (revisionCount > 0) {
-                        saveRevision(values);
-                    }
-                    saveDesplazamiento(values);
-                    if (talonAdicionalCount > 0) {
-                        saveTalonAdicional(values);
-                    }
-                    setFirst(true);
-                    setButtonContinue(false);
+                    if (terapeuticosCount > 0) saveTerapeuticos(values)
+                    if (preventivosCount > 0) savePreventivos(values)
+                    if (revisionCount > 0) saveRevision(values)
+                    saveDesplazamiento(values)
+                    if (talonAdicionalCount > 0) saveTalonAdicional(values)
+                    setFirst(true)
+                    setButtonContinue(false)
                 }}
             >
                 {({ handleSubmit }) => (
                     <>
                         {terapeuticosCount > 0 && (
-                            <View style={styles.item}>
-                                <FormikInputValue
-                                    name='cantidadTerapeuticos'
-                                    placeholder='Cantidad'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledText style={styles.text}>{name[0]}</StyledText>
-                                <FormikInputValue
-                                    name='valorTerapeuticos'
-                                    placeholder='Valor'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[0])} </StyledTextInput>
-                            </View>
+                            <LineItem title={name[0]} icon="mci:stethoscope" quantityName="cantidadTerapeuticos" valueName="valorTerapeuticos" total={total[0]} />
                         )}
                         {preventivosCount > 0 && (
-                            <View style={styles.item}>
-                                <FormikInputValue
-                                    name='cantidadPreventivos'
-                                    placeholder='Cantidad'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledText style={styles.text}>{name[1]}</StyledText>
-                                <FormikInputValue
-                                    name='valorPreventivos'
-                                    placeholder='Valor'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0)} </StyledTextInput>
-                            </View>
-
+                            <LineItem title={name[1]} icon="shield-checkmark-outline" quantityName="cantidadPreventivos" valueName="valorPreventivos" total={total[1] && terapeuticosCount > 0 ? total[1] : total[0] ? total[0] : 0} />
                         )}
                         {revisionCount > 0 && (
-                            <View style={styles.item}>
-                                <FormikInputValue
-                                    name='cantidadRevision'
-                                    placeholder='Cantidad'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledText style={styles.text}>{name[2]}</StyledText>
-                                <FormikInputValue
-                                    name='valorRevision'
-                                    placeholder='Valor'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total.length > 0 ? total[contadorDesplazamiento - 1] : 0)} </StyledTextInput>
-                            </View>
-
+                            <LineItem title={name[2]} icon="eye-outline" quantityName="cantidadRevision" valueName="valorRevision" total={total.length > 0 ? total[contadorDesplazamiento - 1] : 0} />
                         )}
-                        <View style={styles.item}>
-                            <FormikInputValue
-                                name='cantidadDesplazamiento'
-                                placeholder='Cantidad'
-                                placeholderTextColor="#c2c0c0"
-                                keyboardType="number-pad"
-                                isNumeric={true}
-                            />
-                            <StyledText style={styles.text}>Desplazamiento</StyledText>
-                            <FormikInputValue
-                                name='valorDesplazamiento'
-                                placeholder='Valor'
-                                placeholderTextColor="#c2c0c0"
-                                keyboardType="number-pad"
-                                isNumeric={true}
-                            />
-                            <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento])} </StyledTextInput>
-                        </View>
+                        <LineItem title="Desplazamiento" icon="car-outline" quantityName="cantidadDesplazamiento" valueName="valorDesplazamiento" total={total[contadorDesplazamiento]} />
                         {talonAdicionalCount > 0 && (
-                            <View style={styles.item}>
-                                <FormikInputValue
-                                    name='cantidadTalonAdicional'
-                                    placeholder='Cantidad'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledText style={styles.text}>Tacón adicional</StyledText>
-                                <FormikInputValue
-                                    name='valorTalonAdicional'
-                                    placeholder='Valor'
-                                    placeholderTextColor="#c2c0c0"
-
-                                    isNumeric={true}
-                                />
-                                <StyledTextInput editable={false} style={styles.textTotal} placeholder='Total' placeholderTextColor="#c2c0c0"> {formatNumber(total[contadorDesplazamiento + 1])} </StyledTextInput>
-                            </View>
+                            <LineItem title="Tacón adicional" icon="mci:bandage" quantityName="cantidadTalonAdicional" valueName="valorTalonAdicional" total={total[contadorDesplazamiento + 1]} />
                         )}
                         {!first && (
-                            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                                <StyledText fontSize='subheading'>Guardar y continuar</StyledText>
-                            </TouchableOpacity>
+                            <Button title="Guardar y continuar" iconRight="arrow-forward" size="lg" fullWidth onPress={handleSubmit} style={{ marginTop: 6 }} />
                         )}
                     </>
                 )}
             </Formik>
+
             {first && (
                 <>
-
-
-
                     {campo.map((item, index) => (
                         <Formik
                             key={index}
                             initialValues={{ cantidad: '', descripcion: '', valor: '' }}
                             validationSchema={validationSchema}
                             onSubmit={(values) => {
-                                setButtonContinue(false);
-                                saveCuenta(values);
+                                setButtonContinue(false)
+                                saveCuenta(values)
                             }}
                         >
                             {({ handleSubmit }) => (
                                 <>
-                                    <View style={styles.item}>
-                                        <FormikInputValue
-                                            name='cantidad'
-                                            placeholder='Cantidad'
-                                            placeholderTextColor="#c2c0c0"
-        
-                                            isNumeric={true}
-                                        />
-                                        <FormikInputValue
-                                            name='descripcion'
-                                            placeholder='Descripción'
-                                            placeholderTextColor="#c2c0c0"
-                                        />
-                                        <FormikInputValue
-                                            name='valor'
-                                            placeholder='Valor'
-                                            placeholderTextColor="#c2c0c0"
-        
-                                            isNumeric={true}
-                                        />
-                                        <StyledTextInput editable={false} placeholder='Total' style={styles.textTotal} placeholderTextColor="#c2c0c0"> {formatNumber(total[index + contador])} </StyledTextInput>
-                                    </View>
+                                    <LineItem editableTitle icon="add-circle-outline" descriptionName="descripcion" quantityName="cantidad" valueName="valor" total={total[index + contador]} />
                                     {buttonContinue && index === campo.length - 1 && (
-                                        <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                                            <StyledText fontSize='subheading'>Continuar</StyledText>
-                                        </TouchableOpacity>
+                                        <Button title="Guardar campo" icon="checkmark" size="lg" fullWidth onPress={handleSubmit} style={{ marginTop: 6 }} />
                                     )}
                                 </>
                             )}
                         </Formik>
                     ))}
 
-                    <View style={styles.total}>
-                        <StyledText fontSize='title'>Total: ${formatNumber(sumaTotal)}</StyledText>
-                    </View>
+                    <Card tone="primary" style={styles.totalCard}>
+                        <Text variant="label" style={{ color: theme.colors.primary }}>Total a cobrar</Text>
+                        <Text variant="display" style={{ color: theme.colors.primary }}>$ {formatNumber(sumaTotal)}</Text>
+                    </Card>
                     {!buttonContinue && (
-                        <TouchableOpacity style={styles.button} onPress={() => addCuenta()}>
-                            <StyledText fontSize='subheading'>Agregar Campo</StyledText>
-                        </TouchableOpacity>
+                        <Button title="Agregar campo" icon="add" variant="secondary" fullWidth onPress={addCuenta} style={{ marginTop: 12 }} />
                     )}
                 </>
             )}
@@ -385,67 +195,11 @@ const Precio = ({ setTotalCuenta, setSumaTotal, sumaTotal, setButtonContinue, bu
 }
 
 const styles = StyleSheet.create({
-    conatiner: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: 70
-    },
-    sala: {
-        alignItems: 'center',
-        marginBottom: 30,
-    },
-    info: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: 410,
-        padding: 5
-    },
-    button: {
-        borderColor: "#334155",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 10
-    },
-    animalInfo: {
-        display: 'flex',
-        flexDirection: 'row',
-    },
-    item: {
-        borderBottomWidth: 0.3,
-        borderBottomColor: 'snow',
-        marginBottom: 15,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        width: 650,
-        padding: 5
-    },
-    total: {
-        marginTop: 20,
-        marginBottom: 50,
-    },
-    input: {
-        fontSize: 30,
-    },
-    text: {
-        fontSize: 30,
-        textAlign: 'center',
-        alignItems: 'center',
-        justifyContent: 'center',
-        flex: 1,
-        marginTop: 10,
-        marginBottom: 10,
-        marginHorizontal: 10,
-    },
-    textTotal: {
-        fontSize: 30,
-        marginLeft: 20,
-    }
+    line: { marginBottom: 12 },
+    lineHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 12 },
+    lineFields: { flexDirection: 'row', gap: 10 },
+    totalValue: { height: 50, justifyContent: 'center', paddingHorizontal: 14, borderRadius: theme.radius.md, backgroundColor: theme.colors.primarySoft },
+    totalCard: { marginTop: 16, alignItems: 'center' },
 })
 
-export default Precio;
+export default Precio

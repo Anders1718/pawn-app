@@ -1,61 +1,24 @@
 import React from 'react'
-import { Formik, useField } from 'formik'
-import { Button, StyleSheet, View } from 'react-native'
-import StyledTextInput from '../components/StyledTextInput'
-import StyledText from '../components/StyledText'
+import { Formik } from 'formik'
+import { View } from 'react-native'
 import { loginValidationSchema } from '../validationSchemas/login'
+import { Screen, Header, Card, FormField, Button } from '../ui'
 
-const initialValues = {
-    email: '',
-    password: ''
-}
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12
-    }
-})
-
-const FormikInputValue = ({ name, ...props }) => {
-    const [field, meta, helpers] = useField(name)
-
-    return (
-        <>
-            <StyledTextInput
-                error={meta.error}
-                value={field.value}
-                onChangeText={value => helpers.setValue(value)}
-                {...props}
-            />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText> }
-        </>
-
-    )
-}
-
+// Route kept for compatibility; not reachable from the main flow.
 export default function LogInPage() {
-    return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => console.log(values)}>
-        {({ handleChange, handleSubmit, values }) => {
-            return (
-                <View style={styles.form}>
-                    <FormikInputValue
-                        name='email'
-                        placeholder='E-mail'
-                    />
-                    <FormikInputValue
-                        name='password'
-                        placeholder='Password'
-                        secureTextEntry
-                    />
-                    <Button onPress={handleSubmit} title='Log In' />
-                </View>
-            )
-        }}
-    </Formik>
+    return (
+        <Formik validationSchema={loginValidationSchema} initialValues={{ email: '', password: '' }} onSubmit={values => console.log(values)}>
+            {({ handleSubmit }) => (
+                <Screen header={<Header title="Iniciar sesión" backTo="/" />}>
+                    <Card style={{ marginTop: 4 }}>
+                        <FormField name="email" label="E-mail" placeholder="correo@ejemplo.com" icon="mail-outline" keyboardType="email-address" autoCapitalize="none" />
+                        <FormField name="password" label="Contraseña" placeholder="••••••••" icon="lock-closed-outline" secureTextEntry />
+                        <View style={{ marginTop: 6 }}>
+                            <Button title="Entrar" size="lg" fullWidth onPress={handleSubmit} />
+                        </View>
+                    </Card>
+                </Screen>
+            )}
+        </Formik>
+    )
 }

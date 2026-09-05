@@ -1,153 +1,84 @@
 import React, { useState } from 'react'
-import { View, StyleSheet, Image, Pressable, TouchableWithoutFeedback } from "react-native"
-import StyledText from './StyledText'
+import { View, StyleSheet } from 'react-native'
+import EditHistorialForm from './EditHistorialVaca'
+import { Card, Text, Icon, Badge, treatmentTone, Sheet } from '../ui'
 import theme from '../theme'
-import { ModalPaw } from './ModalPaw'
-import LogInPage from './EditHistorialVaca'
 
+const convertirFecha = (fecha) => {
+    const d = new Date(fecha)
+    if (isNaN(d.getTime())) return fecha || ''
+    return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`
+}
 
+// Strips the zone letters so "AI-Lateral 2L 11" reads as "AI-Lateral 2 11".
+const convertExtremidad = (value) => {
+    if (!value) return value
+    return value.split(',').map(seccion =>
+        seccion.trim().split(' ').map(palabra => /\d/.test(palabra) ? palabra.replace(/[^\d]/g, '') : palabra).join(' ')
+    ).join(', ')
+}
 
-const RepositoryItemHeader = (props) => {
-
-    const convertirFecha = (fecha) => {
-
-        const fechaNueva = new Date(fecha);
-
-        var dia = fechaNueva.getDate();
-        var mes = fechaNueva.getMonth() + 1; // Los meses empiezan desde 0, por lo que necesitas sumar 1
-        var año = fechaNueva.getFullYear();
-
-        return dia + '/' + mes + '/' + año;
-    }
-
-    const convertExtremidad = (value) => {
-        
-        // Si value es undefined o null, retornar el valor original
-        if (!value) return value;
-        
-        // Dividir el string por comas y luego por espacios
-        const secciones = value.split(',');
-        
-        const resultado = secciones.map(seccion => {
-            const palabras = seccion.trim().split(' ');
-            
-            // Procesar cada palabra
-            return palabras.map(palabra => {
-                // Si la palabra contiene números
-                if (/\d/.test(palabra)) {
-                    // Extraer solo los números de esa palabra
-                    return palabra.replace(/[^\d]/g, '');
-                }
-                // Si no contiene números, mantener la palabra original
-                return palabra;
-            }).join(' ');
-        }).join(', '); // Unir las secciones con coma y espacio
-        
-        return resultado;
-    }
-
-
-
+const Row = ({ icon, label, value }) => {
+    if (!value) return null
     return (
-        <View style={{ flexDirection: 'row', paddingBottom: 2 }}>
-            <View style={styles.card} >
-                <StyledText fontWeight='bold' style={{ fontSize: 22 }}>ID Animal: {props.nombre_vaca}</StyledText>
-                <StyledText style={{ fontSize: 22 }}>Enfermedades: {props.enfermedades}</StyledText>
-                <StyledText style={{ fontSize: 22 }}>Extremidad: {convertExtremidad(props.extremidad) || 'N/A'}</StyledText>
-                <StyledText style={styles.language}  >Fecha: {convertirFecha(props.fecha)}</StyledText>
-                {props.nota && <StyledText style={{ fontSize: 22 }}>Nota: {props.nota}</StyledText>}
-                <StyledText style={styles.language} >Sala: {props.sala}</StyledText>
-                <StyledText style={styles.language} >Tratamiento: {props.tratamiento}</StyledText>
-            </View>
+        <View style={styles.row}>
+            <Icon name={icon} size={15} color={theme.colors.textFaint} style={{ marginTop: 2 }} />
+            <Text variant="caption" style={styles.rowLabel}>{label}</Text>
+            <Text variant="body" style={styles.rowValue}>{value}</Text>
         </View>
     )
 }
 
-const CardEditHistorial = (props) => {
+export default function RepositoryHistorial(props) {
+    const [isEditOpen, setIsEditOpen] = useState(false)
 
     return (
-        <ModalPaw
-            isOpen={props.isLong}
-        >
-            <View style={styles.modalView}>
-                <Pressable onPress={() => props.setIsLong(false)}>
-                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.returnButton}>x</StyledText>
-                </Pressable>
-                <LogInPage fetchFincas={props.fetchFincas} isEdit setIsOpen={props.setIsLong} {...props} />
-            </View>
-        </ModalPaw>
-    )
-}
+        <>
+            <Card onPress={() => setIsEditOpen(true)} onLongPress={() => setIsEditOpen(true)} accessibilityLabel={`Registro de ${props.nombre_vaca}`}>
+                <View style={styles.head}>
+                    <View style={styles.idWrap}>
+                        <Icon name="mci:cow" size={18} color={theme.colors.primary} />
+                        <Text variant="subheading" style={{ marginLeft: 8 }} numberOfLines={1}>{props.nombre_vaca}</Text>
+                    </View>
+                    <Badge label={props.tratamiento || 'Sin tratamiento'} tone={treatmentTone(props.tratamiento)} />
+                </View>
+                <View style={styles.metaRow}>
+                    <View style={styles.meta}>
+                        <Icon name="calendar-outline" size={14} color={theme.colors.textMuted} />
+                        <Text variant="caption" style={{ marginLeft: 4 }}>{convertirFecha(props.fecha)}</Text>
+                    </View>
+                    {props.sala ? (
+                        <View style={styles.meta}>
+                            <Icon name="home-outline" size={14} color={theme.colors.textMuted} />
+                            <Text variant="caption" style={{ marginLeft: 4 }}>Sala {props.sala}</Text>
+                        </View>
+                    ) : null}
+                </View>
+                <View style={styles.divider} />
+                <Row icon="medkit-outline" label="Enfermedad" value={props.enfermedades} />
+                <Row icon="mci:foot-print" label="Extremidad" value={convertExtremidad(props.extremidad) || 'N/A'} />
+                {props.nota && props.nota !== 'N/A' ? <Row icon="chatbox-ellipses-outline" label="Nota" value={props.nota} /> : null}
+                <View style={styles.editHint}>
+                    <Icon name="create-outline" size={13} color={theme.colors.textFaint} />
+                    <Text variant="caption" style={{ marginLeft: 4, color: theme.colors.textFaint }}>Toca para editar</Text>
+                </View>
+            </Card>
 
-const MenuHistorialEdit = (props) => {
-
-    const longPress = () => {
-        props.setIsLong(true);
-    };
-
-    return (
-        <TouchableWithoutFeedback
-            onLongPress={longPress}
-        >
-            <View>
-                <RepositoryItemHeader {...props} />
-            </View>
-        </TouchableWithoutFeedback>
-    )
-}
-
-const RepositoryHistorial = (props) => {
-    const [isLong, setIsLong] = useState(false)
-    return (
-        <View key={props.id} style={styles.container}>
-            <MenuHistorialEdit setIsLong={setIsLong} isLong={isLong} {...props} />
-            <CardEditHistorial fetchFincas={props.fetchFincas} isLong={isLong} setIsLong={setIsLong} {...props} />
-        </View>
+            <Sheet visible={isEditOpen} onClose={() => setIsEditOpen(false)} title="Editar registro" subtitle={`Animal ${props.nombre_vaca} · ${convertirFecha(props.fecha)}`}>
+                <EditHistorialForm fetchFincas={props.fetchFincas} setIsOpen={setIsEditOpen} {...props} />
+            </Sheet>
+        </>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        paddingVertical: 5,
-    },
-    language: {
-        padding: 4,
-        color: theme.colors.white,
-        backgroundColor: theme.colors.primary,
-        alignSelf: 'flex-start',
-        marginVertical: 4,
-        borderRadius: 4,
-        overflow: 'hidden',
-        fontSize: 18,
-    },
-    image: {
-        width: 48,
-        height: 48,
-        borderRadius: 4,
-        borderColor: 'red'
-    },
-    card: {
-        flex: 1,
-        backgroundColor: '#94ACD4',
-        padding: 10,
-        borderRadius: 4,
-    },
-    modalView: {
-        // margin: 20,
-        width: 400,
-        backgroundColor: '#0f172a',
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
+    head: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
+    idWrap: { flexDirection: 'row', alignItems: 'center', flex: 1 },
+    metaRow: { flexDirection: 'row', gap: 14, marginTop: 6 },
+    meta: { flexDirection: 'row', alignItems: 'center' },
+    divider: { height: 1, backgroundColor: theme.colors.border, marginVertical: 12 },
+    row: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 6 },
+    rowLabel: { width: 84, marginLeft: 8 },
+    rowValue: { flex: 1 },
+    editHint: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', marginTop: 4 },
 })
-
-export default RepositoryHistorial

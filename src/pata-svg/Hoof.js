@@ -1,22 +1,19 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Svg, { Path, G, Circle } from 'react-native-svg';
 import paths from './hoofpaths';
-// Importa las rutas de los `Path`
-import StyledText from '../components/StyledText';
-import { useWindowDimensions } from 'react-native';
+import { Chip, Text, useResponsive } from '../ui';
+import theme from '../theme';
 
-const useOrientation = () => {
-  const { width, height } = useWindowDimensions();
-  const orientation = width > height ? 'LANDSCAPE' : 'PORTRAIT';
-  return orientation;
-};
-
-const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide, modificarPosicion }) => {
+// Bottom view of the hoof. Tapping a zone toggles it; the Lateral/Medial
+// chips toggle the side. Logic is unchanged from the previous version.
+const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide = [], modificarPosicion, width }) => {
   const [selectedZone, setSelectedZone] = useState(null);
-  const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
+  const [colors, setColors] = useState(Array(paths.length).fill(theme.colors.hoof));
+  const { innerWidth, isTablet } = useResponsive();
 
-  const [colorSide, setColorSide] = useState(['snow', 'snow']);
+  const size = width || Math.min(innerWidth - 32, isTablet ? 440 : 340);
+  const height = Math.round(size * 600 / 612);
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -28,29 +25,20 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
     });
   };
 
-  const selectSide = (pata, index) => {
-
-    const updatedColorSide = [...colorSide];
-
+  const selectSide = (pata) => {
     setPawnSide((prevState) => {
       if (prevState.includes(pata)) {
-        updatedColorSide[index] = 'snow';
-        setColorSide(updatedColorSide);
         return prevState.filter(item => item !== pata);
       } else {
-        updatedColorSide[index] = 'red';
-        setColorSide(updatedColorSide);
         return [...prevState, pata];
       }
     });
   }
 
   const handlePress = async (index, pathData) => {
-    if (index >= paths.length - 2) return; // Evita la selección para los dos últimos paths
-    // Deselect all elements first
+    if (index >= paths.length - 2) return;
     const newColors = [...colors];
-    // Select the new element
-    newColors[index] = newColors[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
+    newColors[index] = newColors[index] === theme.colors.hoof ? theme.colors.hoofSelected : theme.colors.hoof;
     setColors(newColors);
     setSelectedZone(index);
     if (setNumberPawnPart) {
@@ -58,102 +46,63 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
       toggleString(pathData.name, setNumberPawnPart)
       modificarPosicion(idPaw - 1, pathData.name)
     }
-
   };
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
     const newArray = [...actualArray];
-
     const arrayPoscion = actualArray[index]
-
     const itemsArray = actualArray[index].indexOf(newValue);
 
     if (itemsArray === -1) {
-      // Si el elemento no existe en el array, añadirlo
       arrayPoscion.push(newValue);
     } else {
-      // Si el elemento existe en el array, eliminarlo
       arrayPoscion.splice(itemsArray, 1);
     }
 
-    // Modificamos el valor en la posición especificada
     newArray[index] = arrayPoscion;
-    // Actualizamos el estado con el array modificado
     setArray(newArray);
   };
 
-  const orientation = useOrientation();
-
-  const svgDimensions = orientation === 'LANDSCAPE' 
-    ? { width: 550, height: 550 } 
-    : { width: 350, height: 350 };
-
+  const zonesSelected = colors.filter(c => c === theme.colors.hoofSelected).length;
 
   return (
     <View style={styles.container}>
-      <View style={styles.hoof}>
-        <TouchableWithoutFeedback
-          onPress={() => selectSide('Lateral', 0)}
-        >
-          <StyledText style={{color: colorSide[0]}} fontSize='title'>Lateral</StyledText>
-        </TouchableWithoutFeedback>
-        <Svg height={svgDimensions.height} width={svgDimensions.width} viewBox="0 0 612 792">
-          <G>
-            {paths.map((pathData, index) => (
-              <TouchableWithoutFeedback
-                key={index}
-                onPress={() => handlePress(index, pathData)}
-                disabled={index >= paths.length - 2} // Deshabilita la selección para los dos últimos paths
-              >
-                <G>
-                  <Path d={pathData.d} fill={colors[index]} />
-                  {index < paths.length - 2 && (
-                    <>
-                      <Path d={pathData.d} fill="transparent" stroke="transparent" strokeWidth="20" />
-                      <Circle cx={pathData.cx} cy={pathData.cy} r="35" fill="transparent" />
-                    </>
-                  )}
-                </G>
-              </TouchableWithoutFeedback>
-            ))}
-          </G>
-        </Svg>
-        <TouchableWithoutFeedback
-          onPress={() => selectSide('Medial', 1)}
-        >
-          <StyledText style={{color: colorSide[1]}} fontSize='title'>Medial</StyledText>
-        </TouchableWithoutFeedback>
+      <View style={[styles.sides, { width: size }]}>
+        <Chip label="Lateral" icon="arrow-back" tone="accent" size="md" selected={pawnSide.includes('Lateral')} onPress={() => selectSide('Lateral')} />
+        <Text variant="caption" align="center" style={{ flex: 1 }}>Vista inferior</Text>
+        <Chip label="Medial" icon="arrow-forward" tone="accent" size="md" selected={pawnSide.includes('Medial')} onPress={() => selectSide('Medial')} />
       </View>
-      {selectedZone !== null && (
-        <Text style={styles.selectedText}>
-          {`Seleccionado: ${paths[selectedZone].name}`}
-        </Text>
-      )}
+      <Svg height={height} width={size} viewBox="0 0 612 600">
+        <G>
+          {paths.map((pathData, index) => (
+            <TouchableWithoutFeedback
+              key={index}
+              onPress={() => handlePress(index, pathData)}
+              disabled={index >= paths.length - 2}
+            >
+              <G>
+                <Path d={pathData.d} fill={colors[index]} stroke={theme.colors.bg} strokeWidth="2" strokeLinejoin="round" />
+                {index < paths.length - 2 && (
+                  <>
+                    <Path d={pathData.d} fill="transparent" stroke="transparent" strokeWidth="20" />
+                    <Circle cx={pathData.cx} cy={pathData.cy} r="35" fill="transparent" />
+                  </>
+                )}
+              </G>
+            </TouchableWithoutFeedback>
+          ))}
+        </G>
+      </Svg>
+      <Text variant="caption" align="center">
+        {selectedZone !== null ? `Última zona: ${paths[selectedZone].name} · ${zonesSelected} seleccionada${zonesSelected === 1 ? '' : 's'}` : 'Toca las zonas afectadas'}
+      </Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    paddingTop: 20, // Ajusta este valor según necesites
-    height: '15%', // Ajusta este porcentaje para recortar desde abajo
-  },
-  hoof: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    flexDirection: 'row',
-  },
-  svgWrapper: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectedText: {
-    marginTop: 0,
-    fontSize: 18,
-    color: 'white',
-  },
+  container: { alignItems: 'center' },
+  sides: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
 });
 
 export default Hoof;

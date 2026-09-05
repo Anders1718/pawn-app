@@ -1,20 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
+import { View, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import Svg, { Path, G, Circle } from 'react-native-svg';
-// import paths from './hoofpaths'; // Importa las rutas de los `Path`
-import paths from './hoofpaths2'; // Importa las rutas de los `Path`
-import { useWindowDimensions } from 'react-native';
+import paths from './hoofpaths2';
+import { Text, useResponsive } from '../ui';
+import theme from '../theme';
 
-const useOrientation = () => {
-  const { width, height } = useWindowDimensions();
-  const orientation = width > height ? 'LANDSCAPE' : 'PORTRAIT';
-  return orientation;
-};
-
-
-const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, modificarPosicion }) => {
+// Upper side view. Only the first three paths are selectable.
+const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, modificarPosicion, width }) => {
   const [selectedZone, setSelectedZone] = useState(null);
-  const [colors, setColors] = useState(Array(paths.length).fill("#D2B48C"));
+  const [colors, setColors] = useState(Array(paths.length).fill(theme.colors.hoof));
+  const { innerWidth, isTablet } = useResponsive();
+
+  const w = width || Math.min((innerWidth - 44) / 2, isTablet ? 300 : 200);
+  const h = Math.round(w * 720 / 1024);
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -27,10 +25,9 @@ const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPar
   };
 
   const handlePress = (index, pathData) => {
-    if (index >= 3) return; // Evita la selección para los dos últimos paths
+    if (index >= 3) return;
     const newColors = [...colors];
-    // Select the new element
-    newColors[index] = newColors[index] === "#D2B48C" ? "#FF6347" : "#D2B48C";
+    newColors[index] = newColors[index] === theme.colors.hoof ? theme.colors.hoofSelected : theme.colors.hoof;
     setColors(newColors);
     setSelectedZone(index);
     if (setNumberPawnPart) {
@@ -42,43 +39,32 @@ const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPar
 
   const updateArrayAtPosition = (index, newValue, setArray, actualArray) => {
     const newArray = [...actualArray];
-
     const arrayPoscion = actualArray[index]
-
     const itemsArray = actualArray[index].indexOf(newValue);
 
     if (itemsArray === -1) {
-      // Si el elemento no existe en el array, añadirlo
       arrayPoscion.push(newValue);
     } else {
-      // Si el elemento existe en el array, eliminarlo
       arrayPoscion.splice(itemsArray, 1);
     }
 
-    // Modificamos el valor en la posición especificada
     newArray[index] = arrayPoscion;
-    // Actualizamos el estado con el array modificado
     setArray(newArray);
   };
 
-  const orientation = useOrientation();
-
-  const svgDimensions = orientation === 'LANDSCAPE' 
-    ? { width: 500, height: 500 } 
-    : { width: 250, height: 250 };
-
   return (
     <View style={styles.container}>
-      <Svg height={svgDimensions.height} width={svgDimensions.width} viewBox="0 0 1024 800">
+      <Text variant="caption" style={styles.label}>Vista superior</Text>
+      <Svg height={h} width={w} viewBox="0 0 1024 720">
         <G>
           {paths.map((pathData, index) => (
             <TouchableWithoutFeedback
               key={index}
               onPress={() => handlePress(index, pathData)}
-              disabled={index >= 3} // Deshabilita la selección para los dos últimos paths
+              disabled={index >= 3}
             >
               <G>
-                <Path d={pathData.d} fill={colors[index]} />
+                <Path d={pathData.d} fill={colors[index]} stroke={theme.colors.bg} strokeWidth="2" strokeLinejoin="round" />
                 {index < 3 && (
                   <>
                     <Path d={pathData.d} fill="transparent" stroke="transparent" strokeWidth="20" />
@@ -90,26 +76,14 @@ const HoofSideUp = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPar
           ))}
         </G>
       </Svg>
-      {selectedZone !== null && (
-        <Text style={styles.selectedText}>
-          {`Seleccionado: ${paths[selectedZone].name}`}
-        </Text>
-      )}
+      <Text variant="caption" align="center">{selectedZone !== null ? `Zona ${paths[selectedZone].name}` : ' '}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  selectedText: {
-    marginTop: 0,
-    fontSize: 18,
-    color: 'white',
-  },
+  container: { alignItems: 'center' },
+  label: { marginBottom: 6 },
 });
 
 export default HoofSideUp;

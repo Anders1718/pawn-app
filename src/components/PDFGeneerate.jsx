@@ -407,13 +407,11 @@ export default function App({ direccion, cliente, lugar, totalCuenta, listaVacas
 
 const styles = StyleSheet.create({
     container: {
-        // flex: 1,
         justifyContent: 'center',
         flexDirection: 'column',
-        padding: 8,
     },
     spacer: {
-        height: 8,
+        height: 0,
     },
     printer: {
         textAlign: 'center',

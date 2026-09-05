@@ -1,189 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { Formik } from 'formik'
-import { Button, Image, StyleSheet, View, Pressable, ScrollView, Alert, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, View, Alert } from 'react-native';
+import { useLocation } from 'react-router-native';
+import queryString from 'query-string';
 import { loginValidationSchema } from '../validationSchemas/login'
-import { ModalPaw } from "../components/ModalPaw";
-import Card from "../component-button/card/Card";
-
 import ComponentButton from "../component-button";
 import ComponentButtonTreatment from "../component-button-treatment";
 import ComponentButtonSeverity from "../component-button-severity";
-import StyledText from "../components/StyledText";
-import { Link } from "react-router-native";
-import { useLocation } from 'react-router-native';
-import queryString from 'query-string';
-import Dropdown from "../components/Dropdown";
-import { fetchVacasId, fetchEnfermedades } from "../hooks/useRepositories";
-import CowValidation from "../components/AddVaca";
-import { addHistorialVacas, ultimaHistoriaVaca } from "../hooks/useRepositories";
+import { fetchVacasId, fetchEnfermedades, addHistorialVacas, ultimaHistoriaVaca } from "../hooks/useRepositories";
+import CowForm from "../components/AddVaca";
 import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '../utils/pawOptions'
 import Hoof from '../pata-svg/Hoof';
 import HoofSide from "../patas-lado-svg/Hoof";
 import HoofSideUp from "../patas-lado-arriba-svg/Hoof";
-import StyledTextInput from "../components/StyledTextInput";
-import Enfermedades from "../components/AddEnfermedad";
+import AddEnfermedad from "../components/AddEnfermedad";
 import EditEnfermedad from "../components/EditEnfermedad";
-import { formatDate } from "../utils/transformDate";
 import ListaVacas from "../components/ListaVacas";
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 14,
-        marginBottom: 20,
-        marginTop: -5,
-        textAlign: 'center',
-    },
-    form: {
-        margin: 45,
-        marginTop: 60,
-        paddingBottom: 120
-    },
-    paw: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    modalView: {
-        // margin: 20,
-        width: 400,
-        backgroundColor: '#0f172a',
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    modalViewList: {
-        height: 600,
-        width: 400,
-        backgroundColor: '#0f172a',
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    save: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    returnMenu: {
-        fontSize: 34,
-        marginBottom: 15,
-        fontWeight: 300,
-        width: 140,
-        color: 'gray',
-    },
-    cowName: {
-        textAlign: 'center',
-        fontSize: 22,
-        fontWeight: 400
-    },
-    farmName: {
-        fontSize: 27,
-    },
-    title: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        // backgroundColor:'purple',
-
-    },
-    button: {
-        borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 10,
-        marginBottom: 20
-    },
-    buttonSelected: {
-        width: 100,
-        height: 100,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        borderRadius: '25%',
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#3b598a',
-    },
-    buttonPata: {
-        width: 100,
-        height: 100,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        borderWidth: 10,
-        borderColor: "#334155",
-        borderRadius: '25%',
-        backgroundColor: "#1e293b",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    buttonSelectedBlue: {
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#3b598a',
-        padding: 15,
-        borderRadius: 15,
-        marginBottom: 20
-    },
-    buttonFree: {
-        borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 10,
-        marginTop: 20
-    },
-    buttonContinue: {
-        borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: '#1e293b',
-        padding: 15,
-        borderRadius: 15,
-        borderWidth: 10,
-        marginBottom: 20
-    },
-    image: {
-        width: 270,
-        height: 270,
-        borderRadius: 4,
-        display: 'flex',
-        display: 'row',
-        justifyContent: 'center',
-        textAlign: 'center'
-    },
-    textInput: {
-        marginTop: 40,
-        marginBottom: 20,
-        borderWidth: 1,
-        borderColor: '#334155',
-        borderRadius: 10,
-        padding: 10,
-        fontSize: 28,
-    }
-})
+import { formatDate } from "../utils/transformDate";
+import { Screen, Header, Card, Select, Button, IconButton, Chip, Input, Text, Icon, Badge, treatmentTone, SectionTitle, Sheet, useResponsive } from '../ui'
+import theme from '../theme'
 
 export default function PawPage() {
 
@@ -221,14 +56,12 @@ export default function PawPage() {
     // Multi-pata para preventivo
     const [selectedPatas, setSelectedPatas] = useState([]);
 
-
     // Modal edit pwan
     const [idEditPawn, setIdEditPawn] = useState('');
     const [valueEditPawn, setValueEditPawn] = useState('');
     const [namePawn, setNamePawn] = useState('');
 
     //Sicks
-    // Crear un nuevo string con las partes que si tengan texto
     const [sickList, setSickList] = useState(['', '', '', ''])
     const [firstPartSick, setFirstPartSick] = useState([])
     const [pawnSide, setPawnSide] = useState([])
@@ -248,9 +81,13 @@ export default function PawPage() {
     const [salaReport, setSalaReport] = useState('');
 
     const location = useLocation();
-    // Parsea la cadena de consulta para obtener los parámetros
     const queryParams = queryString.parse(location.search);
     const { finca, id } = queryParams;
+
+    const { innerWidth, isTablet } = useResponsive();
+    const cardInner = innerWidth - 32;
+    const hoofSize = Math.min(cardInner, isTablet ? 440 : 340);
+    const sideWidth = Math.min((cardInner - 12) / 2, isTablet ? 320 : 220);
 
     useEffect(() => {
         const fetchVacas = async () => {
@@ -266,8 +103,6 @@ export default function PawPage() {
         fetchVacas();
         fetchEnfermedadesList();
     }, [setIdPaw]);
-
-    // Nota: hasTalonAdicional ahora se controla directamente desde el botón TA
 
     const clearAllData = async () => {
         setModalCowAddOpen(false);
@@ -362,8 +197,10 @@ export default function PawPage() {
     const actualizarVacas = async () => {
         const resultado = await fetchVacasId(id);
         setCowList(resultado);
-        setDefaultValue(resultado[0].value);
-        setSalaAdd(resultado[0].sala);
+        if (resultado.length > 0) {
+            setDefaultValue(resultado[0].value);
+            setSalaAdd(resultado[0].sala);
+        }
     };
 
     const actualizarVacasAdd = async () => {
@@ -401,16 +238,14 @@ export default function PawPage() {
         }
 
         const identificadorPata = `${primeraParteLista.join(', ')} ${segundaParte}-${severity} ${value}`;
-        // Clonar el array original
         const nuevoPaws = [...sickList];
-        // Modificar la posición deseada
         nuevoPaws[index] = identificadorPata;
-        // Actualizar el estado
         setSickList(nuevoPaws);
     };
 
     const handleChangeDropdown = (value, label, sala) => {
         setCowName(label)
+        setDefaultValue(value)
         setIsCowSelected(true);
         setSala(sala);
         clearCowData();
@@ -432,14 +267,13 @@ export default function PawPage() {
             const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
-            
-            // Construir el tratamiento final incluyendo Tacon adicional si TA está seleccionado
+
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
                 tratamientoFinal = tratamientoFinal + ', Tacón adicional';
             }
-            
-            const historial = await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
+
+            await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
             clearAllData();
             return Alert.alert('Guardado con éxito');
         }
@@ -461,12 +295,12 @@ export default function PawPage() {
             const extremidad = `${pawn}-${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`
 
             const enfermedades = stringUnido && tratamiento !== 'Libre' ? stringUnido : 'Libre de enfermedad';
-            
+
             let tratamientoFinal = tratamiento === 'Libre' ? 'Preventivo' : tratamiento;
             if (hasTalonAdicional) {
                 tratamientoFinal = tratamientoFinal + ', Tacón adicional';
             }
-            
+
             try {
                 await addHistorialVacas(id, cowName, enfermedades, fechaLocal.toISOString(), sala, notaCompleta, tratamientoFinal, extremidad);
             } catch (error) {
@@ -503,28 +337,17 @@ export default function PawPage() {
     }
 
     const convertExtremidad = (value) => {
-
-        // Si value es undefined o null, retornar el valor original
         if (!value) return value;
-
-        // Dividir el string por comas y luego por espacios
         const secciones = value.split(',');
-
         const resultado = secciones.map(seccion => {
             const palabras = seccion.trim().split(' ');
-
-            // Procesar cada palabra
             return palabras.map(palabra => {
-                // Si la palabra contiene números
                 if (/\d/.test(palabra)) {
-                    // Extraer solo los números de esa palabra
                     return palabra.replace(/[^\d]/g, '');
                 }
-                // Si no contiene números, mantener la palabra original
                 return palabra;
             }).join(' ');
-        }).join(', '); // Unir las secciones con coma y espacio
-
+        }).join(', ');
         return resultado;
     }
 
@@ -549,7 +372,6 @@ export default function PawPage() {
             tratamientoFinal = 'Preventivo, Tacón adicional';
         }
 
-        // Enfermedad/tratamiento/severidad son compartidos entre todas las patas seleccionadas
         const stringUnido = sickList.join(' ').trim();
         const enfermedadesFinal = stringUnido ? stringUnido : 'Libre de enfermedad';
         const detalleExtremidad = `${pawnSide} ${numberPawnPart} ${numberSidePawnPart} ${numberUpPawnPart}`.trim();
@@ -566,272 +388,200 @@ export default function PawPage() {
         }
     };
 
-    let touchStartTime = 0;
-
-    const handleLongPress = ({number, value, label}) => {
+    const handleLongPress = ({ number, value, label }) => {
         setIdEditPawn(number)
         setValueEditPawn(value)
         setNamePawn(label)
         setModalEditSick(true);
     };
 
+    const anyType = terapeutic || isRevision || preventive;
+
+    const renderHoofCard = () => (
+        <Card style={styles.block}>
+            <View style={styles.cardHead}>
+                <Icon name="mci:foot-print" size={18} color={theme.colors.primary} />
+                <Text variant="subheading" style={{ marginLeft: 8 }}>Zonas afectadas</Text>
+            </View>
+            <Hoof width={hoofSize} numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />
+            <View style={styles.sideViews}>
+                <HoofSide width={sideWidth} numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
+                <HoofSideUp width={sideWidth} numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
+            </View>
+        </Card>
+    );
+
+    const renderOptionGroups = () => (
+        <>
+            <ComponentButton title="Enfermedades" icon="medkit-outline" subtitle="Mantén presionado un código para editarlo" tone="danger" handleLongPress={handleLongPress} options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} onAdd={() => setModalEnfermedadesOpen(true)} />
+            <ComponentButtonTreatment title="Tratamiento" icon="mci:bandage" tone="info" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
+            <ComponentButtonSeverity title="Severidad" icon="pulse-outline" tone="accent" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
+            <Input
+                label="Nota (opcional)"
+                placeholder="Observaciones del caso"
+                icon="chatbox-ellipses-outline"
+                value={note}
+                onChangeText={addNote}
+                multiline
+                style={{ marginTop: 20 }}
+            />
+        </>
+    );
 
     return <Formik validationSchema={loginValidationSchema} initialValues={initialValues} onSubmit={values => {
         onSubmitCow()
     }}>
-        {({ handleChange, handleSubmit, values }) => {
+        {({ handleSubmit }) => {
             return (
-                <KeyboardAvoidingView
-                    behavior={Platform.OS === "ios" ? "padding" : "height"}
-                    style={{ flex: 1 }}
-                    keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
+                <Screen
+                    header={
+                        <Header
+                            title={finca || 'Animal'}
+                            subtitle={sala ? `Sala ${sala}` : 'Registro de caso'}
+                            backTo="/"
+                            right={<IconButton icon="list-outline" onPress={() => setIsEdit(true)} accessibilityLabel="Gestionar animales" />}
+                        />
+                    }
                 >
-                    <ScrollView
-                        contentContainerStyle={styles.form}
-                        showsVerticalScrollIndicator={false}
-                    >
-                        <View style={styles.title}>
-                            <Link to='/' style={styles.returnMenu}>
-                                <StyledText style={styles.returnMenu}>⬅ Volver</StyledText>
-                            </Link>
-                            <StyledText style={styles.farmName}>🚜 Finca: {finca}</StyledText>
+                    <Card style={{ marginTop: 4 }}>
+                        <View style={styles.cardHeadRow}>
+                            <Text variant="label">Animal</Text>
+                            <Button title="Añadir" icon="add" variant="soft" size="sm" onPress={() => setModalCowAddOpen(true)} />
                         </View>
-                        {sala && <StyledText style={styles.farmName}>🏡Sala: {sala}</StyledText>}
-                        <View style={{ display: 'flex', flexDirection: "row", justifyContent: "space-between", paddingTop: 20 }}>
-                            <TouchableOpacity
-                                style={styles.button}
-                                onPressOut={() => {
-                                    if (!isEdit) setModalCowAddOpen(true);
-                                }}
-                                onLongPress={() => {
-                                    setIsEdit(true);
-                                }}
-                            >
-                                <StyledText style={styles.farmName}>Añadir animal +</StyledText>
-                            </TouchableOpacity>
-                        </View>
-                        <Dropdown
+                        <Select
                             onChange={handleChangeDropdown}
                             data={cowList}
-                            placeholder="🐮 Lista de animales"
-                            defaultValue={defaultValue}
+                            placeholder="Selecciona el animal"
+                            value={defaultValue}
+                            icon="mci:cow"
+                            style={{ marginBottom: 0 }}
                         />
-                        <ModalPaw isOpen={modalCowAddOpen}>
-                            <View style={styles.modalView}>
-                                <Pressable onPress={() => {
-                                    setModalCowAddOpen(false)
-                                }}>
-                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                </Pressable>
-                                <CowValidation salaReport={salaReport} setSalaReport={setSalaReport} finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
-                            </View>
-                        </ModalPaw>
-                        <ModalPaw isOpen={isEdit}>
-                            <View style={styles.modalViewList}>
-                                <Pressable onPress={() => {
-                                    setIsEdit(false)
-                                }}>
-                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                </Pressable>
-                                <ListaVacas setIsEdit={setIsEdit} actualizarVacas={actualizarVacas} />
-                            </View>
-                        </ModalPaw>
-                        <ModalPaw isOpen={modalEnfermedadesOpen}>
-                            <View style={styles.modalView}>
-                                <Pressable onPress={() => { setModalEnfermedadesOpen(false) }}>
-                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                </Pressable>
-                                <Enfermedades
-                                    actualizarEnfermedades={actualizarEnfermedades}
-                                    setModalEnfermedadesOpen={setModalEnfermedadesOpen}
-                                />
-                            </View>
-                        </ModalPaw>
-                        <ModalPaw isOpen={modalEditSick}>
-                            <View style={styles.modalView}>
-                                <Pressable onPress={() => { setModalEditSick(false) }}>
-                                    <StyledText style={{ fontSize: 20 }}> X </StyledText>
-                                </Pressable>
-                                <EditEnfermedad
-                                    actualizarEnfermedades={actualizarEnfermedades}
-                                    setModalEditSick={setModalEditSick}
-                                    idEditPawn={idEditPawn}
-                                    valueEditPawn={valueEditPawn}
-                                    namePawn={namePawn}
-                                />
-                            </View>
-                        </ModalPaw>
-                        {iscowSelected &&
-                            <>
-                                {ultimoTratamiento && ultimoTratamiento.length > 0 && (
-                                    <View style={{ paddingVertical: 20, backgroundColor: '#94ACD4', borderRadius: 15, paddingHorizontal: 10, marginBottom: 25 }}>
-                                        <StyledText fontSize='subheading' style={{ fontSize: 22, textAlign: 'center', marginBottom: 10 }}>Última historia</StyledText>
-                                        <StyledText style={{ fontSize: 16, textAlign: 'center', marginBottom: 10 }}>Fecha: {formatDate(ultimoTratamiento[0].fecha)}</StyledText>
-                                        {ultimoTratamiento.map((registro, index) => (
-                                            <View
-                                                key={registro.id ?? index}
-                                                style={{
-                                                    display: 'flex',
-                                                    flexDirection: 'row',
-                                                    justifyContent: 'space-between',
-                                                    borderTopWidth: index > 0 ? 1 : 0,
-                                                    borderTopColor: '#5c7099',
-                                                    paddingTop: index > 0 ? 10 : 0,
-                                                    marginTop: index > 0 ? 10 : 0,
-                                                }}
-                                            >
-                                                <StyledText style={{ fontSize: 18 }}>Enfermedad: {registro.enfermedades}</StyledText>
-                                                <StyledText style={{ fontSize: 18 }}>Extremidad: {convertExtremidad(registro.extremidad)}</StyledText>
-                                                <StyledText style={{ fontSize: 18 }}>Tratamiento: {registro.tratamiento}</StyledText>
-                                                <StyledText style={{ fontSize: 18 }}>Nota: {registro.nota}</StyledText>
+                        {!iscowSelected && (
+                            <Text variant="caption" style={{ marginTop: 10 }}>Elige un animal de la lista o añade uno nuevo para registrar el caso.</Text>
+                        )}
+                    </Card>
+
+                    <Sheet visible={modalCowAddOpen} onClose={() => setModalCowAddOpen(false)} title="Nuevo animal" subtitle={finca}>
+                        <CowForm salaReport={salaReport} setSalaReport={setSalaReport} finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                    </Sheet>
+                    <Sheet visible={isEdit} onClose={() => setIsEdit(false)} title="Animales" subtitle={finca} scroll={false}>
+                        <ListaVacas setIsEdit={setIsEdit} actualizarVacas={actualizarVacas} />
+                    </Sheet>
+                    <Sheet visible={modalEnfermedadesOpen} onClose={() => setModalEnfermedadesOpen(false)} title="Nueva enfermedad">
+                        <AddEnfermedad actualizarEnfermedades={actualizarEnfermedades} setModalEnfermedadesOpen={setModalEnfermedadesOpen} />
+                    </Sheet>
+                    <Sheet visible={modalEditSick} onClose={() => setModalEditSick(false)} title="Editar enfermedad" subtitle={namePawn}>
+                        <EditEnfermedad actualizarEnfermedades={actualizarEnfermedades} setModalEditSick={setModalEditSick} idEditPawn={idEditPawn} valueEditPawn={valueEditPawn} namePawn={namePawn} />
+                    </Sheet>
+
+                    {iscowSelected &&
+                        <>
+                            {ultimoTratamiento && ultimoTratamiento.length > 0 && (
+                                <Card tone="alt" style={styles.block}>
+                                    <View style={styles.cardHeadRow}>
+                                        <View style={styles.cardHead}>
+                                            <Icon name="time-outline" size={18} color={theme.colors.textMuted} />
+                                            <Text variant="subheading" style={{ marginLeft: 8 }}>Última historia</Text>
+                                        </View>
+                                        <Badge label={formatDate(ultimoTratamiento[0].fecha)} icon="calendar-outline" />
+                                    </View>
+                                    {ultimoTratamiento.map((registro, index) => (
+                                        <View key={registro.id ?? index} style={[styles.histRow, index > 0 && styles.histRowBorder]}>
+                                            <View style={styles.cardHeadRow}>
+                                                <Text variant="bodyLg" weight="semibold" style={{ flex: 1 }} numberOfLines={1}>{convertExtremidad(registro.extremidad) || 'Sin extremidad'}</Text>
+                                                <Badge label={registro.tratamiento} tone={treatmentTone(registro.tratamiento)} />
                                             </View>
+                                            <Text variant="body" style={{ marginTop: 4 }}>{registro.enfermedades}</Text>
+                                            {registro.nota && registro.nota !== 'N/A' ? <Text variant="caption" style={{ marginTop: 2 }}>Nota: {registro.nota}</Text> : null}
+                                        </View>
+                                    ))}
+                                </Card>
+                            )}
+
+                            <SectionTitle
+                                title="Tipo de atención"
+                                icon="medkit-outline"
+                                right={anyType ? <Button title="Cambiar" icon="refresh" variant="ghost" size="sm" onPress={clearPartialCowData} /> : null}
+                            />
+                            <View style={styles.segment}>
+                                <Chip label="Terapéutico" tone="accent" size="md" style={styles.segItem} selected={terapeutic} disabled={anyType && !terapeutic}
+                                    onPress={() => { setTratamiento('Terapéutico'); isTerapeuctic(true); }} />
+                                <Chip label="Revisión" tone="info" size="md" style={styles.segItem} selected={isRevision} disabled={anyType && !isRevision}
+                                    onPress={() => { setTratamiento('Revisión'); setRevision(true); }} />
+                                <Chip label="Preventivo" tone="primary" size="md" style={styles.segItem} selected={preventive} disabled={anyType && !preventive}
+                                    onPress={() => { setTratamiento('Preventivo'); isPreventive(true); setIdPaw(1); }} />
+                            </View>
+                            <Chip
+                                label="Tacón adicional (TA)"
+                                icon="mci:bandage"
+                                tone="accent"
+                                size="md"
+                                selected={hasTalonAdicional}
+                                onPress={() => setHasTalonAdicional(!hasTalonAdicional)}
+                                style={{ alignSelf: 'flex-start', marginTop: 10 }}
+                            />
+
+                            {preventive &&
+                                <>
+                                    <Button
+                                        title="Libre de enfermedades"
+                                        icon="checkmark-circle"
+                                        variant="soft"
+                                        size="lg"
+                                        fullWidth
+                                        style={{ marginTop: 20 }}
+                                        onPress={() => { setTratamiento('Libre'); handleSubmit(); }}
+                                    />
+                                    <SectionTitle title="Patas" icon="mci:cow" subtitle="Selecciona una o varias" />
+                                    <View style={styles.pataRow}>
+                                        {optionsPawn.map(pata => (
+                                            <Chip key={pata.value} label={pata.label} size="xl" tone="primary" style={styles.pataItem} selected={selectedPatas.includes(pata.label)} onPress={() => togglePata(pata.label)} />
                                         ))}
                                     </View>
-                                )}
-                                <View style={{ display: 'flex', flexDirection: 'row', justifyContent: "space-between" }}>
-                                    <>
+                                    {selectedPatas.length > 0 &&
+                                        <>
+                                            {renderHoofCard()}
+                                            {renderOptionGroups()}
+                                            <Button title="Guardar registro" icon="save-outline" size="lg" fullWidth style={styles.block} onPress={onSubmitPreventivo} />
+                                        </>
+                                    }
+                                </>
+                            }
 
-                                        {!isRevision && !preventive &&
-                                            <TouchableOpacity
-                                                style={styles.button}
-                                                onPress={() => {
-                                                    setTratamiento('Terapéutico');
-                                                    isTerapeuctic(true);
-                                                }}
-                                            >
-                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Terapéutico</StyledText>
-                                            </TouchableOpacity>
-                                        }
-                                        <TouchableOpacity
-                                            style={hasTalonAdicional ? styles.buttonSelectedBlue : styles.button}
-                                            onPress={() => {
-                                                setHasTalonAdicional(!hasTalonAdicional);
-                                            }}
-                                        >
-                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>TA</StyledText>
-                                        </TouchableOpacity>
-                                        {!terapeutic && !preventive &&
-
-                                            <TouchableOpacity
-                                                style={styles.button}
-                                                onPress={() => {
-                                                    setTratamiento('Revisión');
-
-                                                    setRevision(true);
-                                                }}
-                                            >
-                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Revisión</StyledText>
-                                            </TouchableOpacity>
-                                        }
-
-                                        {!terapeutic && !isRevision &&
-                                            <TouchableOpacity
-                                                style={styles.button}
-                                                onPress={() => {
-                                                    setTratamiento('Preventivo');
-                                                    isPreventive(true);
-                                                    setIdPaw(1);
-                                                }}
-                                            >
-                                                <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Preventivo</StyledText>
-                                            </TouchableOpacity>
-                                        }
-                                    </>
-                                </View>
-                                {preventive &&
-                                    <>
-                                        <TouchableOpacity
-                                            style={styles.buttonFree}
-                                            onPress={() => {
-                                                setTratamiento('Libre');
-                                                handleSubmit();
-                                            }}
-                                        >
-                                            <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Libre de enfermedades</StyledText>
-                                        </TouchableOpacity>
-                                        <StyledText style={{ fontSize: 32, fontWeight: '900', textAlign: 'center', marginVertical: 15 }}>Pata</StyledText>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'center', flexWrap: 'wrap' }}>
-                                            {optionsPawn.map(pata => (
-                                                <TouchableOpacity
-                                                    key={pata.value}
-                                                    style={selectedPatas.includes(pata.label) ? styles.buttonSelected : styles.buttonPata}
-                                                    onPress={() => togglePata(pata.label)}
-                                                >
-                                                    <StyledText style={{ fontSize: 46, color: 'snow' }}>{pata.label}</StyledText>
-                                                </TouchableOpacity>
-                                            ))}
-                                        </View>
-                                        {selectedPatas.length > 0 &&
-                                            <>
-                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />
-                                                <View style={{ flexDirection: 'row', marginBottom: 35 }}>
-                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
-                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
-                                                </View>
-                                                <ComponentButton title="Enfermedades" handleLongPress={handleLongPress} options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
-                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <ComponentButtonSeverity title="Severidad" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
-                                                <StyledTextInput
-                                                    placeholder='Nota (opcional)'
-                                                    placeholderTextColor="#c2c0c0"
-                                                    onChangeText={(text) => addNote(text)}
-                                                    style={styles.textInput}
-                                                />
-                                                <TouchableOpacity
-                                                    style={styles.button}
-                                                    onPress={onSubmitPreventivo}
-                                                >
-                                                    <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
-                                                </TouchableOpacity>
-                                            </>
-                                        }
-                                    </>
-                                }
-                                {(terapeutic || isRevision) &&
-                                    <>
-                                        <ComponentButton title="Pata" cardSelected={cardSelected} setCardSelected={setCardSelected} options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
-                                        {idPaw &&
-                                            <>
-                                                <Hoof numberPawnSave={numberPawnSave} pawnSide={pawnSide} setPawnSide={setPawnSide} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberPawnPart} numberPawnPart={numberPawnPart} modificarPosicion={modificarPosicion} />
-                                                <View style={{ flexDirection: 'row', marginBottom: 35 }}>
-                                                    <HoofSide numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberSidePawnPart} numberSidePawnPart={numberSidePawnPart} modificarPosicion={modificarPosicion} />
-                                                    <HoofSideUp numberPawnSave={numberPawnSave} setNumberPawnSave={setNumberPawnSave} idPaw={idPaw} setNumberPawnPart={setNumberUpPawnPart} numberPawnPart={numberUpPawnPart} modificarPosicion={modificarPosicion} />
-                                                </View>
-                                                <ComponentButton title="Enfermedades" handleLongPress={handleLongPress} options={enfermedades} numberSickSave={numberSickSave} optionsSelectedSave={numberSickSave} idPaw={idPaw} setNumberSickSave={setNumberSickSave} setFirstPartSick={setFirstPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <Card onPress={() => setModalEnfermedadesOpen(true)}> + </Card>
-                                                <ComponentButtonTreatment title="Tratamiento" options={optionsTratement} numberTratSave={numberTratSave} optionsSelectedSave={numberTratSave} idPaw={idPaw} setNumberTratSave={setNumberTratSave} setSecondPartSick={setSecondPartSick} modificarPosicion={modificarPosicion} setNumberSeverSave={setNumberSeverSave} numberSeverSave={numberSeverSave} />
-                                                <ComponentButtonSeverity title="Severidad" severity={severity} options={optionsSeverity} numberSeverSave={numberSeverSave} numberSeveritySave={numberSeveritySave} optionsSelectedSave={numberSeveritySave} setNumberSeverSave={setNumberSeverSave} setNumberSeveritySave={setNumberSeveritySave} modificarPosicion={modificarPosicion} idPaw={idPaw} setSeverity={setSeverity} />
-                                                <StyledTextInput
-                                                    placeholder='Nota (opcional)'
-                                                    placeholderTextColor="#c2c0c0"
-                                                    onChangeText={(text) => addNote(text)}
-                                                    style={styles.textInput}
-                                                />
-                                                <View>
-                                                    <TouchableOpacity
-                                                        style={styles.button}
-                                                        onPress={onSubmitPartialCow}
-                                                    >
-                                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardado parcial</StyledText>
-                                                    </TouchableOpacity>
-                                                    <TouchableOpacity
-                                                        style={styles.button}
-                                                        onPress={handleSubmit}
-                                                    >
-                                                        <StyledText fontSize='subheading' style={{ fontSize: 25 }}>Guardar</StyledText>
-                                                    </TouchableOpacity>
-                                                </View>
-                                            </>
-                                        }
-                                    </>
-                                }
-                            </>
-                        }
-                    </ScrollView>
-                </KeyboardAvoidingView>
-
+                            {(terapeutic || isRevision) &&
+                                <>
+                                    <ComponentButton title="Pata" icon="mci:cow" subtitle="Selecciona la pata a tratar" size="xl" tone="primary" stretch cardSelected={cardSelected} setCardSelected={setCardSelected} options={optionsPawn} setPawn={setPawn} setIdPaw={setIdPaw} idPaw={idPaw} />
+                                    {idPaw &&
+                                        <>
+                                            {renderHoofCard()}
+                                            {renderOptionGroups()}
+                                            <View style={styles.actions}>
+                                                <Button title="Guardado parcial" icon="albums-outline" variant="secondary" size="lg" style={{ flex: 1 }} onPress={onSubmitPartialCow} />
+                                                <Button title="Guardar" icon="save-outline" size="lg" style={{ flex: 1 }} onPress={handleSubmit} />
+                                            </View>
+                                            <Text variant="caption" align="center" style={{ marginTop: 10 }}>Guardado parcial conserva el animal seleccionado para registrar otra pata.</Text>
+                                        </>
+                                    }
+                                </>
+                            }
+                        </>
+                    }
+                </Screen>
             )
         }}
     </Formik>
 }
+
+const styles = StyleSheet.create({
+    block: { marginTop: 16 },
+    cardHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
+    cardHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 10 },
+    histRow: { paddingTop: 4 },
+    histRowBorder: { borderTopWidth: 1, borderTopColor: theme.colors.border, marginTop: 12, paddingTop: 12 },
+    segment: { flexDirection: 'row', gap: 8 },
+    segItem: { flex: 1, height: 48, paddingHorizontal: 6, minWidth: 0 },
+    pataRow: { flexDirection: 'row', gap: 8 },
+    pataItem: { flex: 1, minWidth: 0, paddingHorizontal: 4 },
+    sideViews: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 14, gap: 12 },
+    actions: { flexDirection: 'row', gap: 12, marginTop: 20 },
+})

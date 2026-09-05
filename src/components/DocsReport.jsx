@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, ActivityIndicator, Alert } from 'react-native';
+import { View, StyleSheet, Alert } from 'react-native';
 import NetInfo from '@react-native-community/netinfo';
-import StyledText from './StyledText';
+import { Button, Text, Icon } from '../ui';
+import theme from '../theme';
 
 const DocsReport = ({ finca, direccion, cliente, lugar, totalCuenta, listaVacas, fechaHoyFormateada, nit, tel, sumaTotal, report, users }) => {
   const [isConnected, setIsConnected] = useState(true);
@@ -13,7 +14,6 @@ const DocsReport = ({ finca, direccion, cliente, lugar, totalCuenta, listaVacas,
         const netInfoState = await NetInfo.fetch();
         setIsConnected(netInfoState.isConnected);
       } catch (error) {
-        // In case of error, assume connected and let the request fail
         setIsConnected(true);
       }
     };
@@ -73,50 +73,29 @@ const DocsReport = ({ finca, direccion, cliente, lugar, totalCuenta, listaVacas,
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.button, (!isConnected || isLoading) && styles.disabledButton]}
-        onPress={handleGenerateDocs}
+      <Button
+        title="Generar factura + informe en Google Docs"
+        icon="logo-google"
+        size="lg"
+        variant="secondary"
+        fullWidth
+        loading={isLoading}
         disabled={!isConnected || isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <StyledText fontSize='subheading' style={{ fontSize: 25, color: isConnected ? '#fff' : '#a0a0a0' }}>
-            Generar en Google Docs
-          </StyledText>
-        )}
-      </TouchableOpacity>
+        onPress={handleGenerateDocs}
+      />
       {!isConnected && (
-        <Text style={styles.offlineText}>No hay conexión a internet. El botón está deshabilitado.</Text>
+        <View style={styles.offline}>
+          <Icon name="cloud-offline-outline" size={16} color={theme.colors.accent} />
+          <Text variant="caption" style={{ marginLeft: 8, flex: 1, color: theme.colors.accent }}>Sin conexión a internet. Este documento requiere conexión.</Text>
+        </View>
       )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    flexDirection: 'column',
-    padding: 8,
-  },
-  button: {
-    borderColor: '#334155',
-    borderRadius: 15,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1e293b',
-    padding: 15,
-    borderWidth: 10,
-  },
-  disabledButton: {
-    backgroundColor: '#d3d3d3',
-    borderColor: '#a9a9a9',
-  },
-  offlineText: {
-    textAlign: 'center',
-    color: 'red',
-    marginTop: 10,
-  },
+  container: { marginTop: 12 },
+  offline: { flexDirection: 'row', alignItems: 'center', backgroundColor: theme.colors.accentSoft, borderRadius: theme.radius.md, padding: 12, marginTop: 10 },
 });
 
 export default DocsReport;

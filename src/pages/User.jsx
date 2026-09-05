@@ -1,117 +1,43 @@
 import React, { useEffect, useState } from 'react'
-import { Formik, useField } from 'formik'
-import { Button, StyleSheet, TextInput, View, Alert, Image, TouchableOpacity, Text, ScrollView } from 'react-native'
-import StyledTextInput from '../components/StyledTextInput'
-import StyledText from '../components/StyledText'
+import { Formik } from 'formik'
+import { StyleSheet, View, Alert, Image, ActivityIndicator } from 'react-native'
+import * as ImagePicker from 'expo-image-picker'
 import { userValidation } from '../validationSchemas/user'
 import { addUser, fetchUsers, editUser } from '../hooks/useRepositories'
-import { Link } from 'react-router-native';
-import * as ImagePicker from 'expo-image-picker';
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12,
-        color: 'snow'
-    },
-    returnMenu: {
-        fontSize: 34,
-        marginBottom: 15,
-        fontWeight: 300,
-        width: 140,
-        color: 'gray',
-    },
-    container: {
-        margin: 12,
-        marginTop: 70,
-        paddingBottom: 50,
-    },
-    logoContainer: {
-        alignItems: 'center',
-        marginVertical: 20,
-    },
-    logoButton: {
-        backgroundColor: '#3498db',
-        padding: 10,
-        borderRadius: 5,
-        marginTop: 10,
-    },
-    logoButtonText: {
-        color: 'white',
-        textAlign: 'center',
-    },
-    logoImage: {
-        width: 150,
-        height: 100,
-        borderRadius: 10,
-        marginBottom: 10,
-        backgroundColor: '#e0e0e0',
-    }
-})
+import { Screen, Header, Card, FormField, FormRow, Button, Text, Icon, SectionTitle, PressableScale } from '../ui'
+import theme from '../theme'
 
 const addUsers = async (values, users) => {
     if (users.length === 0) {
         try {
-            await addUser(values);
-            Alert.alert('Usuario registrado correctamente');
+            await addUser(values)
+            Alert.alert('Perfil creado', 'Usuario registrado correctamente')
         } catch (error) {
-            Alert.alert('Error al registrar usuario');
+            Alert.alert('Error', 'Error al registrar usuario')
         }
     } else {
         try {
-            await editUser(values);
-            Alert.alert('Usuario editado correctamente');
+            await editUser(values)
+            Alert.alert('Perfil actualizado', 'Usuario editado correctamente')
         } catch (error) {
-            Alert.alert('Error al editar usuario');
+            Alert.alert('Error', 'Error al editar usuario')
         }
     }
-};
-
-const FormikInputValue = ({ name, onSubmitEditing, ...props }) => {
-    const [field, meta, helpers] = useField(name)
-
-    return (
-        <>
-            <StyledTextInput
-                value={field.value}
-                onChangeText={value => helpers.setValue(value)}
-                onSubmitEditing={onSubmitEditing}
-                {...props}
-            />
-        </>
-    )
 }
 
 export default function RegisterUserPage() {
     const [initialValues, setInitialValues] = useState({
-        nombre: '',
-        apellido: '',
-        profesion: '',
-        universidad: '',
-        banco: '',
-        tipoCuenta: '',
-        numeroCuenta: '',
-        telefono: '',
-        documento: '',
-        direccion: '',
-        logo: ''
-    });
-    
-    const [users, setUsers] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+        nombre: '', apellido: '', profesion: '', universidad: '', banco: '', tipoCuenta: '', numeroCuenta: '', telefono: '', documento: '', direccion: '', logo: '',
+    })
+    const [users, setUsers] = useState([])
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const fetchUserInfo = async () => {
-            const resultado = await fetchUsers();
-            setUsers(resultado);
+            const resultado = await fetchUsers()
+            setUsers(resultado)
             if (resultado.length > 0) {
-                const user = resultado[0];
-                console.log("user", user);
+                const user = resultado[0]
                 setInitialValues({
                     id: user.id,
                     nombre: user.nombre,
@@ -124,44 +50,42 @@ export default function RegisterUserPage() {
                     telefono: user.telefono,
                     documento: user.documento,
                     direccion: user.direccion,
-                    logo: user.logo
-                });
+                    logo: user.logo,
+                })
             }
-            setIsLoading(false);
-        };
-        fetchUserInfo();
-    }, []);
+            setIsLoading(false)
+        }
+        fetchUserInfo()
+    }, [])
 
     const pickImage = async (setFieldValue) => {
-        // Solicitar permisos para acceder a la galería
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
         if (status !== 'granted') {
-            Alert.alert('Se necesitan permisos para acceder a la galería');
-            return;
+            Alert.alert('Permiso necesario', 'Se necesitan permisos para acceder a la galería')
+            return
         }
-        
-        // Lanzar el selector de imágenes
-        let result = await ImagePicker.launchImageLibraryAsync({
+        const result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             quality: 1,
             base64: true,
-        });
-        
+        })
         if (!result.canceled) {
-            // Guardar la imagen en formato base64
-            const base64Image = `data:image/jpeg;base64,${result.assets[0].base64}`;
-            setFieldValue('logo', base64Image);
+            setFieldValue('logo', `data:image/jpeg;base64,${result.assets[0].base64}`)
         }
-    };
+    }
+
+    const header = <Header title="Perfil profesional" subtitle="Aparece en informes y facturas" backTo="/" />
 
     if (isLoading) {
         return (
-            <View>
-                <StyledText>Cargando...</StyledText>
-            </View>
-        );
+            <Screen header={header} scroll={false}>
+                <View style={styles.loading}>
+                    <ActivityIndicator color={theme.colors.primary} size="large" />
+                    <Text variant="caption" style={{ marginTop: 12 }}>Cargando perfil...</Text>
+                </View>
+            </Screen>
+        )
     }
 
     return (
@@ -169,131 +93,64 @@ export default function RegisterUserPage() {
             validationSchema={userValidation}
             initialValues={initialValues}
             enableReinitialize={true}
-            onSubmit={async values => {
-                await addUsers(values, users);
-            }}
+            onSubmit={async values => { await addUsers(values, users) }}
         >
-            {({ handleChange, handleSubmit, values, isValid, setFieldValue }) => {
-                return (
-                    <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-                        <View style={styles.container}>
-                            <Link to='/'>
-                                <StyledText style={styles.returnMenu} fontWeight='bold' color='secondary' fontSize='subheading'>⬅ Volver</StyledText>
-                            </Link>
-                            
-                            <View style={styles.form}>
-                                <FormikInputValue
-                                    name='nombre'
-                                    placeholder='Nombre'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='apellido'
-                                    placeholder='Apellido'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='profesion'
-                                    placeholder='Profesión'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='universidad'
-                                    placeholder='Universidad'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='banco'
-                                    placeholder='Nombre del Banco'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='telefono'
-                                    placeholder='Teléfono'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='documento'
-                                    placeholder='Número de documento'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='direccion'
-                                    placeholder='Dirección facturación'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='tipoCuenta'
-                                    placeholder='Tipo de Cuenta'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                <FormikInputValue
-                                    name='numeroCuenta'
-                                    placeholder='Número de Cuenta'
-                                    placeholderTextColor="#c2c0c0"
-                                    onSubmitEditing={() => {
-                                        if (isValid) handleSubmit();
-                                    }}
-                                />
-                                
-                                <View style={styles.logoContainer}>
-                                    <StyledText>Logo del Usuario</StyledText>
-                                    {values.logo ? (
-                                        <Image 
-                                            source={{ uri: values.logo }} 
-                                            style={styles.logoImage} 
-                                        />
-                                    ) : (
-                                        <View style={styles.logoImage} />
-                                    )}
-                                    <TouchableOpacity 
-                                        style={styles.logoButton}
-                                        onPress={() => pickImage(setFieldValue)}
-                                    >
-                                        <Text style={styles.logoButtonText}>
-                                            {values.logo ? "Cambiar Logo" : "Seleccionar Logo"}
-                                        </Text>
-                                    </TouchableOpacity>
-                                </View>
-                                
-                                {users.length === 0 && (
-                                    <Button onPress={handleSubmit} title='Registrar Usuario' />
+            {({ handleSubmit, values, setFieldValue, isSubmitting }) => (
+                <Screen
+                    header={header}
+                    footer={<Button title={users.length === 0 ? 'Registrar perfil' : 'Guardar cambios'} icon="save-outline" size="lg" fullWidth loading={isSubmitting} onPress={handleSubmit} />}
+                >
+                    <Card style={{ marginTop: 4 }}>
+                        <View style={styles.logoRow}>
+                            <PressableScale onPress={() => pickImage(setFieldValue)} style={styles.logoBox} accessibilityRole="button" accessibilityLabel="Seleccionar logo">
+                                {values.logo ? (
+                                    <Image source={{ uri: values.logo }} style={styles.logoImage} resizeMode="contain" />
+                                ) : (
+                                    <Icon name="image-outline" size={30} color={theme.colors.textFaint} />
                                 )}
-                                {users.length > 0 && (
-                                    <Button onPress={handleSubmit} title='Editar Usuario' />
-                                )}
+                            </PressableScale>
+                            <View style={{ flex: 1, marginLeft: 16 }}>
+                                <Text variant="subheading" numberOfLines={1}>{[values.nombre, values.apellido].filter(Boolean).join(' ') || 'Tu nombre'}</Text>
+                                <Text variant="caption" numberOfLines={1}>{values.profesion || 'Profesión'}</Text>
+                                <Button title={values.logo ? 'Cambiar logo' : 'Seleccionar logo'} icon="image-outline" variant="soft" size="sm" onPress={() => pickImage(setFieldValue)} style={{ alignSelf: 'flex-start', marginTop: 10 }} />
                             </View>
                         </View>
-                    </ScrollView>
-                )
-            }}
+                    </Card>
+
+                    <SectionTitle title="Datos personales" icon="person-outline" />
+                    <Card>
+                        <FormRow>
+                            <FormField name="nombre" label="Nombre" placeholder="Nombre" icon="person-outline" />
+                            <FormField name="apellido" label="Apellido" placeholder="Apellido" icon="person-outline" />
+                        </FormRow>
+                        <FormRow>
+                            <FormField name="profesion" label="Profesión" placeholder="Ej. Médico veterinario" icon="briefcase-outline" />
+                            <FormField name="universidad" label="Universidad" placeholder="Institución" icon="school-outline" />
+                        </FormRow>
+                        <FormRow>
+                            <FormField name="documento" label="Documento" placeholder="Número de documento" icon="id-card-outline" keyboardType="number-pad" />
+                            <FormField name="telefono" label="Teléfono" placeholder="Número de contacto" icon="call-outline" keyboardType="phone-pad" />
+                        </FormRow>
+                    </Card>
+
+                    <SectionTitle title="Facturación" icon="card-outline" subtitle="Datos bancarios para la cuenta de cobro" />
+                    <Card>
+                        <FormField name="direccion" label="Dirección de facturación" placeholder="Dirección" icon="home-outline" />
+                        <FormField name="banco" label="Banco" placeholder="Nombre del banco" icon="business-outline" />
+                        <FormRow>
+                            <FormField name="tipoCuenta" label="Tipo de cuenta" placeholder="Ahorros / Corriente" icon="wallet-outline" />
+                            <FormField name="numeroCuenta" label="Número de cuenta" placeholder="Número" icon="card-outline" keyboardType="number-pad" style={{ marginBottom: 0 }} />
+                        </FormRow>
+                    </Card>
+                </Screen>
+            )}
         </Formik>
     )
 }
+
+const styles = StyleSheet.create({
+    loading: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+    logoRow: { flexDirection: 'row', alignItems: 'center' },
+    logoBox: { width: 96, height: 96, borderRadius: 20, backgroundColor: theme.colors.surfaceAlt, borderWidth: 1, borderColor: theme.colors.border, alignItems: 'center', justifyContent: 'center', overflow: 'hidden' },
+    logoImage: { width: '100%', height: '100%' },
+})

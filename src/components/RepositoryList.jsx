@@ -1,163 +1,72 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, StyleSheet, Pressable, KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
-import RepositoryItem from './RepositoryItem.jsx';
-import { useRepositories } from '../hooks/useRepositories.js';
-import { Link } from 'react-router-native';
-import { ModalPaw } from "../components/ModalPaw";
-import StyledText from './StyledText';
-import StyledTextInput from './StyledTextInput.jsx';
-import LogInPage from './AddFinca.jsx';
-import { useLocation } from 'react-router-native';
-import queryString from 'query-string';
+import React, { useState, useEffect, useCallback } from 'react'
+import { FlatList, StyleSheet, View } from 'react-native'
+import { useLocation } from 'react-router-native'
+import queryString from 'query-string'
+import RepositoryItem from './RepositoryItem.jsx'
+import FincaForm from './AddFinca.jsx'
+import { useRepositories } from '../hooks/useRepositories.js'
+import { Screen, Header, SearchBar, EmptyState, Sheet, IconButton, Button, Text } from '../ui'
+import theme from '../theme'
 
-const RepositoryList = () => {
+export default function RepositoryList() {
+    const location = useLocation()
+    const { isBill } = queryString.parse(location.search)
 
-    const location = useLocation();
-    const queryParams = queryString.parse(location.search);
-    const { isBill } = queryParams;
+    const [isOpen, setIsOpen] = useState(false)
+    const [search, setSearch] = useState('')
+    const [masterData, setMasterData] = useState([])
 
-    const [isOpen, setIsOpen] = useState(false);
-    const [search, setsearch] = useState('')
-    const [filterData, setfilterData] = useState([])
-    const [masterData, setmasterData] = useState([])
+    const loadFincas = useCallback(async () => {
+        const resultado = await useRepositories()
+        setMasterData(resultado.fincas)
+    }, [])
 
-    useEffect(() => {
-        const fetchFincas = async () => {
-            const resultado = await useRepositories();
-            setfilterData(resultado.fincas);
-            setmasterData(resultado.fincas);
-        };
+    useEffect(() => { loadFincas() }, [loadFincas])
 
-        fetchFincas();
-    }, []);
-
-    const searchFilter = (text) => {
-        if (text) {
-            const newData = masterData.filter((item) => {
-                const itemData = item.nombre_finca ?
-                    item.nombre_finca.toUpperCase()
-                    : ''.toUpperCase();
-                const textData = text.toUpperCase();
-                return itemData.indexOf(textData) > -1;
-            });
-            setfilterData(newData);
-            setsearch(text);
-        } else {
-            setfilterData(masterData)
-            setsearch(text)
-        }
-
-    }
-
-    const actualizarFincas = async () => {
-        const resultado = await useRepositories();
-        setfilterData(resultado.fincas);
-        setmasterData(resultado.fincas);
-    };
+    const filterData = search
+        ? masterData.filter(item => (item.nombre_finca || '').toUpperCase().includes(search.toUpperCase()))
+        : masterData
 
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === "ios" ? "padding" : "height"}
-            style={{ flex: 1 }}
-            keyboardVerticalOffset={0} // Ajusta este valor según sea necesario
-        >
-            <View
-                style={styles.container}
-            >
-                <View
-                    showsVerticalScrollIndicator={false}
-                    contentContainerStyle={{ paddingBottom: 40 }}
-                >
-                    <View style={styles.title}>
-                        <Link to='/'>
-                            <StyledText fontWeight='bold' color='secondary' fontSize='subheading' style={styles.returnButton}>⬅ Volver</StyledText>
-                        </Link>
-                        {!isBill &&
-                            <Pressable onPress={() => { setIsOpen(true) }}>
-                                <StyledText fontWeight='bold' fontSize='subheading' style={styles.addFincaButton}>+ Agregar Finca</StyledText>
-                            </Pressable>
-                        }
-                        <ModalPaw
-                            isOpen={isOpen}
-                        >
-                            <View style={styles.modalView}>
-                                <Pressable onPress={() => setIsOpen(false)}>
-                                    <StyledText fontWeight='bold' fontSize='subheading' style={styles.addFincaButton}>x</StyledText>
-                                </Pressable>
-                                <LogInPage actualizarFincas={actualizarFincas} setIsOpen={setIsOpen} />
-                            </View>
-                        </ModalPaw>
-                    </View>
-                    <StyledTextInput
-                        placeholder='Buscar finca...'
-                        placeholderTextColor="#c2c0c0"
-                        value={search}
-                        onChangeText={(text) => searchFilter(text)}
-                        style={styles.textInput}
-                    />
-                </View>
-                <FlatList
-                    data={filterData}
-                    ItemSeparatorComponent={() => <Text> </Text>}
-                    renderItem={({ item: repo }) => (
-                        <>
-                            {isBill ?
-                                (<RepositoryItem isBill {...repo} />)
-                                :
-                                (<RepositoryItem {...repo} actualizarFincas={actualizarFincas} />)
-                            }
-                        </>
-                    )}
+        <Screen
+            scroll={false}
+            header={
+                <Header
+                    title={isBill ? 'Facturar' : 'Fincas'}
+                    subtitle={isBill ? 'Selecciona la finca a facturar' : `${masterData.length} ${masterData.length === 1 ? 'finca registrada' : 'fincas registradas'}`}
+                    backTo="/"
+                    right={!isBill ? <IconButton icon="add" variant="primary" onPress={() => setIsOpen(true)} accessibilityLabel="Agregar finca" /> : null}
                 />
-            </View>
-        </KeyboardAvoidingView>
+            }
+        >
+            <FlatList
+                data={filterData}
+                keyExtractor={(item) => String(item.id)}
+                keyboardShouldPersistTaps="handled"
+                ListHeaderComponent={<SearchBar value={search} onChangeText={setSearch} placeholder="Buscar finca..." />}
+                ListEmptyComponent={
+                    <EmptyState
+                        icon="mci:barn"
+                        title={search ? 'Sin resultados' : 'Aún no hay fincas'}
+                        description={search ? 'Prueba con otro nombre.' : 'Registra la primera finca para empezar a llevar el historial de sus animales.'}
+                        action={!isBill && !search ? <Button title="Agregar finca" icon="add" onPress={() => setIsOpen(true)} /> : null}
+                    />
+                }
+                renderItem={({ item }) => (
+                    <RepositoryItem {...item} isBill={!!isBill} actualizarFincas={loadFincas} />
+                )}
+                ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
+                contentContainerStyle={styles.list}
+                showsVerticalScrollIndicator={false}
+            />
+
+            <Sheet visible={isOpen} onClose={() => setIsOpen(false)} title="Nueva finca" subtitle="Datos del predio y del cliente">
+                <FincaForm actualizarFincas={loadFincas} setIsOpen={setIsOpen} />
+            </Sheet>
+        </Screen>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        marginTop: 60,
-        marginBottom: 160
-    },
-    list: {
-        marginTop: 10
-    },
-    returnButton: {
-        fontSize: 34,
-        marginBottom: 15,
-        fontWeight: 300,
-        width: 140,
-        color: 'gray',
-        marginLeft: 20
-    },
-    addFincaButton: {
-        paddingHorizontal: 20
-    },
-    title: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        marginBottom: 30
-    },
-    modalView: {
-        // margin: 20,
-        width: 400,
-        backgroundColor: '#0f172a',
-        borderRadius: 20,
-        padding: 35,
-        shadowColor: '#000',
-        shadowOffset: {
-            width: 0,
-            height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-    textInput: {
-        marginHorizontal: 20,
-        marginBottom: 20
-    }
-});
-
-export default RepositoryList;
+    list: { paddingTop: 4, paddingBottom: 40, flexGrow: 1 },
+})

@@ -1,136 +1,65 @@
-import React, { useState } from 'react'
-import { Formik, useField } from 'formik'
-import { Alert, Button, StyleSheet, TextInput, View, Pressable } from 'react-native'
-import StyledTextInput from './StyledTextInput'
-import StyledText from './StyledText'
+import React from 'react'
+import { Formik } from 'formik'
+import { Alert, View } from 'react-native'
 import { historialVacasValidation } from '../validationSchemas/login'
 import { editHistorialVacas, deleteHistorialVacas } from '../hooks/useRepositories'
+import { FormField, FormRow, Button } from '../ui'
 
-const initialValues = (props) => {
-    return {
-        id_animal: props.nombre_vaca,
-        enfermedades: props.enfermedades,
-        extremidad: props.extremidad,
-        tratamientos: props.tratamiento,
-        nota: props.nota,
-        fecha: props.fecha,
-        sala: props.sala,
-        id: props.id,
-    };
-}
-
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12,
-        color: 'snow'
-    }
+const initialValues = (props) => ({
+    id_animal: props.nombre_vaca,
+    enfermedades: props.enfermedades,
+    extremidad: props.extremidad,
+    tratamientos: props.tratamiento,
+    nota: props.nota,
+    fecha: props.fecha,
+    sala: props.sala,
+    id: props.id,
 })
 
-const addVacas = async (values, fetchFincas, setIsOpen, isDelete) => {
-    if (isDelete) {
-        await deleteHistorialVacas(values);
-    } else {
-        await editHistorialVacas(values);
+export default function EditHistorialForm(props) {
+    const submit = async (values) => {
+        await editHistorialVacas(values)
+        props.fetchFincas()
+        props.setIsOpen(false)
     }
-    fetchFincas();
-    setIsOpen(false);
-};
 
-const FormikInputValue = ({ name, ...props }) => {
-    const [field, meta, helpers] = useField(name)
+    const confirmDelete = () => {
+        Alert.alert(
+            'Eliminar registro',
+            '¿Estás seguro de que deseas eliminar este registro del historial?',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteHistorialVacas({ id: props.id })
+                        props.fetchFincas()
+                        props.setIsOpen(false)
+                    },
+                },
+            ],
+            { cancelable: true }
+        )
+    }
 
     return (
-        <>
-            <StyledTextInput
-                error={meta.error}
-                value={field.value}
-                onChangeText={value => helpers.setValue(value)}
-                {...props}
-            />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
-        </>
-
-    )
-}
-
-export default function LogInPage(props) {
-
-    const [isDelete, setIsDelete] = useState(false);
-
-    return <Formik validationSchema={historialVacasValidation} initialValues={initialValues(props)} onSubmit={values => {
-        addVacas(values, props.fetchFincas, props.setIsOpen, isDelete)
-    }}>
-        {({ handleChange, handleSubmit, values }) => {
-
-            
-
-            const pressDelete = () => {
-                Alert.alert(
-                    "Eliminar animal",
-                    "¿Estás seguro de que deseas continuar?",
-                    [
-                      {
-                        text: "Cancelar",
-                        onPress: () => props.setIsOpen(false),
-                        style: "cancel"
-                      },
-                      { text: "OK", onPress: () => {
-                        setIsDelete(true);
-                        handleSubmit();
-                      } }
-                    ],
-                    { cancelable: false }
-                  );
-            }
-
-            return (
-                <View style={styles.form}>
-                    <FormikInputValue
-                        name='id_animal'
-                        placeholder='Animal'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='extremidad'
-                        placeholder='Extremidad'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='enfermedades'
-                        placeholder='Enfermedades'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='tratamientos'
-                        placeholder='Tratamientos'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='nota'
-                        placeholder='Nota'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='fecha'
-                        placeholder='Fecha'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <FormikInputValue
-                        name='sala'
-                        placeholder='Sala'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <Button onPress={handleSubmit} title='Editar' />
-                    <Button onPress={pressDelete} title='Eliminar' />
+        <Formik validationSchema={historialVacasValidation} initialValues={initialValues(props)} onSubmit={submit}>
+            {({ handleSubmit, isSubmitting }) => (
+                <View>
+                    <FormRow>
+                        <FormField name="id_animal" label="Animal" placeholder="ID del animal" icon="mci:cow" />
+                        <FormField name="sala" label="Sala" placeholder="Sala" icon="home-outline" />
+                    </FormRow>
+                    <FormField name="tratamientos" label="Tratamiento" placeholder="Preventivo, Terapéutico..." icon="medkit-outline" />
+                    <FormField name="extremidad" label="Extremidad" placeholder="AI-Lateral 2 11" icon="mci:foot-print" />
+                    <FormField name="enfermedades" label="Enfermedades" placeholder="Enfermedades" icon="pulse-outline" multiline />
+                    <FormField name="nota" label="Nota" placeholder="Observaciones" icon="chatbox-ellipses-outline" multiline />
+                    <FormField name="fecha" label="Fecha (ISO)" placeholder="2025-01-31T00:00:00.000Z" icon="calendar-outline" hint="Formato guardado por la app; cámbialo solo si es necesario." />
+                    <Button title="Guardar cambios" icon="save-outline" size="lg" fullWidth onPress={handleSubmit} loading={isSubmitting} style={{ marginTop: 6 }} />
+                    <Button title="Eliminar registro" icon="trash-outline" variant="danger" fullWidth onPress={confirmDelete} style={{ marginTop: 10 }} />
                 </View>
-            )
-        }}
-    </Formik>
+            )}
+        </Formik>
+    )
 }

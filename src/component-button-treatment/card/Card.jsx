@@ -1,44 +1,18 @@
 import * as React from "react";
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import Chip from "../../ui/Chip";
 
-export default function Card({ onPress, isTurnedOver, children }) {
+// Selectable option tile. Presentation lives in the shared Chip; the parent
+// decides the selected state.
+export default function Card({ onPress, isTurnedOver, children, handleLongPress, size = 'lg', tone = 'primary', style }) {
     return (
-        <TouchableOpacity
-            style={!isTurnedOver ? styles.cardDown : styles.cardUp}
+        <Chip
+            label={children}
+            selected={isTurnedOver}
             onPress={onPress}
-        >
-            <Text style={styles.text}>{children}</Text>
-        </TouchableOpacity>
+            onLongPress={handleLongPress}
+            size={size}
+            tone={tone}
+            style={style}
+        />
     );
 }
-
-const styles = StyleSheet.create({
-    cardUp: {
-        width: 100,
-        height: 100,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        borderColor: "#334155",
-        borderRadius: "25%",
-        borderRadius: "25%",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#3b598a",
-    },
-    cardDown: {
-        width: 100,
-        height: 100,
-        marginHorizontal: 5,
-        marginVertical: 10,
-        borderWidth: 10,
-        borderColor: "#334155",
-        borderRadius: "25%",
-        backgroundColor: "#1e293b",
-        alignItems: "center",
-        justifyContent: "center",
-    },
-    text: {
-        fontSize: 46,
-        color: "snow",
-    },
-});

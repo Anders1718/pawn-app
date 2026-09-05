@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text } from "react-native";
+import { View } from "react-native";
 import RepositoryList from "./RepositoryList";
 import { Routes, Route, Navigate } from "react-router-native";
 import LogInPage from '../pages/LogIn.jsx'
@@ -8,10 +8,11 @@ import HistorialFinca from "./HistorialFinca.jsx";
 import ItemMenu from "./ItemsMenu.jsx";
 import BillPage from "../pages/bill-page/Bill.jsx";
 import User from "../pages/User.jsx";
+import theme from "../theme";
 
 const Main = () => {
     return (
-        <View style={{ flex: 1, backgroundColor:'#1e293b' }}>
+        <View style={{ flex: 1, backgroundColor: theme.colors.bg }}>
             <Routes>
                 <Route path='/' element={<ItemMenu/>} />
                 <Route path='/home' element={<RepositoryList/>} />

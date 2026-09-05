@@ -1,85 +1,82 @@
-import React, { useState, useEffect } from 'react'
-import { View, StyleSheet, Image, TouchableWithoutFeedback, Pressable, ScrollView, Alert, ActivityIndicator } from "react-native"
-import { Link } from 'react-router-native'
-import StyledText from './StyledText'
-import theme from '../theme'
-import Dropdown from './Dropdown'
+import React, { useState, useEffect, useCallback } from 'react'
+import { View, StyleSheet, Alert } from 'react-native'
+import { useNavigate } from 'react-router-native'
+import Constants from 'expo-constants'
 import { fetchFincasNombres, exportDatabase, importDatabase } from '../hooks/useRepositories'
+import { Screen, Card, Select, Button, Text, Icon, SectionTitle, PressableScale, useResponsive } from '../ui'
+import theme from '../theme'
 
-const RepositoryItemHeader = ({ nombreFinca, idFinca }) => {
+const Tile = ({ title, description, icon, tone, disabled, onPress, width }) => {
+    const colors = {
+        primary: [theme.colors.primarySoft, theme.colors.primary],
+        accent: [theme.colors.accentSoft, theme.colors.accent],
+        info: [theme.colors.infoSoft, '#93C5FD'],
+        neutral: [theme.colors.surfaceAlt, theme.colors.textMuted],
+    }[tone || 'primary']
 
     return (
-        <View style={{ paddingBottom: 2, flexDirection: 'row', alignSelf: 'center', marginTop: 40 }}>
-            <View style={{ paddingRight: 45 }}>
-
-                <Link to='/home' >
-                    <View>
-                        <Image style={styles.image} source={require(`../img/finca.png`)} />
-                        <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center', paddingBottom: 45 }}>Finca</StyledText>
-                    </View>
-                </Link>
-                {nombreFinca ? (
-                    <Link to={`/pawpage?finca=${nombreFinca}&id=${idFinca}`} component={TouchableWithoutFeedback} >
-                        <View>
-                            <Image style={styles.image} source={require(`../img/pata-inicio.png`)} />
-                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Animal</StyledText>
-                        </View>
-                    </Link>
-                ) : (
-                    <Pressable onPress={() => Alert.alert('Debe seleccionar un predio')} >
-                        <View>
-                            <Image style={styles.imageDisabled} source={require(`../img/pata-inicio.png`)} />
-                            <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Animal</StyledText>
-                        </View>
-                    </Pressable>
-                )
-                }
+        <PressableScale onPress={onPress} style={[styles.tile, { width }, disabled && styles.tileDisabled]} accessibilityRole="button" accessibilityLabel={title}>
+            <View style={[styles.tileIcon, { backgroundColor: colors[0] }]}>
+                <Icon name={icon} size={26} color={colors[1]} />
             </View>
-            <View >
-                <Link to='/home?isBill=true' >
-                    <View>
-                        <Image style={styles.image} source={require(`../img/factura.png`)} />
-                        <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center', paddingBottom: 45 }}>Factura</StyledText>
-                    </View>
-                </Link>
-                <Link to='/user' >
-                    <View>
-                        <Image style={styles.image} source={require(`../img/usuario-2.png`)} />
-                        <StyledText fontWeight='bold' fontSize='subheading' style={{ alignSelf: 'center' }}>Usuario</StyledText>
-                    </View>
-                </Link>
+            <Text variant="subheading" style={styles.tileTitle} numberOfLines={1}>{title}</Text>
+            <Text variant="caption" numberOfLines={2}>{description}</Text>
+            <Icon name="chevron-forward" size={18} color={theme.colors.textFaint} style={styles.tileChevron} />
+        </PressableScale>
+    )
+}
+
+const BrandHeader = () => {
+    const { gutter, contentWidth } = useResponsive()
+    return (
+        <View style={[styles.brand, { paddingTop: Constants.statusBarHeight + 14, paddingHorizontal: gutter, maxWidth: contentWidth }]}>
+            <View style={styles.brandMark}>
+                <Icon name="mci:cow" size={26} color="#062B1E" />
+            </View>
+            <View style={{ flex: 1 }}>
+                <Text variant="title">Podología Bovina</Text>
+                <Text variant="caption">Registro de casos, historial e informes</Text>
             </View>
         </View>
     )
 }
 
-const ItemMenu = () => {
+export default function ItemMenu() {
+    const navigate = useNavigate()
+    const { columns, innerWidth } = useResponsive()
 
-    const [fincas, setFincas] = useState([]);
-    const [nombreFinca, setNombreFinca] = useState(null);
-    const [idFinca, setIdFinca] = useState(null);
-    const [isExporting, setIsExporting] = useState(false);
-    const [isImporting, setIsImporting] = useState(false);
+    const [fincas, setFincas] = useState([])
+    const [nombreFinca, setNombreFinca] = useState(null)
+    const [idFinca, setIdFinca] = useState(null)
+    const [isExporting, setIsExporting] = useState(false)
+    const [isImporting, setIsImporting] = useState(false)
+
+    const loadFincas = useCallback(async () => {
+        const resultado = await fetchFincasNombres()
+        setFincas(resultado)
+    }, [])
+
+    useEffect(() => { loadFincas() }, [loadFincas])
 
     const handleChange = (value, label) => {
-        setNombreFinca(label);
-        setIdFinca(value);
+        setNombreFinca(label)
+        setIdFinca(value)
     }
 
     const handleExportDB = async () => {
         try {
-            setIsExporting(true);
-            await exportDatabase();
+            setIsExporting(true)
+            await exportDatabase()
         } catch (error) {
-            Alert.alert('Error', 'No se pudo exportar la base de datos');
+            Alert.alert('Error', 'No se pudo exportar la base de datos')
         } finally {
-            setIsExporting(false);
+            setIsExporting(false)
         }
     }
 
     const handleImportDB = () => {
         Alert.alert(
-            'Importar Base de Datos',
+            'Importar base de datos',
             'Esta acción reemplazará todos los datos actuales. ¿Desea continuar?',
             [
                 { text: 'Cancelar', style: 'cancel' },
@@ -88,154 +85,99 @@ const ItemMenu = () => {
                     style: 'destructive',
                     onPress: async () => {
                         try {
-                            setIsImporting(true);
-                            const result = await importDatabase();
+                            setIsImporting(true)
+                            const result = await importDatabase()
                             if (result.success) {
-                                Alert.alert('Éxito', result.message);
-                                const resultado = await fetchFincasNombres();
-                                setFincas(resultado);
-                                setNombreFinca(null);
-                                setIdFinca(null);
+                                Alert.alert('Éxito', result.message)
+                                await loadFincas()
+                                setNombreFinca(null)
+                                setIdFinca(null)
                             }
                         } catch (error) {
-                            Alert.alert('Error', error.message || 'No se pudo importar la base de datos');
+                            Alert.alert('Error', error.message || 'No se pudo importar la base de datos')
                         } finally {
-                            setIsImporting(false);
+                            setIsImporting(false)
                         }
                     },
                 },
             ]
-        );
+        )
     }
 
-    useEffect(() => {
-        const fetchFincas = async () => {
-            const resultado = await fetchFincasNombres();
-            setFincas(resultado);
-        };
+    const goToAnimal = () => {
+        if (!nombreFinca) {
+            Alert.alert('Selecciona una finca', 'Elige la finca activa para registrar animales.')
+            return
+        }
+        const params = new URLSearchParams({ finca: nombreFinca, id: String(idFinca) })
+        navigate(`/pawpage?${params.toString()}`)
+    }
 
-        fetchFincas();
-    }, []);
+    const gap = 12
+    const tileWidth = Math.floor((innerWidth - gap * (columns - 1)) / columns)
+
+    const tiles = [
+        { key: 'fincas', title: 'Fincas', description: 'Clientes, predios e historial', icon: 'mci:barn', tone: 'primary', onPress: () => navigate('/home') },
+        { key: 'animal', title: 'Animal', description: nombreFinca ? `Registrar caso en ${nombreFinca}` : 'Selecciona una finca primero', icon: 'mci:cow', tone: 'accent', disabled: !nombreFinca, onPress: goToAnimal },
+        { key: 'factura', title: 'Factura', description: 'Cuenta de cobro por periodo', icon: 'receipt-outline', tone: 'info', onPress: () => navigate('/home?isBill=true') },
+        { key: 'usuario', title: 'Perfil', description: 'Datos del profesional y logo', icon: 'person-outline', tone: 'neutral', onPress: () => navigate('/user') },
+    ]
 
     return (
-        <ScrollView
-            contentContainerStyle={styles.container}
-            showsVerticalScrollIndicator={false}
-        >
-            <Dropdown
-                data={fincas}
-                onChange={handleChange}
-                placeholder="🚜 Seleccione el predio"
+        <Screen header={<BrandHeader />}>
+            <Card style={styles.selectorCard}>
+                <Text variant="label" style={{ marginBottom: 8 }}>Finca activa</Text>
+                <Select
+                    data={fincas}
+                    value={idFinca}
+                    onChange={handleChange}
+                    placeholder="Seleccione el predio"
+                    icon="mci:barn"
+                    style={{ marginBottom: 0 }}
+                />
+                <View style={styles.selectorHint}>
+                    <Icon name={nombreFinca ? 'checkmark-circle' : 'information-circle-outline'} size={16} color={nombreFinca ? theme.colors.primary : theme.colors.textFaint} />
+                    <Text variant="caption" style={{ marginLeft: 6, flex: 1 }}>
+                        {nombreFinca ? `Los registros de animal se guardarán en ${nombreFinca}.` : 'Necesaria para registrar animales.'}
+                    </Text>
+                </View>
+            </Card>
 
-            />
-            <RepositoryItemHeader nombreFinca={nombreFinca} idFinca={idFinca} />
-            <View style={styles.dbButtonsContainer}>
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.exportButton,
-                        pressed && styles.exportButtonPressed
-                    ]}
-                    onPress={handleExportDB}
-                    disabled={isExporting}
-                >
-                    {isExporting ? (
-                        <ActivityIndicator color={theme.colors.white} size='small' />
-                    ) : (
-                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.exportButtonText}>
-                            Exportar Base de Datos
-                        </StyledText>
-                    )}
-                </Pressable>
-                <Pressable
-                    style={({ pressed }) => [
-                        styles.importButton,
-                        pressed && styles.importButtonPressed
-                    ]}
-                    onPress={handleImportDB}
-                    disabled={isImporting}
-                >
-                    {isImporting ? (
-                        <ActivityIndicator color={theme.colors.white} size='small' />
-                    ) : (
-                        <StyledText fontWeight='bold' fontSize='subheading' style={styles.importButtonText}>
-                            Importar Base de Datos
-                        </StyledText>
-                    )}
-                </Pressable>
+            <SectionTitle title="Accesos" icon="grid-outline" />
+            <View style={[styles.grid, { gap }]}>
+                {tiles.map(({ key, ...t }) => <Tile key={key} width={tileWidth} {...t} />)}
             </View>
-        </ScrollView>
+
+            <SectionTitle title="Copia de seguridad" subtitle="Exporta o restaura todos los datos en un archivo" icon="cloud-outline" />
+            <Card>
+                <View style={styles.backupRow}>
+                    <Button title="Exportar" icon="cloud-upload-outline" variant="secondary" loading={isExporting} onPress={handleExportDB} style={{ flex: 1 }} />
+                    <Button title="Importar" icon="cloud-download-outline" variant="secondary" loading={isImporting} onPress={handleImportDB} style={{ flex: 1 }} />
+                </View>
+                <Text variant="caption" style={{ marginTop: 10 }}>Importar reemplaza fincas, animales, historial, enfermedades y perfil.</Text>
+            </Card>
+        </Screen>
     )
 }
 
 const styles = StyleSheet.create({
-    container: {
-        padding: 20,
-        marginTop: 50,
-        backgroundColor: '#1e293b',
-        paddingBottom: 90,
+    brand: { flexDirection: 'row', alignItems: 'center', width: '100%', alignSelf: 'center', paddingBottom: 14 },
+    brandMark: { width: 48, height: 48, borderRadius: 14, backgroundColor: theme.colors.primary, alignItems: 'center', justifyContent: 'center', marginRight: 12 },
+    selectorCard: { marginTop: 4 },
+    selectorHint: { flexDirection: 'row', alignItems: 'center', marginTop: 10 },
+    grid: { flexDirection: 'row', flexWrap: 'wrap' },
+    tile: {
+        backgroundColor: theme.colors.surface,
+        borderColor: theme.colors.border,
+        borderWidth: 1,
+        borderRadius: theme.radius.lg,
+        padding: 16,
+        minHeight: 140,
+        ...theme.shadow.card,
     },
-    language: {
-        padding: 4,
-        color: theme.colors.white,
-        backgroundColor: theme.colors.primary,
-        alignSelf: 'flex-start',
-        marginVertical: 4,
-        borderRadius: 4,
-        overflow: 'hidden'
-    },
-    image: {
-        width: 270,
-        height: 270,
-        borderRadius: 4,
-    },
-    imageDisabled: {
-        width: 270,
-        height: 270,
-        borderRadius: 4,
-        opacity: 0.4
-    },
-    title: {
-        paddingBottom: 100,
-        alignSelf: 'center',
-        color: 'snow'
-    },
-    dbButtonsContainer: {
-        marginTop: 30,
-        alignItems: 'center',
-        gap: 14,
-    },
-    exportButton: {
-        backgroundColor: '#16a34a',
-        paddingVertical: 14,
-        paddingHorizontal: 24,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 250,
-        minHeight: 50,
-    },
-    exportButtonPressed: {
-        opacity: 0.7,
-    },
-    exportButtonText: {
-        color: theme.colors.white,
-    },
-    importButton: {
-        backgroundColor: '#2563eb',
-        paddingVertical: 14,
-        paddingHorizontal: 24,
-        borderRadius: 10,
-        alignItems: 'center',
-        justifyContent: 'center',
-        minWidth: 250,
-        minHeight: 50,
-    },
-    importButtonPressed: {
-        opacity: 0.7,
-    },
-    importButtonText: {
-        color: theme.colors.white,
-    }
+    tileDisabled: { opacity: 0.55 },
+    tileIcon: { width: 48, height: 48, borderRadius: 14, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
+    tileTitle: { marginBottom: 2 },
+    tileChevron: { position: 'absolute', top: 16, right: 14 },
+    backupRow: { flexDirection: 'row', gap: 12 },
 })
-
-export default ItemMenu

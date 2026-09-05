@@ -1,105 +1,49 @@
-import React, { useState } from 'react'
-import { Formik, useField } from 'formik'
-import { Alert, Button, StyleSheet, View } from 'react-native'
-import StyledTextInput from './StyledTextInput'
-import StyledText from './StyledText'
+import React from 'react'
+import { Formik } from 'formik'
+import { Alert, View } from 'react-native'
 import { enfermedadesValidation } from '../validationSchemas/login'
 import { updateEnfermedades, deleteEnfermedad } from '../hooks/useRepositories'
-
-const initialValues = (nombre, id) => {
-    return {
-        nombre: nombre,
-        id: id,
-    }
-}
-
-const styles = StyleSheet.create({
-    error: {
-        color: 'red',
-        fontSize: 12,
-        marginBottom: 20,
-        marginTop: -5
-    },
-    form: {
-        margin: 12,
-        color: 'snow'
-    }
-})
-
-const editEnfermedades = async (values,idEditPawn, actualizarEnfermedades, setModalEditSick, isDelete) => {
-    if (isDelete) {
-        await deleteEnfermedad(idEditPawn)
-    } else {
-        await updateEnfermedades(values, idEditPawn);
-    }
-    actualizarEnfermedades();
-    setModalEditSick(false);
-};
-
-const FormikInputValue = ({ name, ...props }) => {
-    const [field, meta, helpers] = useField(name)
-
-    return (
-        <>
-            <StyledTextInput
-                error={meta.error}
-                value={field.value}
-                onChangeText={value => helpers.setValue(value)}
-                {...props}
-            />
-            {meta.error && <StyledText style={styles.error}>{meta.error}</StyledText>}
-        </>
-
-    )
-}
+import { FormField, FormRow, Button } from '../ui'
 
 export default function EditEnfermedad({ actualizarEnfermedades, setModalEditSick, idEditPawn, valueEditPawn, namePawn }) {
-    const [isDelete, setIsDelete] = useState(false);
+    const submit = async (values) => {
+        await updateEnfermedades(values, idEditPawn)
+        actualizarEnfermedades()
+        setModalEditSick(false)
+    }
 
-    return <Formik validationSchema={enfermedadesValidation} initialValues={initialValues( valueEditPawn, namePawn)} onSubmit={values => {
-        editEnfermedades(values, idEditPawn, actualizarEnfermedades, setModalEditSick, isDelete)
-    }}>
-        {({ handleChange, handleSubmit, values }) => {
+    const confirmDelete = () => {
+        Alert.alert(
+            'Eliminar enfermedad',
+            `Se eliminará "${namePawn}" de la lista. ¿Deseas continuar?`,
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Eliminar',
+                    style: 'destructive',
+                    onPress: async () => {
+                        await deleteEnfermedad(idEditPawn)
+                        actualizarEnfermedades()
+                        setModalEditSick(false)
+                    },
+                },
+            ],
+            { cancelable: true }
+        )
+    }
 
-            const pressDelete = () => {
-                Alert.alert(
-                    "Eliminar enfermedad",
-                    "¿Estás seguro de que deseas continuar?",
-                    [
-                        {
-                            text: "Cancelar",
-                            onPress: () => setModalEditSick(false),
-                            style: "cancel"
-                        },
-                        {
-                            text: "OK", onPress: () => {
-                                setIsDelete(true);
-                                handleSubmit();
-                            }
-                        }
-                    ],
-                    { cancelable: false }
-                );
-            }
-
-            return (
-                <View style={styles.form}>
-                    <FormikInputValue
-                        name='nombre'
-                        placeholder='Nombre Enfermedad'
-                        placeholderTextColor="#c2c0c0"
-                    />
-
-                    <FormikInputValue
-                        name='id'
-                        placeholder='Identificación Enfermedad'
-                        placeholderTextColor="#c2c0c0"
-                    />
-                    <Button onPress={handleSubmit} title='Editar' />
-                    <Button onPress={pressDelete} title='Eliminar' />
-
+    return (
+        <Formik validationSchema={enfermedadesValidation} initialValues={{ nombre: valueEditPawn, id: namePawn }} onSubmit={submit}>
+            {({ handleSubmit, isSubmitting }) => (
+                <View>
+                    <FormRow>
+                        <FormField name="id" label="Código" placeholder="Ej. LB" icon="pricetag-outline" autoCapitalize="characters" />
+                        <FormField name="nombre" label="Nombre de la enfermedad" placeholder="Nombre completo" icon="medkit-outline" />
+                    </FormRow>
+                    <Button title="Guardar cambios" icon="save-outline" size="lg" fullWidth onPress={handleSubmit} loading={isSubmitting} style={{ marginTop: 6 }} />
+                    <Button title="Eliminar enfermedad" icon="trash-outline" variant="danger" fullWidth onPress={confirmDelete} style={{ marginTop: 10 }} />
                 </View>
-            )
-        }}
-    </Formik>
+            )}
+        </Formik>
+    )
 }
