@@ -389,15 +389,18 @@ export default function PawPage() {
     }
 
     const modificarPosicion = (index, value) => {
+        const primeraParteLista = Array.isArray(firstPartSick) ? firstPartSick : (firstPartSick ? [firstPartSick] : []);
+        const segundaParteLista = Array.isArray(secondPartSick) ? secondPartSick : (secondPartSick ? [secondPartSick] : []);
+
         let segundaParte = '';
-        if (secondPartSick.includes('venda + oxi')) {
+        if (segundaParteLista.includes('venda + oxi')) {
             segundaParte = 'venda + oxi'
         }
-        if (secondPartSick.includes('tacón adicional')) {
+        if (segundaParteLista.includes('tacón adicional')) {
             segundaParte = segundaParte ? segundaParte + ', tacón adicional' : 'tacón adicional'
         }
 
-        const identificadorPata = `${firstPartSick.join(', ')} ${segundaParte}-${severity} ${value}`;
+        const identificadorPata = `${primeraParteLista.join(', ')} ${segundaParte}-${severity} ${value}`;
         // Clonar el array original
         const nuevoPaws = [...sickList];
         // Modificar la posición deseada
@@ -483,7 +486,7 @@ export default function PawPage() {
             setNumberSidePawnPart([], [], [], []);
             setNumberUpPawnPart([], [], [], []);
             setSickList(['', '', '', '']);
-            setFirstPartSick('');
+            setFirstPartSick([]);
             setPawnSide([]);
             setSecondPartSick([]);
             setNumberPawnSave([[], [], [], []]);
