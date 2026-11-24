@@ -75,6 +75,31 @@ export async function fetchVacasId(id) {
     return nombreVacas;
 }
 
+// Salas distintas de una finca (animales + historial). Ignora mayúsculas y
+// espacios sobrantes para no repetir la misma sala escrita de dos formas.
+export async function fetchSalas(id) {
+
+    const db = await SQLite.openDatabaseAsync(databaseName);
+
+    await db.execAsync('CREATE TABLE IF NOT EXISTS vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), sala VARCHAR(255), finca INT, FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await db.execAsync('CREATE TABLE IF NOT EXISTS historial_vacas (id INTEGER PRIMARY KEY AUTOINCREMENT, nombre_vaca VARCHAR(255) NOT NULL, enfermedades VARCHAR(255), fecha DATE, finca INT, sala VARCHAR(255), nota VARCHAR(255), tratamiento VARCHAR(255), FOREIGN KEY (finca) REFERENCES fincas(id))');
+    await addExtremidadColumnIfNotExists(db);
+
+    const filas = await db.getAllAsync(
+        'SELECT sala FROM vacas WHERE finca = ? UNION SELECT sala FROM historial_vacas WHERE finca = ?',
+        [id, id]
+    );
+
+    const salas = new Map();
+    filas.forEach(({ sala }) => {
+        const nombre = String(sala ?? '').trim();
+        const clave = nombre.toLowerCase();
+        if (nombre && !salas.has(clave)) salas.set(clave, nombre);
+    });
+
+    return [...salas.values()].sort((a, b) => a.localeCompare(b, 'es', { numeric: true }));
+}
+
 export async function listadoVacasId(id) {
 
     const db = await SQLite.openDatabaseAsync(databaseName);

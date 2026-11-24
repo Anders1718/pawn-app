@@ -5,6 +5,10 @@ import paths from './hoofpaths';
 import { Chip, Text, useResponsive } from '../ui';
 import theme from '../theme';
 
+// The drawing spans x 4.6–672.6 and y 46–574.7 in hoofpaths.js; a narrower box
+// clips the right claw.
+const VIEW_BOX = { x: 0, y: 40, width: 677, height: 541 };
+
 // Bottom view of the hoof. Tapping a zone toggles it; the Lateral/Medial
 // chips toggle the side. Logic is unchanged from the previous version.
 const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, setPawnSide, pawnSide = [], modificarPosicion, width }) => {
@@ -12,8 +16,8 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
   const [colors, setColors] = useState(Array(paths.length).fill(theme.colors.hoof));
   const { innerWidth, isTablet } = useResponsive();
 
-  const size = width || Math.min(innerWidth - 32, isTablet ? 440 : 340);
-  const height = Math.round(size * 600 / 612);
+  const size = width || Math.min(innerWidth - 32, isTablet ? 488 : 340);
+  const height = Math.round(size * VIEW_BOX.height / VIEW_BOX.width);
 
   const toggleString = (str, setVal) => {
     setVal((prevState) => {
@@ -72,7 +76,7 @@ const Hoof = ({ numberPawnSave, setNumberPawnSave, idPaw, setNumberPawnPart, set
         <Text variant="caption" align="center" style={{ flex: 1 }}>Vista inferior</Text>
         <Chip label="Medial" icon="arrow-forward" tone="accent" size="md" selected={pawnSide.includes('Medial')} onPress={() => selectSide('Medial')} />
       </View>
-      <Svg height={height} width={size} viewBox="0 0 612 600">
+      <Svg height={height} width={size} viewBox={`${VIEW_BOX.x} ${VIEW_BOX.y} ${VIEW_BOX.width} ${VIEW_BOX.height}`}>
         <G>
           {paths.map((pathData, index) => (
             <TouchableWithoutFeedback

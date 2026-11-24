@@ -7,7 +7,7 @@ import { loginValidationSchema } from '../validationSchemas/login'
 import ComponentButton from "../component-button";
 import ComponentButtonTreatment from "../component-button-treatment";
 import ComponentButtonSeverity from "../component-button-severity";
-import { fetchVacasId, fetchEnfermedades, addHistorialVacas, ultimaHistoriaVaca } from "../hooks/useRepositories";
+import { fetchVacasId, fetchSalas, fetchEnfermedades, addHistorialVacas, ultimaHistoriaVaca } from "../hooks/useRepositories";
 import CowForm from "../components/AddVaca";
 import { initialValues, optionsPawn, optionsTratement, optionsSeverity } from '../utils/pawOptions'
 import Hoof from '../pata-svg/Hoof';
@@ -79,6 +79,7 @@ export default function PawPage() {
     const [numberSeveritySave, setNumberSeveritySave] = useState([[], [], [], []])
 
     const [salaReport, setSalaReport] = useState('');
+    const [salas, setSalas] = useState([]);
 
     const location = useLocation();
     const queryParams = queryString.parse(location.search);
@@ -86,13 +87,14 @@ export default function PawPage() {
 
     const { innerWidth, isTablet } = useResponsive();
     const cardInner = innerWidth - 32;
-    const hoofSize = Math.min(cardInner, isTablet ? 440 : 340);
+    const hoofSize = Math.min(cardInner, isTablet ? 488 : 340);
     const sideWidth = Math.min((cardInner - 12) / 2, isTablet ? 320 : 220);
 
     useEffect(() => {
         const fetchVacas = async () => {
             const resultado = await fetchVacasId(id);
             setCowList(resultado);
+            setSalas(await fetchSalas(id));
         };
 
         const fetchEnfermedadesList = async () => {
@@ -197,6 +199,7 @@ export default function PawPage() {
     const actualizarVacas = async () => {
         const resultado = await fetchVacasId(id);
         setCowList(resultado);
+        setSalas(await fetchSalas(id));
         if (resultado.length > 0) {
             setDefaultValue(resultado[0].value);
             setSalaAdd(resultado[0].sala);
@@ -206,6 +209,7 @@ export default function PawPage() {
     const actualizarVacasAdd = async () => {
         const resultado = await fetchVacasId(id);
         setCowList(resultado);
+        setSalas(await fetchSalas(id));
         setDefaultValue(resultado[0].value);
         setSalaAdd(resultado[0].sala);
         handleChangeDropdown(resultado[0].value, resultado[0].label, resultado[0].sala);
@@ -395,6 +399,12 @@ export default function PawPage() {
         setModalEditSick(true);
     };
 
+    // La sala solo aporta cuando el cliente tiene varias. Si los registros del
+    // último caso son de salas distintas se muestra en cada fila.
+    const salasUltimaHistoria = salas.length > 1 && Array.isArray(ultimoTratamiento)
+        ? [...new Set(ultimoTratamiento.map(registro => registro.sala || ''))]
+        : [];
+
     const anyType = terapeutic || isRevision || preventive;
 
     const renderHoofCard = () => (
@@ -462,7 +472,7 @@ export default function PawPage() {
                     </Card>
 
                     <Sheet visible={modalCowAddOpen} onClose={() => setModalCowAddOpen(false)} title="Nuevo animal" subtitle={finca}>
-                        <CowForm salaReport={salaReport} setSalaReport={setSalaReport} finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
+                        <CowForm salas={salas} salaReport={salaReport} setSalaReport={setSalaReport} finca={finca} setSeleccionarAnimal={setSeleccionarAnimal} actualizarVacas={actualizarVacasAdd} id={id} setModalCowAddOpen={setModalCowAddOpen} />
                     </Sheet>
                     <Sheet visible={isEdit} onClose={() => setIsEdit(false)} title="Animales" subtitle={finca} scroll={false}>
                         <ListaVacas setIsEdit={setIsEdit} actualizarVacas={actualizarVacas} />
@@ -483,7 +493,10 @@ export default function PawPage() {
                                             <Icon name="time-outline" size={18} color={theme.colors.textMuted} />
                                             <Text variant="subheading" style={{ marginLeft: 8 }}>Última historia</Text>
                                         </View>
-                                        <Badge label={formatDate(ultimoTratamiento[0].fecha)} icon="calendar-outline" />
+                                        <View style={styles.badges}>
+                                            {salasUltimaHistoria.length === 1 && salasUltimaHistoria[0] ? <Badge label={`Sala ${salasUltimaHistoria[0]}`} icon="home-outline" tone="info" /> : null}
+                                            <Badge label={formatDate(ultimoTratamiento[0].fecha)} icon="calendar-outline" />
+                                        </View>
                                     </View>
                                     {ultimoTratamiento.map((registro, index) => (
                                         <View key={registro.id ?? index} style={[styles.histRow, index > 0 && styles.histRowBorder]}>
@@ -491,6 +504,7 @@ export default function PawPage() {
                                                 <Text variant="bodyLg" weight="semibold" style={{ flex: 1 }} numberOfLines={1}>{convertExtremidad(registro.extremidad) || 'Sin extremidad'}</Text>
                                                 <Badge label={registro.tratamiento} tone={treatmentTone(registro.tratamiento)} />
                                             </View>
+                                            {salasUltimaHistoria.length > 1 && registro.sala ? <Text variant="caption">Sala {registro.sala}</Text> : null}
                                             <Text variant="body" style={{ marginTop: 4 }}>{registro.enfermedades}</Text>
                                             {registro.nota && registro.nota !== 'N/A' ? <Text variant="caption" style={{ marginTop: 2 }}>Nota: {registro.nota}</Text> : null}
                                         </View>
@@ -576,6 +590,7 @@ const styles = StyleSheet.create({
     block: { marginTop: 16 },
     cardHead: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
     cardHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, gap: 10 },
+    badges: { flexShrink: 1, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: 8 },
     histRow: { paddingTop: 4 },
     histRowBorder: { borderTopWidth: 1, borderTopColor: theme.colors.border, marginTop: 12, paddingTop: 12 },
     segment: { flexDirection: 'row', gap: 8 },
